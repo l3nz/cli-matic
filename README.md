@@ -23,6 +23,44 @@ cli-matic currently depends on:
 
 ## Rationale
 
+Say you want to create a simple script, in Clojure, where you want
+to run a very simple calculator that either sums A to B or subtracts B from A:
+
+
+	$ clj -m calc add -a 40 -b 2
+	42
+	$ clj -m calc sub -a 10 -b 2
+	8
+	$ clj -m calc --base 16 add -a 30 -b 2
+	20
+
+We would also want it to display its help:
+
+	$clj -m calc -?
+	Calc version 0.2
+	Usage: calc [parms] cmd
+
+	Parms:
+	    -b, --base n 	      The number base for output (default 10)
+
+	Cmd:
+		add:          Adds A and B together
+		sub:          Subtracts B from A
+
+And help for sub-commands:
+
+	$clj -m calc add -?
+	Calc version 0.2
+	Usage: calc [parms] add [-a n] [-b n]
+	Adds A and B together
+	
+	Parms:
+	    -a          Parameter A
+	    -b   		Parameter B
+
+
+But while we are coding this, we do not realy want to waste time writing any parsing logic.
+What we care about are functions "add-numbers" and "sub-numbers"; the rest sould just be declared externally.
 
 
 
