@@ -62,6 +62,33 @@ And help for sub-commands:
 But while we are coding this, we do not realy want to waste time writing any parsing logic.
 What we care about are functions "add-numbers" and "sub-numbers"; the rest sould just be declared externally.
 
+From your point of view of an application programmer, you'd like to have a function:
+
+	(defn add-number
+		"Sums A and B together, and prints it in base `base`"
+		[{:keys [a b base]}]
+		(Integer/toString (+ a b) base))
+
+And nothing more; the fact that both parameters exist, are of the right type, have the right defaults etc, 
+should not be a concern.
+
+(def CLI 
+	{:description "Calc version 0.2"
+	 :global-parms {["-b" "--base n" :default 10 ]}
+	 :commands {
+	 	[{:description "Adds A and B together"
+	 	  :short-form "a"
+	 	  :long-form "add"
+	 	  :fn    add-number
+	 	  :spec  spec-add
+	 	  :parms [
+	 	  {:short "-a" :type :integer }
+	 	  {:short "-b" :type :integer }]
+	 	}]
+
+	}
+}
+)
 
 
 
