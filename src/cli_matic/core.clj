@@ -79,6 +79,19 @@
   ))
 
 
+(defn all-subcommands
+  "Returns all subcommands, as strings"
+  [climatic-args]
+  (let [just-subcmds (dissoc climatic-args :_common)
+        keys-subcmds (keys just-subcmds)
+        names-subcmds (map name keys-subcmds)]
+    (set names-subcmds)))
+
+(s/fdef
+  all-subcommands
+  :args (s/cat :args ::S/climatic-cfg)
+  :ret set?)
+
 
 ;
 ; Out of a cli-matic arg list,
@@ -107,47 +120,62 @@
 ;
 ;
 
+(defn mkError
+  [config subcommand error text]
+  {:subcommand     subcommand
+   :subcommand-def (get-subcommand config subcommand)
+   :commandline    {}
+   :parse-errors   error
+   :error-text     text
+   })
+
+
 (defn parse-cmds
   [cmdline config]
 
-  (let [cli-top-options (rewrite-opts config nil)
+  (let [possible-subcmds (all-subcommands config)
+
+        cli-cmn-options (rewrite-opts config nil)
         ;_ (prn "Options" cli-top-options)
-        parsed-common-args (parse-opts cmdline cli-top-options :in-order true)
+        parsed-cmn-opts (parse-opts cmdline cli-cmn-options :in-order true)
         ;_ (prn "Common cmdline" parsed-common-cmdline)
-        parse-errors-common (:errors parsed-common-args)
-        opts-common (:options parsed-common-args)]
 
-    (if (nil? parse-errors-common)
+        {cmn-errs :errors cmn-opts :options cmn-args :arguments} parsed-cmn-opts]
 
-      (let [subcommand (first (:arguments parsed-common-args))
-            subcommand-parms (vec (rest (:arguments parsed-common-args)))
-            cli-subcmd-options (rewrite-opts config subcommand)
-            fnToCall (:runs (get-subcommand config subcommand))
-            parsed-subcmd-args (parse-opts subcommand-parms cli-subcmd-options)
-            ;_ (prn "Subcmd cmdline" parsed-subcmd-cmdline)
-            parse-errors-subcmd (:errors parsed-subcmd-args)
-            opts-subcmd (:options parsed-subcmd-args)]
+    (cond
+      (some? cmn-errs)
+      (mkError config nil :ERR-COMMON "")
 
-        (if (nil? parse-errors-subcmd)
+      :else
+      (let [subcommand (first cmn-args)
+            subcommand-parms (vec (rest cmn-args))]
 
-          {:subcommand     subcommand
-           :subcommand-def (get-subcommand config subcommand)
-           :commandline     (into
-                              (into opts-common opts-subcmd)
-                              {:_arguments (:arguments parsed-subcmd-args)})
-           :parse-errors    :NONE
-           :error-text     ""
-           }
+        (cond
+          (nil? subcommand)
+          (mkError config nil :ERR-NO-SUBCMD "")
 
+          (nil? (possible-subcmds subcommand))
+          (mkError config subcommand :ERR-SUBCMD-NOT-FOUND "")
 
-          (exception (str "Parse error subcmd" parse-errors-subcmd))
+          :else
+          (let [cli-scmd-options (rewrite-opts config subcommand)
+                parsed-scmd-opts (parse-opts subcommand-parms cli-scmd-options)
+                ;_ (prn "Subcmd cmdline" parsed-subcmd-cmdline)
+                {scmd-errs :errors scmd-opts :options scmd-args :arguments} parsed-scmd-opts]
 
-          ))
+            (if (nil? scmd-errs)
 
+              {:subcommand     subcommand
+               :subcommand-def (get-subcommand config subcommand)
+               :commandline     (into
+                                  (into cmn-opts scmd-opts)
+                                  {:_arguments scmd-args})
+               :parse-errors    :NONE
+               :error-text     ""
+               }
+              )
 
-      (exception (str "Err" parse-errors-common))
-      )))
-
+          ))))))
 
 
 (s/fdef

@@ -57,7 +57,7 @@
 (s/def ::subcommand ::existing-string)
 (s/def ::subcommand-def ::climatic-subcommand)
 (s/def ::commandline map?) ;; contains :_arguments as vec
-(s/def ::parse-errors #{:NONE :CLI-MATIC-DEF :HELP-MAIN :ERR-MAIN :HELP-SUBCMD :ERR-SUBCMD})
+(s/def ::parse-errors #{:NONE :CLI-MATIC-DEF :HELP-MAIN :ERR-COMMON :HELP-SUBCMD :ERR-SUBCMD})
 (s/def ::error-text string?)
 
 
