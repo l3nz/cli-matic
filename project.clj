@@ -7,5 +7,6 @@
 		[org.clojure/clojure "1.9.0"]
 		[org.clojure/spec.alpha "0.1.143"]
 		[org.clojure/tools.cli "0.3.5"]
+                 [orchestra "2017.11.12-1"]
   	])
 

@@ -35,32 +35,21 @@
    ["-h" "--help"]])
 
 
-(def SIMPLE-OPTIONS
-  [
-  ["-a" nil nil :id :a :default "x" ]
-  ["-b" nil nil :id :b :default "x" ]
-  ["-c" nil nil :id :c :default "x" ]
-  ["-d" nil nil :id :d :default "x" ]
-   ["-e" nil nil :id :e :default "x" ]
-
-   ]
-  )
-
 
 
 (def SIMPLE-SUBCOMMAND-CFG
   {:_common {:descr "I am some command"
-             :opts [{:opt "a" :as "A" :type :int}
-                    {:opt "b" :as "B" :type :int}]}
+             :opts [{:option "aa" :as "A" :type :int}
+                    {:option "bb" :as "B" :type :int}]}
 
    :foo    {:descr "I am function foo"
-             :opts [{:opt "c" :as "C" :type :int}
-                    {:opt "d" :as "D" :type :int}]
+             :opts [{:option "cc" :as "C" :type :int}
+                    {:option "dd" :as "D" :type :int}]
              :runs cmd_foo}
 
    :bar    {:descr "I am function bar"
-             :opts [{:opt "e" :as "E" :type :int}
-                    {:opt "f" :as "F" :type :int}]
+             :opts [{:option "ee" :as "E" :type :int}
+                    {:option "ff" :as "F" :type :int}]
              :runs cmd_bar}
    })
 
@@ -70,16 +59,20 @@
 (deftest simple-subcommand
   (testing "A simple subcommand"
     (is (= (parse-cmds
-             [ "-b1" "foo" "-c2" "-d3"]
+             [ "--bb" "1" "foo" "--cc" "2" "--dd" "3"]
              SIMPLE-SUBCOMMAND-CFG)
 
-           {:settings {:opt-a 0 :opt-b 1 :opt-c 2 :opt-d 3}
-           :arguments []
+           {:commandline {:bb 1 :cc 2 :dd 3 :_arguments []}
            :subcommand "foo"
-           :errors :NONE
+           :parse-errors :NONE
+            :error-text ""
            :subcommand-def {:descr "I am function foo"
-                            :opts  [{:as "C" :opt "c" :type :int}
-                                    {:as "D" :opt "d" :type :int}]
+                            :opts  [{:as     "C"
+                                     :option "cc"
+                                     :type   :int}
+                                    {:as     "D"
+                                     :option "dd"
+                                     :type   :int}]
                             :runs  cmd_foo}}
            ))))
 
@@ -89,8 +82,14 @@
       (= o (mk-cli-option i))
 
       ; simplest example
-      {:opt "x" :as "Port number" :type :int}
-      ["-x" "--opt-x NONE" "Port number"
-       :parse-fn parseInt
-       :default 0])))
+      {:option "extra" :shortened "x" :as "Port number" :type :int}
+      ["-x" "--extra N" "Port number"
+       :parse-fn parseInt]
+
+      ; no shorthand
+      {:option "extra"  :as "Port number" :type :int}
+      [nil "--extra N" "Port number"
+       :parse-fn parseInt]
+
+      )))
 

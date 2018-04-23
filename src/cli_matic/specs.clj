@@ -2,6 +2,15 @@
   (:require [clojure.spec.alpha :as s]))
 
 
+
+(s/def ::existing-string string?)
+
+;
+; The way your process runs; will generate
+; a return val and some lines for stdout/stderr.
+;
+
+
 (s/def ::retval int?)
 (s/def ::status #{:OK :ARGS :EXCEPTION})
 (s/def ::stdout (s/coll-of string?))
@@ -12,20 +21,48 @@
   (s/keys :req-un [::retval ::status ::stdout ::stderr]))
 
 
+;
+; Cli-matic option definition
+;
 
+(s/def ::option ::existing-string) ; ex-string
+(s/def ::shortened ::existing-string)
+(s/def ::as ::existing-string)
+(s/def ::type #{:int :string})
 
+(s/def ::climatic-option
+  (s/keys :req-un [::option  ::as  ::type]
+          :opt-un [::shortened]))
 
+;
+; Climatic configuration
+;
 
-(s/def ::options map?)
-(s/def ::arguments (s/coll-of string?))
-(s/def ::subcommand ifn?)
-(s/def ::errors  #{:NONE :HELP-MAIN :HELP-CMD :ERR-CMD})
+(s/def ::descr ::existing-string)
+(s/def ::opts  (s/coll-of ::climatic-option))
+(s/def ::runs ifn?)
+
+(s/def ::climatic-general (s/keys :req-un [::descr ::opts]))
+(s/def ::climatic-subcommand (s/keys :req-un [::descr ::opts ::runs]))
+
+(s/def ::climatic-cfg (s/map-of keyword? (s/or :cgen ::climatic-general
+                                               :subc ::climatic-subcommand)))
+
 
 
 ;
-; Our options
+; Parsing of options.
 ;
 
+(s/def ::subcommand ::existing-string)
+(s/def ::subcommand-def ::climatic-subcommand)
+(s/def ::commandline map?) ;; contains :_arguments as vec
+(s/def ::parse-errors #{:NONE :CLI-MATIC-DEF :HELP-MAIN :ERR-MAIN :HELP-SUBCMD :ERR-SUBCMD})
+(s/def ::error-text string?)
 
 
-(s/def ::cm-option map?)
+(s/def ::lineParseResult (s/keys :req-un [::subcommand ::subcommand-def ::commandline ::parse-errors ::error-text]))
+
+
+
+

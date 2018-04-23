@@ -1,7 +1,9 @@
 (ns cli-matic.core
   (:require [cli-matic.specs :as S]
             [clojure.tools.cli :refer [parse-opts]]
-            [clojure.spec.alpha :as s]))
+            [clojure.spec.alpha :as s]
+            [orchestra.spec.test :as st]
+            ))
 
 ;
 ; Cli-matic has one main entry-point: run!
@@ -23,7 +25,8 @@
 
 (def known-presets
   {:int {:parse-fn parseInt
-         :default 0}})
+         :placeholder "N"}
+   :string {:placeholder "S"}})
 
 
 ;
@@ -34,12 +37,15 @@
 ;     :parse-fn #(Integer/parseInt %)]
 
 (defn mk-cli-option
-  [{:keys [opt as type] :as cm-option}]
+  [{:keys [option shortened as type] :as cm-option}]
   (let [preset (get known-presets type :unknown)
-        head [(str "-" opt)
-              (str "--opt-" opt " NONE")
+        head [(if (string? shortened)
+                (str "-" shortened)
+                nil)
+              (str "--" option " " (:placeholder preset))
               as]
-        opts  preset]
+
+        opts  (dissoc preset :placeholder)]
 
     (apply
       conj head
@@ -50,7 +56,7 @@
 
 (s/fdef
   mk-cli-option
-  :args (s/cat :opts ::S/cm-option)
+  :args (s/cat :opts ::S/climatic-option)
   :ret some?)
 
 
@@ -79,7 +85,7 @@
 ; generates a set of commands for tools.cli
 ;
 
-(defn rewrite-args
+(defn rewrite-opts
   [climatic-args subcmd]
 
   (let [cmd-found   (get-subcommand climatic-args subcmd)
@@ -87,12 +93,8 @@
     (map mk-cli-option opts)))
 
 
-
-
-
-
 (s/fdef
-  rewrite-args
+  rewrite-opts
   :args (s/cat :args some?
                :mode (s/or :common nil?
                            :a-subcommand string?))
@@ -105,12 +107,13 @@
 ;
 ;
 
-(defn parse-cmds [args opts]
+(defn parse-cmds
+  [cmdline config]
 
-  (let [cli-top-options (rewrite-args opts nil)
+  (let [cli-top-options (rewrite-opts config nil)
         ;_ (prn "Options" cli-top-options)
-        parsed-common-args (parse-opts args cli-top-options :in-order true)
-        ;_ (prn "Common args" parsed-common-args)
+        parsed-common-args (parse-opts cmdline cli-top-options :in-order true)
+        ;_ (prn "Common cmdline" parsed-common-cmdline)
         parse-errors-common (:errors parsed-common-args)
         opts-common (:options parsed-common-args)]
 
@@ -118,21 +121,22 @@
 
       (let [subcommand (first (:arguments parsed-common-args))
             subcommand-parms (vec (rest (:arguments parsed-common-args)))
-            cli-subcmd-options (rewrite-args opts subcommand)
-            fnToCall (:runs (get-subcommand opts subcommand))
+            cli-subcmd-options (rewrite-opts config subcommand)
+            fnToCall (:runs (get-subcommand config subcommand))
             parsed-subcmd-args (parse-opts subcommand-parms cli-subcmd-options)
-            ;_ (prn "Subcmd args" parsed-subcmd-args)
+            ;_ (prn "Subcmd cmdline" parsed-subcmd-cmdline)
             parse-errors-subcmd (:errors parsed-subcmd-args)
             opts-subcmd (:options parsed-subcmd-args)]
 
         (if (nil? parse-errors-subcmd)
 
           {:subcommand     subcommand
-           :subcommand-def (get-subcommand opts subcommand)
-           :arguments      (:arguments parsed-subcmd-args)
-           :settings       (into opts-common opts-subcmd)
-           :errors         :NONE
-
+           :subcommand-def (get-subcommand config subcommand)
+           :commandline     (into
+                              (into opts-common opts-subcmd)
+                              {:_arguments (:arguments parsed-subcmd-args)})
+           :parse-errors    :NONE
+           :error-text     ""
            }
 
 
@@ -144,6 +148,14 @@
       (exception (str "Err" parse-errors-common))
       )))
 
+
+
+(s/fdef
+  parse-cmds
+  :args (s/cat :args (s/coll-of string?)
+               :opts ::S/climatic-cfg)
+  :ret ::S/lineParseResult
+  )
 
 ;
 ; Executes our code.
@@ -159,7 +171,7 @@
 
   (try
 
-    (let [cli-options (rewrite-args setup)
+    (let [cli-options (rewrite-opts setup)
           parsed-args (parse-opts args cli-options)]
 
       ; maybe there was an error parsing
@@ -196,3 +208,7 @@
   ;  (System.out/println  (:stdout result))
   ;  (System.err/println  (:stderr result))
     (System/exit (:retval result))))
+
+
+
+(st/instrument)
