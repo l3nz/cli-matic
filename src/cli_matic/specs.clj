@@ -20,3 +20,12 @@
 (s/def ::arguments (s/coll-of string?))
 (s/def ::subcommand ifn?)
 (s/def ::errors  #{:NONE :HELP-MAIN :HELP-CMD :ERR-CMD})
+
+
+;
+; Our options
+;
+
+
+
+(s/def ::cm-option map?)
