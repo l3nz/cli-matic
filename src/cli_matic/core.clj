@@ -3,6 +3,7 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.spec.alpha :as s]
             [orchestra.spec.test :as st]
+            [cli-matic.presets :as PRESETS]
             ))
 
 ;
@@ -10,19 +11,6 @@
 ; Actually, most of the logic will be run in run*
 ; to make testing easier.
 ;
-
-;
-; Known presets
-;
-
-(defn parseInt [s]
-  (Integer/parseInt s))
-
-
-(def known-presets
-  {:int {:parse-fn parseInt
-         :placeholder "N"}
-   :string {:placeholder "S"}})
 
 
 ;
@@ -33,19 +21,24 @@
 ;     :parse-fn #(Integer/parseInt %)]
 
 (defn mk-cli-option
-  [{:keys [option shortened as type] :as cm-option}]
-  (let [preset (get known-presets type :unknown)
+  [{:keys [option shortened as type default] :as cm-option}]
+  (let [preset (get PRESETS/known-presets type :unknown)
         head [(if (string? shortened)
                 (str "-" shortened)
                 nil)
               (str "--" option " " (:placeholder preset))
               as]
 
-        opts  (dissoc preset :placeholder)]
+        opts  (dissoc preset :placeholder)
+        opts-def (if (some? default)
+                  (assoc opts :default default)
+                  opts
+                  )
+        ]
 
     (apply
       conj head
-      (flatten (seq opts)))
+      (flatten (seq opts-def)))
 
     ))
 
@@ -106,6 +99,13 @@
 ; Generate pages
 ;
 ;
+
+(defn asString [s]
+  (if (string? s)
+    s
+    (clojure.string/join "\n" s)
+    ))
+
 
 (defn indent-string [s]
   (str " " s))
@@ -210,7 +210,7 @@
                      (get-subcommand config subcommand))
    :commandline    {}
    :parse-errors   error
-   :error-text     text
+   :error-text     (asString text)
    })
 
 
@@ -228,7 +228,7 @@
 
     (cond
       (some? gl-errs)
-      (mkError config nil :ERR-PARMS-GLOBAL "")
+      (mkError config nil :ERR-PARMS-GLOBAL gl-errs)
 
       :else
       (let [subcommand (first gl-args)
@@ -244,10 +244,13 @@
           :else
           (let [cli-cmd-options (rewrite-opts config subcommand)
                 parsed-cmd-opts (parse-opts subcommand-parms cli-cmd-options)
-                ;_ (prn "Subcmd cmdline" parsed-subcmd-cmdline)
+                ;_ (prn "Subcmd cmdline" parsed-cmd-opts)
                 {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts]
 
-            (if (nil? cmd-errs)
+            (cond
+
+
+              (nil? cmd-errs)
 
               {:subcommand     subcommand
                :subcommand-def (get-subcommand config subcommand)
@@ -257,6 +260,11 @@
                :parse-errors    :NONE
                :error-text     ""
                }
+
+              :else
+              (mkError config subcommand :ERR-PARMS-SUBCMD cmd-errs)
+
+
               )
 
           ))))))
@@ -320,7 +328,9 @@
         ))
 
     (catch Throwable t
-      (->RV -1 :EXCEPTION nil nil "**exception**")
+      (->RV -1 :EXCEPTION nil nil
+            (str "JVM Exception: "
+                 (with-out-str (println t))))
       )
     ))
 
@@ -346,9 +356,11 @@
         :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
         :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
         :HELP-COMMON (->RV -1 :OK :HELP-GLOBAL nil nil)
-        :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Error: ")
-        :HELP-SUBCMD (->RV -1 :OK :HELP-SUBCMD nil nil)
-        :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD :ERR-SUBCMD nil "Error: ")
+        :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil
+                                (str "Global option error: " (:error-text parsed-opts)))
+        :HELP-SUBCMD (->RV -1 :OK :HELP-SUBCMD (:subcommand parsed-opts) nil)
+        :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD (:subcommand parsed-opts)
+                                (str "Option error: " (:error-text parsed-opts)))
 
         :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts))
 
@@ -358,20 +370,25 @@
 (defn run-cmd
   [args setup]
 
-  (let [result (run-cmd* setup args)
+  (let [result (run-cmd* setup (if (nil? args) [] args))
         manual (:help result)
         errmsg (:stderr result)
-        subcmd (:subcmd result)]
+        subcmd (:subcmd result)
+        _ (prn "Dopo exec:" result)
+        ]
 
-    (if (some? errmsg)
-      (println errmsg))
+    (if (not (empty? errmsg))
+      (println
+        (asString
+          (flatten
+            [ "** ERROR: **" errmsg ""]))))
 
     (cond
       (= :HELP-GLOBAL manual)
-      (println (generate-global-help setup))
+      (println (asString (generate-global-help setup)))
 
       (= :HELP-SUBCMD manual)
-      (println (generate-subcmd-help setup subcmd)))
+      (println (asString (generate-subcmd-help setup subcmd))))
 
     (System/exit (:retval result))))
 

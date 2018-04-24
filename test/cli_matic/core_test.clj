@@ -1,6 +1,7 @@
 (ns cli-matic.core-test
   (:require [clojure.test :refer :all]
-            [cli-matic.core :refer :all]))
+            [cli-matic.core :refer :all]
+            [cli-matic.presets :as PRESETS :refer [parseInt]]))
 
 
 (defn cmd_foo [& opts])
@@ -96,6 +97,13 @@
       [nil "--extra N" "Port number"
        :parse-fn parseInt]
 
+      ;  with a default
+      {:option "extra"  :as "Port number" :type :int :default 13}
+      [nil "--extra N" "Port number"
+       :parse-fn parseInt :default 13]
+
+
+
       )))
 
 
@@ -115,9 +123,16 @@
       ["--lippa foo"]
       (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Error: ")
 
+      )))
 
-      )
+; Problems
+; --------
+;
+; Types
+;
+; lein run -m cli-matic.toycalc -- add --a x
+; ** ERROR: **
+; Error:
+; and nothing else
 
-
-    ))
 

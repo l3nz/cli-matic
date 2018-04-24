@@ -27,37 +27,45 @@ Say you want to create a simple script, in Clojure, where you want
 to run a very simple calculator that either sums A to B or subtracts B from A:
 
 
-	$ clj -m calc add -a 40 -b 2
+	$ clj -m calc add --a 40 --b 2
 	42
-	$ clj -m calc sub -a 10 -b 2
+	$ clj -m calc sub --a 10 --b 2
 	8
-	$ clj -m calc --base 16 add -a 30 -b 2
+	$ clj -m calc --base 16 add --a 30 --b 2
 	20
 
 We would also want it to display its help:
 
 	$clj -m calc -?
-	Calc version 0.2
-	Usage: calc [parms] cmd
+	NAME:
+	 toycalc - A command-line toy calculator
 
-	Parms:
-	    -b, --base n 	      The number base for output (default 10)
+	USAGE:
+	 toycalc [global-options] command [command options] [arguments...]
 
-	Cmd:
-		add:          Adds A and B together
-		sub:          Subtracts B from A
+	VERSION:
+	 0.0.1
+
+	COMMANDS:
+	 add    Adds two numbers together
+	 sub    Subtracts parameter B from A
+
+	GLOBAL OPTIONS:
+	       --base N  10  The number base for output
+
 
 And help for sub-commands:
 
 	$clj -m calc add -?
-	Calc version 0.2
-	Usage: calc [parms] add [-a n] [-b n]
-	Adds A and B together
-	
-	Parms:
-	    -a          Parameter A
-	    -b   		Parameter B
+	NAME:
+	 toycalc add - Adds two numbers together
 
+	USAGE:
+	 toycalc add [command options] [arguments...]
+
+	OPTIONS:
+	       --a N     Addendum 1
+	       --b N  0  Addendum 2
 
 But while we are coding this, we do not realy want to waste time writing any parsing logic.
 What we care about are functions "add-numbers" and "sub-numbers"; the rest sould just be declared externally.
@@ -72,23 +80,29 @@ From your point of view of an application programmer, you'd like to have a funct
 And nothing more; the fact that both parameters exist, are of the right type, have the right defaults etc, 
 should not be a concern.
 
-(def CLI 
-	{:description "Calc version 0.2"
-	 :global-parms {["-b" "--base n" :default 10 ]}
-	 :commands {
-	 	[{:description "Adds A and B together"
-	 	  :short-form "a"
-	 	  :long-form "add"
-	 	  :fn    add-number
-	 	  :spec  spec-add
-	 	  :parms [
-	 	  {:short "-a" :type :integer }
-	 	  {:short "-b" :type :integer }]
-	 	}]
 
-	}
-}
-)
+	(def CONFIGURATION
+	  {:app         {:command     "toycalc"
+	                 :description "A command-line toy calculator"
+	                 :version     "0.0.1"}
+
+	   :global-opts [{:option  "base"
+	                  :as      "The number base for output"
+	                  :type    :int
+	                  :default 10}]
+
+	   :commands    [{:command     "add"
+	                  :description "Adds two numbers together"
+	                  :opts        [{:option "a" :as "Addendum 1" :type :int}
+	                                {:option "b" :as "Addendum 2" :type :int :default 0}]
+	                  :runs        add_numbers}
+	                   
+	                 {:command     "sub"
+	                  :description "Subtracts parameter B from A"
+	                  :opts        [{:option "a" :as "Parameter A" :type :int :default 0}
+	                                {:option "b" :as "Parameter B" :type :int :default 0}]
+	                  :runs        subtract_numbers}
+	                 ]})
 
 
 

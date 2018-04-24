@@ -21,14 +21,15 @@
 (s/def ::retval int?)
 (s/def ::status (s/or :oth #{:OK :EXCEPTION}
                       :err ::climatic-errors))
-(s/def ::stdout #{:HELP-GLOBAL :HELP-SUBCMD})
+(s/def ::help   (s/or :none nil?
+                      :some #{:HELP-GLOBAL :HELP-SUBCMD}))
 (s/def ::subcmd (s/or :none ::existing-string
                       :nil  nil?))
 (s/def ::stderr (s/coll-of string?))
 
 
 (s/def ::RV
-  (s/keys :req-un [::retval ::status ::stdout ::subcmd ::stderr]))
+  (s/keys :req-un [::retval ::status ::help ::subcmd ::stderr]))
 
 
 ;
@@ -39,10 +40,11 @@
 (s/def ::shortened ::existing-string)
 (s/def ::as ::existing-string)
 (s/def ::type #{:int :string})
+(s/def ::default some?)
 
 (s/def ::climatic-option
   (s/keys :req-un [::option  ::as  ::type]
-          :opt-un [::shortened]))
+          :opt-un [::shortened ::default]))
 
 ;
 ; Climatic configuration
