@@ -102,8 +102,6 @@
       [nil "--extra N" "Port number"
        :parse-fn parseInt :default 13]
 
-
-
       )))
 
 
@@ -121,7 +119,7 @@
       (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
 
       ["--lippa foo"]
-      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Error: ")
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Unknown option: \"--lippa foo\"")
 
       )))
 

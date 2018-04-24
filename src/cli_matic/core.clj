@@ -370,27 +370,23 @@
 (defn run-cmd
   [args setup]
 
-  (let [result (run-cmd* setup (if (nil? args) [] args))
-        manual (:help result)
-        errmsg (:stderr result)
-        subcmd (:subcmd result)
-        _ (prn "Dopo exec:" result)
-        ]
+  (let [{:keys [help stderr subcmd retval]}
+        (run-cmd* setup (if (nil? args) [] args))]
 
-    (if (not (empty? errmsg))
+    (if (not (empty? stderr))
       (println
         (asString
           (flatten
-            [ "** ERROR: **" errmsg ""]))))
+            [ "** ERROR: **" stderr ""]))))
 
     (cond
-      (= :HELP-GLOBAL manual)
+      (= :HELP-GLOBAL help)
       (println (asString (generate-global-help setup)))
 
-      (= :HELP-SUBCMD manual)
+      (= :HELP-SUBCMD help)
       (println (asString (generate-subcmd-help setup subcmd))))
 
-    (System/exit (:retval result))))
+    (System/exit retval)))
 
 
 
