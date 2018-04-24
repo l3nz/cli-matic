@@ -5,6 +5,13 @@
 
 (s/def ::existing-string string?)
 
+(s/def ::climatic-errors #{:ERR-CFG
+                           :ERR-NO-SUBCMD
+                           :ERR-UNKNOWN-SUBCMD
+                           :ERR-PARMS-COMMON
+                           :ERR-PARMS-SUBCMD})
+
+
 ;
 ; The way your process runs; will generate
 ; a return val and some lines for stdout/stderr.
@@ -12,13 +19,16 @@
 
 
 (s/def ::retval int?)
-(s/def ::status #{:OK :ARGS :EXCEPTION})
-(s/def ::stdout (s/coll-of string?))
+(s/def ::status (s/or :oth #{:OK :EXCEPTION}
+                      :err ::climatic-errors))
+(s/def ::stdout #{:HELP-CMD :HELP-SUBCMD})
+(s/def ::subcmd (s/or :none ::existing-string
+                      :nil  nil?))
 (s/def ::stderr (s/coll-of string?))
 
 
 (s/def ::RV
-  (s/keys :req-un [::retval ::status ::stdout ::stderr]))
+  (s/keys :req-un [::retval ::status ::stdout ::subcmd ::stderr]))
 
 
 ;
@@ -54,10 +64,15 @@
 ; Parsing of options.
 ;
 
-(s/def ::subcommand ::existing-string)
-(s/def ::subcommand-def ::climatic-subcommand)
+(s/def ::subcommand (s/or :empty nil?
+                          :some ::existing-string))
+(s/def ::subcommand-def (s/or :empty nil?
+                              :some ::climatic-subcommand))
 (s/def ::commandline map?) ;; contains :_arguments as vec
-(s/def ::parse-errors #{:NONE :CLI-MATIC-DEF :HELP-MAIN :ERR-COMMON :HELP-SUBCMD :ERR-SUBCMD})
+(s/def ::parse-errors (s/or :oth #{:NONE :HELP-COMMON :HELP-SUBCMD}
+                            :err ::climatic-errors))
+
+
 (s/def ::error-text string?)
 
 

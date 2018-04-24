@@ -93,3 +93,27 @@
 
       )))
 
+
+
+(deftest run-examples
+  (testing "Some real-life behavior for our SIMPLE case"
+    (are [i o]
+      (= (run-cmd* SIMPLE-SUBCOMMAND-CFG i) o)
+
+      ; no parameters - displays cmd help
+      []
+      (->RV -1 :ERR-NO-SUBCMD nil nil "No sub-command specified")
+
+      ["x"]
+      (->RV -1 :ERR-UNKNOWN-SUBCMD nil nil "Unknown sub-command")
+
+      ["--lippa foo"]
+      (->RV -1 :ERR-PARMS-COMMON nil nil "Error: ")
+
+
+
+      )
+
+
+    ))
+

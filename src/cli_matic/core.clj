@@ -123,7 +123,9 @@
 (defn mkError
   [config subcommand error text]
   {:subcommand     subcommand
-   :subcommand-def (get-subcommand config subcommand)
+   :subcommand-def (if (nil? subcommand)
+                     nil
+                     (get-subcommand config subcommand))
    :commandline    {}
    :parse-errors   error
    :error-text     text
@@ -144,7 +146,7 @@
 
     (cond
       (some? cmn-errs)
-      (mkError config nil :ERR-COMMON "")
+      (mkError config nil :ERR-PARMS-COMMON "")
 
       :else
       (let [subcommand (first cmn-args)
@@ -155,7 +157,7 @@
           (mkError config nil :ERR-NO-SUBCMD "")
 
           (nil? (possible-subcmds subcommand))
-          (mkError config subcommand :ERR-SUBCMD-NOT-FOUND "")
+          (mkError config subcommand :ERR-UNKNOWN-SUBCMD "")
 
           :else
           (let [cli-scmd-options (rewrite-opts config subcommand)
@@ -185,6 +187,62 @@
   :ret ::S/lineParseResult
   )
 
+
+;
+; builds a return value
+;
+
+
+
+(defn ->RV
+  [return-code type stdout subcmd stderr]
+  (let [fnStrVec (fn [s]
+                   (cond
+                     (nil? s) []
+                     (string? s) [s]
+                     :else  s ))]
+
+  {:retval return-code
+   :status type
+   :stdout stdout
+   :subcmd subcmd
+   :stderr (fnStrVec stderr)}
+  ))
+
+(s/fdef
+  ->RV
+  :args (s/cat :rv int? :status some? :stdout any? :subcmd any? :stderr any?)
+  :rets ::S/RV)
+
+
+
+;
+; Invokes a subcommand.
+;
+; The subcommand may:
+; - return an integer (to specify exit code)
+; - return nil
+; - throw a Throwable object
+;
+
+(defn invoke-subcmd
+  [subcommand-def options]
+
+  (try
+    (let [rv ((:runs subcommand-def)  options)]
+      (cond
+        (nil? rv)    (->RV 0 :OK nil nil nil)
+        (zero? rv)   (->RV 0 :OK nil nil nil)
+        (int? rv)    (->RV rv :ERR nil nil nil)
+        :else        (->RV -1 :ERR nil nil nil)
+        ))
+
+    (catch Throwable t
+      (->RV -1 :EXCEPTION nil nil "**exception**")
+      )
+    ))
+
+
 ;
 ; Executes our code.
 ; It will try and parse the arguments via clojure.tools.cli
@@ -197,36 +255,22 @@
 (defn run-cmd*
   [setup args]
 
-  (try
-
-    (let [cli-options (rewrite-opts setup)
-          parsed-args (parse-opts args cli-options)]
+    (let [parsed-opts (parse-cmds args setup)]
 
       ; maybe there was an error parsing
-      (if (some? (:error parsed-args))
-        {:retval -1
-         :status ::S/PARSE-ERR
-         :stdout []
-         :stderr []}
+      (condp = (:parse-errors parsed-opts)
 
-        (let [cmd "a"]
+        :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in cli-matic configuration")
+        :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD nil nil "No sub-command specified")
+        :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD nil nil "Unknown sub-command")
+        :HELP-COMMON (->RV -1 :OK nil nil nil)
+        :ERR-PARMS-COMMON (->RV -1 :ERR-PARMS-COMMON nil nil "Error: ")
+        :HELP-SUBCMD (->RV -1 :OK nil nil nil)
+        :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD nil nil "Error: ")
 
-          {:retval 0
-           :status ::S/OK
-           :stdout []
-           :stderr []}
+        :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts))
 
-          )
-      ))
-
-
-
-    (catch Throwable t
-      {:retval -1
-       :status ::S/EXCEPTION
-       :stdout ["exc"]
-       :stderr []}
-    )))
+        )))
 
 
 (defn run-cmd
