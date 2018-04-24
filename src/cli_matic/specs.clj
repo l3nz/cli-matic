@@ -76,7 +76,7 @@
 (s/def ::subcommand-def (s/or :empty nil?
                               :some ::a-command))
 (s/def ::commandline map?) ;; contains :_arguments as vec
-(s/def ::parse-errors (s/or :oth #{:NONE :HELP-COMMON :HELP-SUBCMD}
+(s/def ::parse-errors (s/or :oth #{:NONE :HELP-GLOBAL :HELP-SUBCMD}
                             :err ::climatic-errors))
 
 

@@ -84,7 +84,10 @@
   (let [opts (if (nil? subcmd)
                (:global-opts climatic-args)
                (:opts (get-subcommand climatic-args subcmd)))]
-    (map mk-cli-option opts)))
+    (conj
+      (mapv mk-cli-option opts)
+      ["-?" "--help" "" :id :_help_trigger]
+      )))
 
 
 (s/fdef
@@ -205,7 +208,9 @@
   {:subcommand     subcommand
    :subcommand-def (if (or (= error :ERR-UNKNOWN-SUBCMD)
                            (= error :ERR-NO-SUBCMD)
-                           (= error :ERR-PARMS-GLOBAL))
+                           (= error :ERR-PARMS-GLOBAL)
+                           (= error :HELP-GLOBAL)
+                           )
                      nil
                      (get-subcommand config subcommand))
    :commandline    {}
@@ -229,6 +234,11 @@
     (cond
       (some? gl-errs)
       (mkError config nil :ERR-PARMS-GLOBAL gl-errs)
+
+      (some? (:_help_trigger gl-opts))
+      (mkError config nil :HELP-GLOBAL nil)
+
+
 
       :else
       (let [subcommand (first gl-args)
@@ -355,10 +365,10 @@
         :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in cli-matic configuration")
         :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
         :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
-        :HELP-COMMON (->RV -1 :OK :HELP-GLOBAL nil nil)
+        :HELP-GLOBAL (->RV 0 :OK :HELP-GLOBAL nil nil)
         :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil
                                 (str "Global option error: " (:error-text parsed-opts)))
-        :HELP-SUBCMD (->RV -1 :OK :HELP-SUBCMD (:subcommand parsed-opts) nil)
+        :HELP-SUBCMD (->RV 0 :OK :HELP-SUBCMD (:subcommand parsed-opts) nil)
         :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD (:subcommand parsed-opts)
                                 (str "Option error: " (:error-text parsed-opts)))
 

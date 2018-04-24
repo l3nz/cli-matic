@@ -121,6 +121,23 @@
       ["--lippa foo"]
       (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Unknown option: \"--lippa foo\"")
 
+      ; help globale
+      ["-?"]
+      (->RV 0 :OK :HELP-GLOBAL nil nil)
+
+      ["--help"]
+      (->RV 0 :OK :HELP-GLOBAL nil nil)
+
+
+      ; help sub-command
+;      ["foo -?"]
+;      (->RV 0 :OK :HELP-SUBCMD "foo" nil)
+
+;      ["bar --help"]
+;      (->RV 0 :OK :HELP-SUBCMD "bar" nil)
+
+
+
       )))
 
 ; Problems
