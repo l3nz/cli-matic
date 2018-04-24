@@ -38,19 +38,22 @@
 
 
 (def SIMPLE-SUBCOMMAND-CFG
-  {:_common {:descr "I am some command"
-             :opts [{:option "aa" :as "A" :type :int}
-                    {:option "bb" :as "B" :type :int}]}
+  {:app         {:description "I am some command"
+                 :version     "0.1.2"}
+   :global-opts [{:option "aa" :as "A" :type :int}
+                 {:option "bb" :as "B" :type :int}]
+   :commands [{:command    "foo"
+                  :description "I am function foo"
+                  :opts  [{:option "cc" :as "C" :type :int}
+                          {:option "dd" :as "D" :type :int}]
+                  :runs  cmd_foo}
 
-   :foo    {:descr "I am function foo"
-             :opts [{:option "cc" :as "C" :type :int}
-                    {:option "dd" :as "D" :type :int}]
-             :runs cmd_foo}
-
-   :bar    {:descr "I am function bar"
-             :opts [{:option "ee" :as "E" :type :int}
-                    {:option "ff" :as "F" :type :int}]
-             :runs cmd_bar}
+                 {:command    "bar"
+                  :description "I am function bar"
+                  :opts  [{:option "ee" :as "E" :type :int}
+                          {:option "ff" :as "F" :type :int}]
+                  :runs  cmd_bar}
+                 ]
    })
 
 
@@ -66,7 +69,8 @@
            :subcommand "foo"
            :parse-errors :NONE
             :error-text ""
-           :subcommand-def {:descr "I am function foo"
+           :subcommand-def {:command "foo"
+                            :description "I am function foo"
                             :opts  [{:as     "C"
                                      :option "cc"
                                      :type   :int}

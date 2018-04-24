@@ -48,15 +48,20 @@
 ; Climatic configuration
 ;
 
-(s/def ::descr ::existing-string)
+(s/def ::description ::existing-string)
+(s/def ::version ::existing-string)
+(s/def ::command ::existing-string)
+
 (s/def ::opts  (s/coll-of ::climatic-option))
 (s/def ::runs ifn?)
 
-(s/def ::climatic-general (s/keys :req-un [::descr ::opts]))
-(s/def ::climatic-subcommand (s/keys :req-un [::descr ::opts ::runs]))
+(s/def ::app (s/keys :req-un [::description ::version]))
+(s/def ::global-opts ::opts)
 
-(s/def ::climatic-cfg (s/map-of keyword? (s/or :cgen ::climatic-general
-                                               :subc ::climatic-subcommand)))
+(s/def ::a-command (s/keys :req-un [::command ::opts ::runs]))
+(s/def ::commands (s/coll-of ::a-command))
+
+(s/def ::climatic-cfg (s/keys :req-un [::app ::global-opts ::commands]))
 
 
 
@@ -67,7 +72,7 @@
 (s/def ::subcommand (s/or :empty nil?
                           :some ::existing-string))
 (s/def ::subcommand-def (s/or :empty nil?
-                              :some ::climatic-subcommand))
+                              :some ::a-command))
 (s/def ::commandline map?) ;; contains :_arguments as vec
 (s/def ::parse-errors (s/or :oth #{:NONE :HELP-COMMON :HELP-SUBCMD}
                             :err ::climatic-errors))

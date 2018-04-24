@@ -62,30 +62,21 @@
 
 (defn get-subcommand
   [climatic-args subcmd]
-  (let [cmd-to-find (if (nil? subcmd)
-                      :_common
-                      (keyword subcmd))
+  (let [subcommands (:commands climatic-args)]
+    (first (filter #(= (:command %) subcmd) subcommands))))
 
-        cmd-found   (get climatic-args cmd-to-find nil)]
-
-    (if (nil? cmd-found)
-      (exception "No subcommand found")
-      cmd-found
-
-      )
-
-
-
-  ))
+(s/fdef
+  get-subcommand
+  :args (s/cat :args ::S/climatic-cfg :subcmd string?)
+  :ret ::S/a-command)
 
 
 (defn all-subcommands
   "Returns all subcommands, as strings"
   [climatic-args]
-  (let [just-subcmds (dissoc climatic-args :_common)
-        keys-subcmds (keys just-subcmds)
-        names-subcmds (map name keys-subcmds)]
-    (set names-subcmds)))
+  (let [subcommands (:commands climatic-args)]
+    (into #{}
+      (map :command subcommands))))
 
 (s/fdef
   all-subcommands
@@ -101,8 +92,9 @@
 (defn rewrite-opts
   [climatic-args subcmd]
 
-  (let [cmd-found   (get-subcommand climatic-args subcmd)
-        opts        (:opts cmd-found)]
+  (let [opts (if (nil? subcmd)
+               (:global-opts climatic-args)
+               (:opts (get-subcommand climatic-args subcmd)))]
     (map mk-cli-option opts)))
 
 
@@ -123,7 +115,9 @@
 (defn mkError
   [config subcommand error text]
   {:subcommand     subcommand
-   :subcommand-def (if (nil? subcommand)
+   :subcommand-def (if (or (= error :ERR-UNKNOWN-SUBCMD)
+                           (= error :ERR-NO-SUBCMD)
+                           (= error :ERR-PARMS-COMMON))
                      nil
                      (get-subcommand config subcommand))
    :commandline    {}
@@ -137,20 +131,20 @@
 
   (let [possible-subcmds (all-subcommands config)
 
-        cli-cmn-options (rewrite-opts config nil)
+        cli-gl-options (rewrite-opts config nil)
         ;_ (prn "Options" cli-top-options)
-        parsed-cmn-opts (parse-opts cmdline cli-cmn-options :in-order true)
+        parsed-gl-opts (parse-opts cmdline cli-gl-options :in-order true)
         ;_ (prn "Common cmdline" parsed-common-cmdline)
 
-        {cmn-errs :errors cmn-opts :options cmn-args :arguments} parsed-cmn-opts]
+        {gl-errs :errors gl-opts :options gl-args :arguments} parsed-gl-opts]
 
     (cond
-      (some? cmn-errs)
+      (some? gl-errs)
       (mkError config nil :ERR-PARMS-COMMON "")
 
       :else
-      (let [subcommand (first cmn-args)
-            subcommand-parms (vec (rest cmn-args))]
+      (let [subcommand (first gl-args)
+            subcommand-parms (vec (rest gl-args))]
 
         (cond
           (nil? subcommand)
@@ -160,18 +154,18 @@
           (mkError config subcommand :ERR-UNKNOWN-SUBCMD "")
 
           :else
-          (let [cli-scmd-options (rewrite-opts config subcommand)
-                parsed-scmd-opts (parse-opts subcommand-parms cli-scmd-options)
+          (let [cli-cmd-options (rewrite-opts config subcommand)
+                parsed-cmd-opts (parse-opts subcommand-parms cli-cmd-options)
                 ;_ (prn "Subcmd cmdline" parsed-subcmd-cmdline)
-                {scmd-errs :errors scmd-opts :options scmd-args :arguments} parsed-scmd-opts]
+                {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts]
 
-            (if (nil? scmd-errs)
+            (if (nil? cmd-errs)
 
               {:subcommand     subcommand
                :subcommand-def (get-subcommand config subcommand)
                :commandline     (into
-                                  (into cmn-opts scmd-opts)
-                                  {:_arguments scmd-args})
+                                  (into gl-opts cmd-opts)
+                                  {:_arguments cmd-args})
                :parse-errors    :NONE
                :error-text     ""
                }
