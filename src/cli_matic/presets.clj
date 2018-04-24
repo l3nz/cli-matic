@@ -19,6 +19,10 @@
 
 
 
+;
+; Remember to add these to
+; ::S/type
+
 (def known-presets
   {:int    {:parse-fn    parseInt
             :placeholder "N"}

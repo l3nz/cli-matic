@@ -39,7 +39,7 @@
 (s/def ::option ::existing-string) ; ex-string
 (s/def ::shortened ::existing-string)
 (s/def ::as ::existing-string)
-(s/def ::type #{:int :string})
+(s/def ::type #{:int :string :int-0 :yyyy-mm-dd})
 (s/def ::default some?)
 
 (s/def ::climatic-option
