@@ -8,7 +8,7 @@ The library can be easily referenced through Github:
 	{:deps
 	 {cli-matic
 	  {:git/url "https://github.com/l3nz/cli-matic.git"
-	   :sha "0f03f707010761b6064a325b4463eb8d405badb8"}}}
+	   :sha "545ceac178771f9fd5560c948a301f836d3be19e"}}}
 
 At the moment there are no artifacts released.
 
@@ -103,6 +103,42 @@ the correct help screen, etc., should ideally not be a concern.
 	                                {:option "b" :as "Parameter B" :type :int :default 0}]
 	                  :runs        subtract_numbers}
 	                 ]})
+
+### Current pre-sets
+
+The following pre-sets (":type") are available:
+
+* `:int` - an integer number
+* `:int-0` - an integre number, with defaults to zero
+* `:string` - a string
+* `:yyyy-mm-dd` - a Date object, expressed as "yyyy-mm-dd" in the local time zone
+
+For all presents, you can then add:
+
+* `:default` the default value, as expected after conversion
+
+[to be done]
+
+* boolean types
+* having a library of ready-made types that cover most cases
+* using spec for checking values
+* `:multiple` if true, the values for all instances are stored in an array
+* `:env` if set, the default is taken from the current value of an envirnoment variable
+
+
+### Return values
+
+The function called can return an integer; if it does, it is used as an exit code
+for the shell process.
+
+Errors and exceptions return an exit code of -1; while normal executions (including invocations 
+of help) return 0.
+
+
+
+
+
+
 
 
 
