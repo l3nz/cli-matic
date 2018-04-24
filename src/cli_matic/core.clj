@@ -253,12 +253,15 @@
 
           :else
           (let [cli-cmd-options (rewrite-opts config subcommand)
-                _ (prn "O" cli-cmd-options)
+                ;_ (prn "O" cli-cmd-options)
                 parsed-cmd-opts (parse-opts subcommand-parms cli-cmd-options)
                 ;_ (prn "Subcmd cmdline" parsed-cmd-opts)
                 {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts]
 
             (cond
+
+              (some? (:_help_trigger cmd-opts))
+              (mkError config subcommand :HELP-SUBCMD nil)
 
 
               (nil? cmd-errs)
