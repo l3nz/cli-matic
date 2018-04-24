@@ -8,7 +8,7 @@ The library can be easily referenced through Github:
 	{:deps
 	 {cli-matic
 	  {:git/url "https://github.com/l3nz/cli-matic.git"
-	   :sha "1afc35f1bac6c84363fcb3160e8ad3e0ed64f78e"}}}
+	   :sha "0f03f707010761b6064a325b4463eb8d405badb8"}}}
 
 At the moment there are no artifacts released.
 
