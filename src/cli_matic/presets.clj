@@ -36,7 +36,9 @@
    :yyyy-mm-dd
            {:placeholder "YYYY-MM-DD"
             :parse-fn    asDate
-            :validate    [some? "Must be a date in format YYYY-MM-DD"]}
+            ;:validate    [#(true)
+            ;              "Must be a date in format YYYY-MM-DD"]
+            }
 
    })
 

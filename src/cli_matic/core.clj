@@ -253,6 +253,7 @@
 
           :else
           (let [cli-cmd-options (rewrite-opts config subcommand)
+                _ (prn "O" cli-cmd-options)
                 parsed-cmd-opts (parse-opts subcommand-parms cli-cmd-options)
                 ;_ (prn "Subcmd cmdline" parsed-cmd-opts)
                 {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts]
@@ -387,7 +388,7 @@
       (println
         (asString
           (flatten
-            [ "** ERROR: **" stderr ""]))))
+            [ "** ERROR: **" stderr "" ""]))))
 
     (cond
       (= :HELP-GLOBAL help)
