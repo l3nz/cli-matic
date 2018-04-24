@@ -8,7 +8,7 @@
 (s/def ::climatic-errors #{:ERR-CFG
                            :ERR-NO-SUBCMD
                            :ERR-UNKNOWN-SUBCMD
-                           :ERR-PARMS-COMMON
+                           :ERR-PARMS-GLOBAL
                            :ERR-PARMS-SUBCMD})
 
 
@@ -21,7 +21,7 @@
 (s/def ::retval int?)
 (s/def ::status (s/or :oth #{:OK :EXCEPTION}
                       :err ::climatic-errors))
-(s/def ::stdout #{:HELP-CMD :HELP-SUBCMD})
+(s/def ::stdout #{:HELP-GLOBAL :HELP-SUBCMD})
 (s/def ::subcmd (s/or :none ::existing-string
                       :nil  nil?))
 (s/def ::stderr (s/coll-of string?))
@@ -55,7 +55,7 @@
 (s/def ::opts  (s/coll-of ::climatic-option))
 (s/def ::runs ifn?)
 
-(s/def ::app (s/keys :req-un [::description ::version]))
+(s/def ::app (s/keys :req-un [::command ::description ::version]))
 (s/def ::global-opts ::opts)
 
 (s/def ::a-command (s/keys :req-un [::command ::opts ::runs]))

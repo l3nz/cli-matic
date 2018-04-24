@@ -38,7 +38,8 @@
 
 
 (def SIMPLE-SUBCOMMAND-CFG
-  {:app         {:description "I am some command"
+  {:app         {:command   "dummy"
+                 :description "I am some command"
                  :version     "0.1.2"}
    :global-opts [{:option "aa" :as "A" :type :int}
                  {:option "bb" :as "B" :type :int}]
@@ -106,14 +107,13 @@
 
       ; no parameters - displays cmd help
       []
-      (->RV -1 :ERR-NO-SUBCMD nil nil "No sub-command specified")
+      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
 
       ["x"]
-      (->RV -1 :ERR-UNKNOWN-SUBCMD nil nil "Unknown sub-command")
+      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
 
       ["--lippa foo"]
-      (->RV -1 :ERR-PARMS-COMMON nil nil "Error: ")
-
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Error: ")
 
 
       )

@@ -11,10 +11,6 @@
 ; to make testing easier.
 ;
 
-
-(defn exception [s]
-  (prn "Exception: " s))
-
 ;
 ; Known presets
 ;
@@ -106,6 +102,98 @@
   :ret some?)
 
 
+;
+; Generate pages
+;
+;
+
+(defn indent-string [s]
+  (str " " s))
+
+(defn indent [s]
+  (if (string? s)
+    (indent-string s)
+    (map indent-string s)
+    ))
+
+(defn generate-section [title lines]
+  (if (empty? lines)
+    []
+
+    [(str title ":")
+     (indent lines)
+     ""]
+    ))
+
+
+(defn generate-sections
+  [name version usage commands opts-title opts]
+
+  (vec
+    (flatten
+         [(generate-section "NAME" name)
+          (generate-section "USAGE" usage)
+          (generate-section "VERSION" version)
+          (generate-section "COMMANDS" commands)
+          (generate-section opts-title opts)])))
+
+
+(defn get-options-summary
+  [cfg subcmd]
+  (let [cli-cfg (rewrite-opts cfg subcmd)
+        options-str (:summary
+                       (parse-opts [] cli-cfg))]
+    (clojure.string/split-lines options-str)))
+
+
+
+
+(defn generate-global-help [cfg]
+
+  (let [name (get-in cfg [:app :command])
+        version (get-in cfg [:app :version])
+        descr (get-in cfg [:app :description])
+        ]
+
+    (generate-sections
+      (str name " - " descr)
+      version
+      (str name " [global-options] command [command options] [arguments...]")
+      (map #(str (:command %) "    " (:description %)) (:commands cfg))
+      "GLOBAL OPTIONS"
+      (get-options-summary cfg nil)
+      )))
+
+(s/fdef
+  generate-global-help
+  :args (s/cat :cfg ::S/climatic-cfg)
+  :ret (s/coll-of string?))
+
+
+
+
+(defn generate-subcmd-help [cfg cmd]
+
+  (let [glname (get-in cfg [:app :command])
+        cmd-cfg (get-subcommand cfg cmd )
+        name (:command cmd-cfg)
+        descr (:description cmd-cfg)]
+
+    (generate-sections
+      (str glname " " name " - " descr)
+      nil
+      (str glname " " name " [command options] [arguments...]")
+      nil
+      "OPTIONS"
+      (get-options-summary cfg cmd)
+      )))
+
+(s/fdef
+  generate-subcmd-help
+  :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
+  :ret (s/coll-of string?))
+
+
 
 ;
 ; We parse our command line here
@@ -117,7 +205,7 @@
   {:subcommand     subcommand
    :subcommand-def (if (or (= error :ERR-UNKNOWN-SUBCMD)
                            (= error :ERR-NO-SUBCMD)
-                           (= error :ERR-PARMS-COMMON))
+                           (= error :ERR-PARMS-GLOBAL))
                      nil
                      (get-subcommand config subcommand))
    :commandline    {}
@@ -140,7 +228,7 @@
 
     (cond
       (some? gl-errs)
-      (mkError config nil :ERR-PARMS-COMMON "")
+      (mkError config nil :ERR-PARMS-GLOBAL "")
 
       :else
       (let [subcommand (first gl-args)
@@ -198,14 +286,14 @@
 
   {:retval return-code
    :status type
-   :stdout stdout
+   :help   stdout
    :subcmd subcmd
    :stderr (fnStrVec stderr)}
   ))
 
 (s/fdef
   ->RV
-  :args (s/cat :rv int? :status some? :stdout any? :subcmd any? :stderr any?)
+  :args (s/cat :rv int? :status some? :help any? :subcmd any? :stderr any?)
   :rets ::S/RV)
 
 
@@ -255,12 +343,12 @@
       (condp = (:parse-errors parsed-opts)
 
         :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in cli-matic configuration")
-        :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD nil nil "No sub-command specified")
-        :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD nil nil "Unknown sub-command")
-        :HELP-COMMON (->RV -1 :OK nil nil nil)
-        :ERR-PARMS-COMMON (->RV -1 :ERR-PARMS-COMMON nil nil "Error: ")
-        :HELP-SUBCMD (->RV -1 :OK nil nil nil)
-        :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD nil nil "Error: ")
+        :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
+        :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
+        :HELP-COMMON (->RV -1 :OK :HELP-GLOBAL nil nil)
+        :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Error: ")
+        :HELP-SUBCMD (->RV -1 :OK :HELP-SUBCMD nil nil)
+        :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD :ERR-SUBCMD nil "Error: ")
 
         :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts))
 
@@ -270,9 +358,21 @@
 (defn run-cmd
   [args setup]
 
-  (let [result (run-cmd* setup args)]
-  ;  (System.out/println  (:stdout result))
-  ;  (System.err/println  (:stderr result))
+  (let [result (run-cmd* setup args)
+        manual (:help result)
+        errmsg (:stderr result)
+        subcmd (:subcmd result)]
+
+    (if (some? errmsg)
+      (println errmsg))
+
+    (cond
+      (= :HELP-GLOBAL manual)
+      (println (generate-global-help setup))
+
+      (= :HELP-SUBCMD manual)
+      (println (generate-subcmd-help setup subcmd)))
+
     (System/exit (:retval result))))
 
 
