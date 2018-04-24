@@ -77,8 +77,8 @@ From your point of view of an application programmer, you'd like to have a funct
 		[{:keys [a b base]}]
 		(Integer/toString (+ a b) base))
 
-And nothing more; the fact that both parameters exist, are of the right type, have the right defaults etc, 
-should not be a concern.
+And nothing more; the fact that both parameters exist, are of the right type, have the right defaults, print
+the correct help screen, etc., should ideally not be a concern.
 
 
 	(def CONFIGURATION
@@ -96,7 +96,7 @@ should not be a concern.
 	                  :opts        [{:option "a" :as "Addendum 1" :type :int}
 	                                {:option "b" :as "Addendum 2" :type :int :default 0}]
 	                  :runs        add_numbers}
-	                   
+
 	                 {:command     "sub"
 	                  :description "Subtracts parameter B from A"
 	                  :opts        [{:option "a" :as "Parameter A" :type :int :default 0}
