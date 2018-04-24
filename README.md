@@ -113,7 +113,7 @@ The following pre-sets (":type") are available:
 * `:string` - a string
 * `:yyyy-mm-dd` - a Date object, expressed as "yyyy-mm-dd" in the local time zone
 
-For all presents, you can then add:
+For all options, you can then add:
 
 * `:default` the default value, as expected after conversion
 
@@ -122,7 +122,7 @@ For all presents, you can then add:
 * boolean types
 * having a library of ready-made types that cover most cases
 * using spec for checking values
-* `:multiple` if true, the values for all instances are stored in an array
+* `:multiple` if true, the values for all options with the same name are stored in an array
 * `:env` if set, the default is taken from the current value of an envirnoment variable
 
 
