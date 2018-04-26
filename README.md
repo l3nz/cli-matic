@@ -8,7 +8,7 @@ Compact [sub]command line parsing library, for Clojure.
 
 The library is available on Clojars:
 
-	[cli-matic "0.1.0"]
+![](https://clojars.org/cli-matic/latest-version.svg)
 
 Or the library can be easily referenced through Github:
 
