@@ -1,16 +1,22 @@
 # cli-matic
-Compact [sub]command line parsing library, for Clojure
+
+Compact [sub]command line parsing library, for Clojure.
+
+
 
 ## Using
 
-The library can be easily referenced through Github:
+The library is available on Clojars:
+
+	[cli-matic "0.1.0"]
+
+Or the library can be easily referenced through Github:
 
 	{:deps
 	 {cli-matic
 	  {:git/url "https://github.com/l3nz/cli-matic.git"
 	   :sha "545ceac178771f9fd5560c948a301f836d3be19e"}}}
 
-At the moment there are no artifacts released.
 
 ### Transitive dependencies
 
