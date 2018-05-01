@@ -13,6 +13,20 @@
 ;
 
 
+(defn assoc-new-multivalue
+  "associates a new multiple value to the
+  current parameter map.
+  If the current value is not a vector, creates
+  a new vector with the new value.
+  "
+  [parameter-map option v]
+  (let [curr-val (get parameter-map option [])
+        new-val (if (vector? curr-val)
+                  (conj curr-val v)
+                  [v])]
+    (assoc parameter-map option new-val)))
+
+
 ;
 ; Rewrite options to our format
 ;
@@ -21,26 +35,28 @@
 ;     :parse-fn #(Integer/parseInt %)]
 
 (defn mk-cli-option
-  [{:keys [option shortened as type default] :as cm-option}]
+  [{:keys [option shortened as type default multiple] :as cm-option}]
   (let [preset (get PRESETS/known-presets type :unknown)
-        head [(if (string? shortened)
-                (str "-" shortened)
-                nil)
-              (str "--" option " " (:placeholder preset))
-              as]
+        positional-opts [(if (string? shortened)
+                           (str "-" shortened)
+                           nil)
+                         (str "--" option " " (:placeholder preset))
+                         as]
 
-        opts  (dissoc preset :placeholder)
-        opts-def (if (some? default)
-                  (assoc opts :default default)
-                  opts
-                  )
-        ]
+        ; step 1 - remove :placeholder
+        opts-1 (dissoc preset :placeholder)
+        ; step 2 - add default if present
+        opts-2 (if (some? default)
+                 (assoc opts-1 :default default)
+                 opts-1)
+        ; step 3 - if multivalue, add correct assoc-fns
+        opts-3 (if multiple
+                 (assoc opts-2 :assoc-fn assoc-new-multivalue)
+                 opts-2)]
 
     (apply
-      conj head
-      (flatten (seq opts-def)))
-
-    ))
+      conj positional-opts
+      (flatten (seq opts-3)))))
 
 
 (s/fdef
@@ -265,7 +281,6 @@
 
 
               (nil? cmd-errs)
-
               {:subcommand     subcommand
                :subcommand-def (get-subcommand config subcommand)
                :commandline     (into
@@ -277,11 +292,7 @@
 
               :else
               (mkError config subcommand :ERR-PARMS-SUBCMD cmd-errs)
-
-
-              )
-
-          ))))))
+              )))))))
 
 
 (s/fdef

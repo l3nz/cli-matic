@@ -45,6 +45,63 @@
 
 
 ; :string
+(deftest test-string
+  (testing "just strings"
+    (are [i o]
+      (= (parse-cmds-simpler
+           i
+           (mkDummyCfg {:option "val" :as "x" :type :string})
+           ) o)
+
+
+      ["foo" "--val" "abcd"]
+      {:commandline  {:_arguments []
+                      :val        "abcd"}
+       :error-text   ""
+       :parse-errors :NONE
+       }))
+
+  (testing "multiple strings"
+    (are [i o]
+      (= (parse-cmds-simpler
+           i
+           (mkDummyCfg {:option "val" :as "x" :type :string :multiple true})
+           ) o)
+
+
+      ["foo" "--val" "abcd"]
+      {:commandline  {:_arguments []
+                      :val        ["abcd"]}
+       :error-text   ""
+       :parse-errors :NONE}
+
+      ["foo" "--val" "abcd" "--val" "defg"]
+      {:commandline  {:_arguments []
+                      :val        ["abcd" "defg"]}
+       :error-text   ""
+       :parse-errors :NONE}))
+
+  (testing "multiple strings but no multiple option"
+    (are [i o]
+      (= (parse-cmds-simpler
+           i
+           (mkDummyCfg {:option "val" :as "x" :type :string :multiple false})
+           ) o)
+
+
+      ["foo" "--val" "abcd"]
+      {:commandline  {:_arguments []
+                      :val        "abcd"}
+       :error-text   ""
+       :parse-errors :NONE}
+
+      ["foo" "--val" "abcd" "--val" "defg"]
+      {:commandline  {:_arguments []
+                      :val        "defg"}
+       :error-text   ""
+       :parse-errors :NONE}
+
+      )))
 
 
 
@@ -74,6 +131,9 @@
        :parse-errors   :NONE
        }
       )))
+
+
+
 
 
 
