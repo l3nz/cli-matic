@@ -22,10 +22,10 @@ Or the library can be easily referenced through Github:
 
 cli-matic currently depends on:
 
-* org.clojure/clojure {:mvn/version "1.9.0"}
-* org.clojure/spec.alpha {:mvn/version "0.1.143"}
-* org.clojure/tools.cli {:mvn/version "0.3.5"} 
-
+* org.clojure/clojure 
+* org.clojure/spec.alpha 
+* org.clojure/tools.cli 
+* orchestra 
 
 ## Rationale
 
@@ -122,13 +122,13 @@ The following pre-sets (":type") are available:
 For all options, you can then add:
 
 * `:default` the default value, as expected after conversion
+* `:multiple` if true, the values for all options with the same name are stored in an array
 
 [to be done]
 
 * boolean types
 * having a library of ready-made types that cover most cases
 * using spec for checking values
-* `:multiple` if true, the values for all options with the same name are stored in an array
 * `:env` if set, the default is taken from the current value of an envirnoment variable
 
 
@@ -139,13 +139,6 @@ for the shell process.
 
 Errors and exceptions return an exit code of -1; while normal executions (including invocations 
 of help) return 0.
-
-
-
-
-
-
-
 
 
 ## License
