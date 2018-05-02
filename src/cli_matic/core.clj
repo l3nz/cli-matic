@@ -3,22 +3,16 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.spec.alpha :as s]
             [orchestra.spec.test :as st]
-            [cli-matic.presets :as PRESETS]
-            ))
+            [cli-matic.presets :as PRESETS]))
 
-;
-; Cli-matic has one main entry-point: run!
-; Actually, most of the logic will be run in run*
-; to make testing easier.
-;
-
-
+;; Cli-matic has one main entry-point: run!
+;; Actually, most of the logic will be run in run*
+;; to make testing easier.
 (defn assoc-new-multivalue
   "associates a new multiple value to the
   current parameter map.
   If the current value is not a vector, creates
-  a new vector with the new value.
-  "
+  a new vector with the new value."
   [parameter-map option v]
   (let [curr-val (get parameter-map option [])
         new-val (if (vector? curr-val)
@@ -26,13 +20,10 @@
                   [v])]
     (assoc parameter-map option new-val)))
 
-
-;
-; Rewrite options to our format
-;
-; {:opt "x" :as "Port number" :type :int}
-; ["-x" nil "Port number"
-;     :parse-fn #(Integer/parseInt %)]
+;; Rewrite options to our format
+;; {:opt "x" :as "Port number" :type :int}
+;; ["-x" nil "Port number"
+;;  :parse-fn #(Integer/parseInt %)]
 
 (defn mk-cli-option
   [{:keys [option shortened as type default multiple] :as cm-option}]
@@ -42,76 +33,62 @@
                            nil)
                          (str "--" option " " (:placeholder preset))
                          as]
-
-        ; step 1 - remove :placeholder
+        ;; step 1 - remove :placeholder
         opts-1 (dissoc preset :placeholder)
-        ; step 2 - add default if present
+
+        ;; step 2 - add default if present
         opts-2 (if (some? default)
                  (assoc opts-1 :default default)
                  opts-1)
-        ; step 3 - if multivalue, add correct assoc-fns
+        ;; step 3 - if multivalue, add correct assoc-fns
         opts-3 (if multiple
                  (assoc opts-2 :assoc-fn assoc-new-multivalue)
                  opts-2)]
-
     (apply
-      conj positional-opts
-      (flatten (seq opts-3)))))
+     conj positional-opts
+     (flatten (seq opts-3)))))
 
-
-(s/fdef
-  mk-cli-option
-  :args (s/cat :opts ::S/climatic-option)
-  :ret some?)
-
+(s/fdef mk-cli-option
+        :args (s/cat :opts ::S/climatic-option)
+        :ret some?)
 
 (defn get-subcommand
   [climatic-args subcmd]
   (let [subcommands (:commands climatic-args)]
     (first (filter #(= (:command %) subcmd) subcommands))))
 
-(s/fdef
-  get-subcommand
-  :args (s/cat :args ::S/climatic-cfg :subcmd string?)
-  :ret ::S/a-command)
-
+(s/fdef get-subcommand
+        :args (s/cat :args ::S/climatic-cfg :subcmd string?)
+        :ret ::S/a-command)
 
 (defn all-subcommands
   "Returns all subcommands, as strings"
   [climatic-args]
   (let [subcommands (:commands climatic-args)]
     (into #{}
-      (map :command subcommands))))
+          (map :command subcommands))))
 
-(s/fdef
-  all-subcommands
-  :args (s/cat :args ::S/climatic-cfg)
-  :ret set?)
+(s/fdef all-subcommands
+        :args (s/cat :args ::S/climatic-cfg)
+        :ret set?)
 
-
-;
-; Out of a cli-matic arg list,
-; generates a set of commands for tools.cli
-;
-
+;; Out of a cli-matic arg list,
+;; generates a set of commands for tools.cli
 (defn rewrite-opts
   [climatic-args subcmd]
-
   (let [opts (if (nil? subcmd)
                (:global-opts climatic-args)
                (:opts (get-subcommand climatic-args subcmd)))]
     (conj
-      (mapv mk-cli-option opts)
-      ["-?" "--help" "" :id :_help_trigger]
-      )))
+     (mapv mk-cli-option opts)
+     ["-?" "--help" "" :id :_help_trigger]
+     )))
 
-
-(s/fdef
-  rewrite-opts
-  :args (s/cat :args some?
-               :mode (s/or :common nil?
-                           :a-subcommand string?))
-  :ret some?)
+(s/fdef rewrite-opts
+        :args (s/cat :args some?
+                     :mode (s/or :common nil?
+                                 :a-subcommand string?))
+        :ret some?)
 
 
 ;
@@ -355,64 +332,44 @@
     (catch Throwable t
       (->RV -1 :EXCEPTION nil nil
             (str "JVM Exception: "
-                 (with-out-str (println t))))
-      )
-    ))
+                 (with-out-str (println t)))))))
 
+;; Executes our code.
+;; It will try and parse the arguments via clojure.tools.cli
+;; and detect our subcommand.
 
-;
-; Executes our code.
-; It will try and parse the arguments via clojure.tools.cli
-; and detect our subcommand.
-
-; If no subcommand was found, it will print the error reminder.
-; On exceptions, it will raise an exception message.
-;
-
+;; If no subcommand was found, it will print the error reminder.
+;; On exceptions, it will raise an exception message.
 (defn run-cmd*
   [setup args]
-
-    (let [parsed-opts (parse-cmds args setup)]
-
-      ; maybe there was an error parsing
-      (condp = (:parse-errors parsed-opts)
-
-        :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in cli-matic configuration")
-        :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
-        :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
-        :HELP-GLOBAL (->RV 0 :OK :HELP-GLOBAL nil nil)
-        :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil
-                                (str "Global option error: " (:error-text parsed-opts)))
-        :HELP-SUBCMD (->RV 0 :OK :HELP-SUBCMD (:subcommand parsed-opts) nil)
-        :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD (:subcommand parsed-opts)
-                                (str "Option error: " (:error-text parsed-opts)))
-
-        :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts))
-
-        )))
-
+  (let [parsed-opts (parse-cmds args setup)]
+    ;; maybe there was an error parsing
+    (condp = (:parse-errors parsed-opts)
+      :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in cli-matic configuration")
+      :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
+      :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
+      :HELP-GLOBAL (->RV 0 :OK :HELP-GLOBAL nil nil)
+      :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil
+                              (str "Global option error: " (:error-text parsed-opts)))
+      :HELP-SUBCMD (->RV 0 :OK :HELP-SUBCMD (:subcommand parsed-opts) nil)
+      :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD (:subcommand parsed-opts)
+                              (str "Option error: " (:error-text parsed-opts)))
+      :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts)))))
 
 (defn run-cmd
   [args setup]
-
   (let [{:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
-
     (if (not (empty? stderr))
       (println
-        (asString
-          (flatten
-            [ "** ERROR: **" stderr "" ""]))))
-
+       (asString
+        (flatten
+         [ "** ERROR: **" stderr "" ""]))))
     (cond
       (= :HELP-GLOBAL help)
       (println (asString (generate-global-help setup)))
-
       (= :HELP-SUBCMD help)
       (println (asString (generate-subcmd-help setup subcmd))))
-
     (System/exit retval)))
-
-
 
 (st/instrument)
