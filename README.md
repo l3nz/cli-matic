@@ -33,11 +33,11 @@ Say you want to create a simple script, in Clojure, where you want
 to run a very simple calculator that either sums A to B or subtracts B from A:
 
 
-	$ clj -m calc add --a 40 --b 2
+	$ clj -m calc add -a 40 -b 2
 	42
-	$ clj -m calc sub --a 10 --b 2
+	$ clj -m calc sub -a 10 -b 2
 	8
-	$ clj -m calc --base 16 add --a 30 --b 2
+	$ clj -m calc --base 16 add -a 30 -b 2
 	20
 
 We would also want it to display its help:
@@ -53,11 +53,12 @@ We would also want it to display its help:
 	 0.0.1
 
 	COMMANDS:
-	 add    Adds two numbers together
-	 sub    Subtracts parameter B from A
+	   add, a   Adds two numbers together
+	   sub, s   Subtracts parameter B from A
 
 	GLOBAL OPTIONS:
 	       --base N  10  The number base for output
+	   -?, --help
 
 
 And help for sub-commands:
@@ -67,11 +68,12 @@ And help for sub-commands:
 	 toycalc add - Adds two numbers together
 
 	USAGE:
-	 toycalc add [command options] [arguments...]
+	 toycalc [add|a] [command options] [arguments...]
 
 	OPTIONS:
-	       --a N     Addendum 1
-	       --b N  0  Addendum 2
+	   -a, --a1 N  0  Addendum 1
+	   -b, --a2 N  0  Addendum 2
+	   -?, --help
 
 But while we are coding this, we do not realy want to waste time writing any parsing logic.
 What we care about are functions "add-numbers" and "sub-numbers"; the rest sould just be declared externally.

@@ -5,15 +5,15 @@
 
 (defn add_numbers
   "Sums A and B together, and prints it in base `base`"
-  [{:keys [a b base]}]
+  [{:keys [a1 a2 base]}]
   (println
-   (Integer/toString (+ a b) base)))
+    (Integer/toString (+ a1 a2) base)))
 
 (defn subtract_numbers
   "Subtracts B from A, and prints it in base `base`"
-  [{:keys [a b base]}]
+  [{:keys [pa pb base]}]
   (println
-   (Integer/toString (- a b) base)))
+   (Integer/toString (- pa pb) base)))
 
 (def CONFIGURATION
   {:app         {:command     "toycalc"
@@ -23,15 +23,15 @@
                   :as      "The number base for output"
                   :type    :int
                   :default 10}]
-   :commands    [{:command     "add"
+   :commands    [{:command     "add" :short "a"
                   :description "Adds two numbers together"
-                  :opts        [{:option "a" :as "Addendum 1" :type :int}
-                                {:option "b" :as "Addendum 2" :type :int :default 0}]
+                  :opts        [{:option "a1" :short "a" :as "First addendum" :type :int :default 0}
+                                {:option "a2" :short "b" :as "Second addendum" :type :int :default 0}]
                   :runs        add_numbers}
-                 {:command     "sub"
+                 {:command     "sub"  :short "s"
                   :description "Subtracts parameter B from A"
-                  :opts        [{:option "a" :as "Parameter A" :type :int :default 0}
-                                {:option "b" :as "Parameter B" :type :int :default 0}]
+                  :opts        [{:option "pa" :short "a" :as "Parameter A" :type :int :default 0}
+                                {:option "pb" :short "b" :as "Parameter B" :type :int :default 0}]
                   :runs        subtract_numbers}]})
 
 (defn -main
