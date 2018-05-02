@@ -8,14 +8,14 @@ Compact [sub]command line parsing library, for Clojure.
 
 The library is available on Clojars:
 
-![](https://clojars.org/cli-matic/latest-version.svg)
+[![Clojars Project](https://img.shields.io/clojars/v/cli-matic.svg)](https://clojars.org/cli-matic)
 
 Or the library can be easily referenced through Github:
 
 	{:deps
 	 {cli-matic
 	  {:git/url "https://github.com/l3nz/cli-matic.git"
-	   :sha "545ceac178771f9fd5560c948a301f836d3be19e"}}}
+	   :sha "5252413d1cacd9d3db90019fdd059893167c73db"}}}
 
 
 ### Transitive dependencies
