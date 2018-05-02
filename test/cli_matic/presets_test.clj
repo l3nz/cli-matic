@@ -61,7 +61,24 @@
        :parse-errors :NONE
        }))
 
-  (testing "multiple strings"
+  (testing
+  (are [i o]
+    (= (parse-cmds-simpler
+         i
+         (mkDummyCfg {:option "val" :short "v" :as "x" :type :string})
+         ) o)
+
+
+    ["foo" "-v" "abcd" "aaarg"]
+    {:commandline  {:_arguments ["aaarg"]
+                    :val        "abcd"}
+     :error-text   ""
+     :parse-errors :NONE
+     }))
+
+
+
+(testing "multiple strings"
     (are [i o]
       (= (parse-cmds-simpler
            i

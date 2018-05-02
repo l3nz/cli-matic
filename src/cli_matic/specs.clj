@@ -31,7 +31,7 @@
 ;; Cli-matic option definition
 (s/def ::option ::existing-string) ;; ex-string
 
-(s/def ::shortened ::existing-string)
+(s/def ::short ::existing-string)
 
 (s/def ::as ::existing-string)
 
@@ -41,7 +41,7 @@
 
 (s/def ::climatic-option
   (s/keys :req-un [::option  ::as  ::type]
-          :opt-un [::shortened ::default]))
+          :opt-un [::short ::default]))
 
 ;; Climatic configuration
 (s/def ::description ::existing-string)

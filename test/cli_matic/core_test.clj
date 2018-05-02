@@ -88,7 +88,7 @@
       (= o (mk-cli-option i))
 
       ; simplest example
-      {:option "extra" :shortened "x" :as "Port number" :type :int}
+      {:option "extra" :short "x" :as "Port number" :type :int}
       ["-x" "--extra N" "Port number"
        :parse-fn parseInt]
 

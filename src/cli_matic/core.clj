@@ -9,7 +9,7 @@
 ;; Actually, most of the logic will be run in run*
 ;; to make testing easier.
 (defn assoc-new-multivalue
-  "associates a new multiple value to the
+  "Associates a new multiple value to the
   current parameter map.
   If the current value is not a vector, creates
   a new vector with the new value."
@@ -20,16 +20,20 @@
                   [v])]
     (assoc parameter-map option new-val)))
 
-;; Rewrite options to our format
+;; Rewrite options from our format
 ;; {:opt "x" :as "Port number" :type :int}
+;; to tools.cli:
 ;; ["-x" nil "Port number"
 ;;  :parse-fn #(Integer/parseInt %)]
+;; as specified in
+;;  https://github.com/clojure/tools.cli/blob/master/src/main/clojure/clojure/tools/cli.clj#L488
+;;
 
 (defn mk-cli-option
-  [{:keys [option shortened as type default multiple] :as cm-option}]
+  [{:keys [option short as type default multiple] :as cm-option}]
   (let [preset (get PRESETS/known-presets type :unknown)
-        positional-opts [(if (string? shortened)
-                           (str "-" shortened)
+        positional-opts [(if (string? short)
+                           (str "-" short)
                            nil)
                          (str "--" option " " (:placeholder preset))
                          as]
