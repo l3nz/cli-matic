@@ -39,30 +39,30 @@
 
 
 (def SIMPLE-SUBCOMMAND-CFG
-  {:app         {:command   "dummy"
+  {:app         {:command     "dummy"
                  :description "I am some command"
                  :version     "0.1.2"}
    :global-opts [{:option "aa" :as "A" :type :int}
                  {:option "bb" :as "B" :type :int}]
-   :commands [{:command    "foo"
+   :commands    [{:command     "foo" :short       "f"
                   :description "I am function foo"
-                  :opts  [{:option "cc" :as "C" :type :int}
-                          {:option "dd" :as "D" :type :int}]
-                  :runs  cmd_foo}
+                  :opts        [{:option "cc" :as "C" :type :int}
+                                {:option "dd" :as "D" :type :int}]
+                  :runs        cmd_foo}
 
-                 {:command    "bar"
+                 {:command     "bar"
                   :description "I am function bar"
-                  :opts  [{:option "ee" :as "E" :type :int}
-                          {:option "ff" :as "F" :type :int}]
-                  :runs  cmd_bar}
-                 ]
-   })
+                  :opts        [{:option "ee" :as "E" :type :int}
+                                {:option "ff" :as "F" :type :int}]
+                  :runs        cmd_bar}]})
 
 
 
 
 (deftest simple-subcommand
   (testing "A simple subcommand"
+
+    ;; Normmal subcomamnd
     (is (= (parse-cmds
              [ "--bb" "1" "foo" "--cc" "2" "--dd" "3"]
              SIMPLE-SUBCOMMAND-CFG)
@@ -72,6 +72,7 @@
            :parse-errors :NONE
             :error-text ""
            :subcommand-def {:command "foo"
+                            :short "f"
                             :description "I am function foo"
                             :opts  [{:as     "C"
                                      :option "cc"
@@ -80,7 +81,67 @@
                                      :option "dd"
                                      :type   :int}]
                             :runs  cmd_foo}}
-           ))))
+           ))
+
+    ;; short subcommand
+    (is (= (parse-cmds
+             [ "--bb" "1" "f" "--cc" "2" "--dd" "3"]
+             SIMPLE-SUBCOMMAND-CFG)
+
+           {:commandline {:bb 1 :cc 2 :dd 3 :_arguments []}
+            :subcommand "foo"
+            :parse-errors :NONE
+            :error-text ""
+            :subcommand-def {:command "foo"
+                             :short "f"
+                             :description "I am function foo"
+                             :opts  [{:as     "C"
+                                      :option "cc"
+                                      :type   :int}
+                                     {:as     "D"
+                                      :option "dd"
+                                      :type   :int}]
+                             :runs  cmd_foo}}
+           ))
+
+    ;; unknown subcommand
+    (is (= (parse-cmds
+             [ "--bb" "1" "unknown" "--cc" "2" "--dd" "3"]
+             SIMPLE-SUBCOMMAND-CFG)
+
+           {:commandline    {}
+            :error-text     ""
+            :parse-errors   :ERR-UNKNOWN-SUBCMD
+            :subcommand     "unknown"
+            :subcommand-def nil}
+           ))
+    ))
+
+
+(deftest subcommands-and-aliases
+  (testing "Subcommands and aliases"
+    (is (= (all-subcommands-aliases SIMPLE-SUBCOMMAND-CFG)
+           {"bar" "bar"
+            "f"   "foo"
+            "foo" "foo"})))
+
+  (testing "All subcommands"
+    (is (= (all-subcommands SIMPLE-SUBCOMMAND-CFG)
+           #{"bar"
+             "f"
+             "foo"})))
+
+  (testing "Canonicalize-subcommand"
+    (is (= (canonicalize-subcommand SIMPLE-SUBCOMMAND-CFG "foo")
+           "foo"))
+    (is (= (canonicalize-subcommand SIMPLE-SUBCOMMAND-CFG "f")
+           "foo"))
+    (is (= (canonicalize-subcommand SIMPLE-SUBCOMMAND-CFG "bar")
+           "bar"))))
+
+
+
+
 
 (deftest make-option
   (testing "Build a tools.cli option"
@@ -128,14 +189,15 @@
       ["--help"]
       (->RV 0 :OK :HELP-GLOBAL nil nil)
 
-      ; help sub-command
+      ; help sub-commands (incl short version)
       ["foo"  "-?"]
       (->RV 0 :OK :HELP-SUBCMD "foo" nil)
 
       ["bar" "--help"]
       (->RV 0 :OK :HELP-SUBCMD "bar" nil)
 
-
+      ["f"  "-?"]
+      (->RV 0 :OK :HELP-SUBCMD "foo" nil)
 
       )))
 

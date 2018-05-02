@@ -56,6 +56,9 @@
         :args (s/cat :opts ::S/climatic-option)
         :ret some?)
 
+
+
+
 (defn get-subcommand
   [climatic-args subcmd]
   (let [subcommands (:commands climatic-args)]
@@ -65,16 +68,63 @@
         :args (s/cat :args ::S/climatic-cfg :subcmd string?)
         :ret ::S/a-command)
 
-(defn all-subcommands
-  "Returns all subcommands, as strings"
+
+(defn all-subcommands-aliases
+  "Maps all subcommands and subcommand aliases
+  to their canonical name.
+  E.g. {'add': 'add', 'a': 'add'}.
+
+  We basicaly add them all, then remove
+  nil keys.
+
+  "
+
   [climatic-args]
   (let [subcommands (:commands climatic-args)]
-    (into #{}
-          (map :command subcommands))))
+
+    (dissoc
+      (merge
+        ;; a map of 'cmd' -> 'cmd'
+        (into {}
+              (map
+                (fn [{:keys [command short]}]
+                  [command command])
+                subcommands))
+
+        (into {}
+              (map
+                (fn [{:keys [command short]}]
+                  [short command])
+                subcommands)))
+      nil)))
+
+(s/fdef all-subcommands-aliases
+        :args (s/cat :args ::S/climatic-cfg)
+        :ret (s/map-of string? string?))
+
+
+
+(defn all-subcommands
+  "Returns all subcommands, as strings.
+   We get all versions of all subcommands.
+  "
+  [climatic-args]
+  (set (keys (all-subcommands-aliases climatic-args))))
 
 (s/fdef all-subcommands
         :args (s/cat :args ::S/climatic-cfg)
         :ret set?)
+
+
+(defn canonicalize-subcommand
+  [commands subcmd]
+  (get (all-subcommands-aliases commands) subcmd))
+
+(s/fdef canonicalize-subcommands
+        :args (s/cat :args ::S/climatic-cfg :sub string?)
+        :ret string?)
+
+
 
 ;; Out of a cli-matic arg list,
 ;; generates a set of commands for tools.cli
@@ -146,20 +196,50 @@
     (clojure.string/split-lines options-str)))
 
 
+(defn generate-a-command
+  "Maybe we should use a way to format commands
+
+   E.g.
+   (pp/cl-format true \"~{ ~vA  ~vA  ~vA ~}\" v)"
+
+  [{:keys [command short description]}]
+
+  (str "  "
+       command
+       (when short
+         (str ", " short))
+       "   "
+       description))
 
 
-(defn generate-global-help [cfg]
+(defn generate-global-command-list
+  "Creates a list of commands and descriptions.
+   Commands are of kind ::S/commands
+  "
+  [commands]
+  (map generate-a-command commands))
+
+(s/fdef
+  generate-global-command-list
+  :args (s/cat :commands ::S/commands)
+  :ret  (s/coll-of string?))
+
+
+
+
+(defn generate-global-help
+
+  [cfg]
 
   (let [name (get-in cfg [:app :command])
         version (get-in cfg [:app :version])
-        descr (get-in cfg [:app :description])
-        ]
+        descr (get-in cfg [:app :description])]
 
     (generate-sections
       (str name " - " descr)
       version
       (str name " [global-options] command [command options] [arguments...]")
-      (map #(str (:command %) "    " (:description %)) (:commands cfg))
+      (generate-global-command-list (:commands cfg))
       "GLOBAL OPTIONS"
       (get-options-summary cfg nil)
       )))
@@ -172,17 +252,22 @@
 
 
 
-(defn generate-subcmd-help [cfg cmd]
+(defn generate-subcmd-help
+  [cfg cmd]
 
   (let [glname (get-in cfg [:app :command])
         cmd-cfg (get-subcommand cfg cmd )
         name (:command cmd-cfg)
+        shortname (:short cmd-cfg)
+        name-short (if shortname
+                     (str "[" name "|" shortname "]")
+                     name)
         descr (:description cmd-cfg)]
 
     (generate-sections
       (str glname " " name " - " descr)
       nil
-      (str glname " " name " [command options] [arguments...]")
+      (str glname " " name-short " [command options] [arguments...]")
       nil
       "OPTIONS"
       (get-options-summary cfg cmd)
@@ -219,9 +304,7 @@
 (defn parse-cmds
   [cmdline config]
 
-  (let [possible-subcmds (all-subcommands config)
-
-        cli-gl-options (rewrite-opts config nil)
+  (let [cli-gl-options (rewrite-opts config nil)
         ;_ (prn "Options" cli-top-options)
         parsed-gl-opts (parse-opts cmdline cli-gl-options :in-order true)
         ;_ (prn "Common cmdline" parsed-common-cmdline)
@@ -245,11 +328,12 @@
           (nil? subcommand)
           (mkError config nil :ERR-NO-SUBCMD "")
 
-          (nil? (possible-subcmds subcommand))
+          (nil? ((all-subcommands config) subcommand))
           (mkError config subcommand :ERR-UNKNOWN-SUBCMD "")
 
           :else
-          (let [cli-cmd-options (rewrite-opts config subcommand)
+          (let [canonical-subcommand (canonicalize-subcommand config subcommand)
+                cli-cmd-options (rewrite-opts config canonical-subcommand)
                 ;_ (prn "O" cli-cmd-options)
                 parsed-cmd-opts (parse-opts subcommand-parms cli-cmd-options)
                 ;_ (prn "Subcmd cmdline" parsed-cmd-opts)
@@ -258,12 +342,12 @@
             (cond
 
               (some? (:_help_trigger cmd-opts))
-              (mkError config subcommand :HELP-SUBCMD nil)
+              (mkError config canonical-subcommand :HELP-SUBCMD nil)
 
 
               (nil? cmd-errs)
-              {:subcommand     subcommand
-               :subcommand-def (get-subcommand config subcommand)
+              {:subcommand     canonical-subcommand
+               :subcommand-def (get-subcommand config canonical-subcommand)
                :commandline     (into
                                   (into gl-opts cmd-opts)
                                   {:_arguments cmd-args})
@@ -272,7 +356,7 @@
                }
 
               :else
-              (mkError config subcommand :ERR-PARMS-SUBCMD cmd-errs)
+              (mkError config canonical-subcommand :ERR-PARMS-SUBCMD cmd-errs)
               )))))))
 
 
@@ -288,8 +372,6 @@
 ; builds a return value
 ;
 
-
-
 (defn ->RV
   [return-code type stdout subcmd stderr]
   (let [fnStrVec (fn [s]
@@ -302,8 +384,7 @@
    :status type
    :help   stdout
    :subcmd subcmd
-   :stderr (fnStrVec stderr)}
-  ))
+   :stderr (fnStrVec stderr)}))
 
 (s/fdef
   ->RV

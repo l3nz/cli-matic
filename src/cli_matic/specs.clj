@@ -58,7 +58,8 @@
 
 (s/def ::global-opts ::opts)
 
-(s/def ::a-command (s/keys :req-un [::command ::opts ::runs]))
+(s/def ::a-command (s/keys :req-un [::command ::opts ::runs]
+                           :opt-un [::short ::description]))
 
 (s/def ::commands (s/coll-of ::a-command))
 
