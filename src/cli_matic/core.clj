@@ -5,9 +5,16 @@
             [orchestra.spec.test :as st]
             [cli-matic.presets :as PRESETS]))
 
+;; ================ ATTENTION ====================
 ;; Cli-matic has one main entry-point: run!
 ;; Actually, most of the logic will be run in run*
 ;; to make testing easier.
+;;
+;; -----------------------------------------------
+
+
+
+
 (defn assoc-new-multivalue
   "Associates a new multiple value to the
   current parameter map.
@@ -30,7 +37,11 @@
 ;;
 
 (defn mk-cli-option
+  "Builds a tools.cli option out of our own format.
+
+  "
   [{:keys [option short as type default multiple] :as cm-option}]
+
   (let [preset (get PRESETS/known-presets type :unknown)
         positional-opts [(if (string? short)
                            (str "-" short)
@@ -60,6 +71,9 @@
 
 
 (defn get-subcommand
+  "Given args and the canonical name of a subcommand,
+  returns the map describing it.
+  "
   [climatic-args subcmd]
   (let [subcommands (:commands climatic-args)]
     (first (filter #(= (:command %) subcmd) subcommands))))
@@ -117,10 +131,13 @@
 
 
 (defn canonicalize-subcommand
+  "Returns the 'canonical' name of a subcommand,
+  i.e. the one that appears in :command, even
+  if we pass an alias or short version."
   [commands subcmd]
   (get (all-subcommands-aliases commands) subcmd))
 
-(s/fdef canonicalize-subcommands
+(s/fdef canonicalize-subcommand
         :args (s/cat :args ::S/climatic-cfg :sub string?)
         :ret string?)
 
@@ -129,6 +146,12 @@
 ;; Out of a cli-matic arg list,
 ;; generates a set of commands for tools.cli
 (defn rewrite-opts
+  "
+  Out of a cli-matic arg list, generates a set of
+  options for tools.cli.
+  It also adds in the -? and --help options
+  to trigger display of helpness.
+  "
   [climatic-args subcmd]
   (let [opts (if (nil? subcmd)
                (:global-opts climatic-args)
@@ -145,28 +168,40 @@
         :ret some?)
 
 
-;
-; Generate pages
-;
-;
+;; ------------------------------------------------
+;; Stuff to generate help pages
+;; ------------------------------------------------
 
-(defn asString [s]
+(defn asString
+  "Turns a collection of strings into one string,
+  or the string itself."
+  [s]
   (if (string? s)
     s
     (clojure.string/join "\n" s)
     ))
 
 
-(defn indent-string [s]
+(defn indent-string
+  "Indents a single string."
+  [s]
   (str " " s))
 
-(defn indent [s]
+(defn indent
+  "Indents a single string, or each string
+  in a collection of strings."
+  [s]
   (if (string? s)
     (indent-string s)
     (map indent-string s)
     ))
 
-(defn generate-section [title lines]
+(defn generate-section
+  "Generates a section (as a collection of strings,
+  possibly nested, but we'll flatten it out).
+  If a section has no content, we return [].
+  "
+  [title lines]
   (if (empty? lines)
     []
 
@@ -177,6 +212,9 @@
 
 
 (defn generate-sections
+  "Generates all sections.
+  All those positional parameters are not that nice.
+  "
   [name version usage commands opts-title opts]
 
   (vec
@@ -189,6 +227,10 @@
 
 
 (defn get-options-summary
+  "To get the sumamry of options, we pass options to
+  tools.cli parse-opts and an empty set of arguments.
+  Parsing will fail but we get the :summary.
+  We then split it into a collection of lines."
   [cfg subcmd]
   (let [cli-cfg (rewrite-opts cfg subcmd)
         options-str (:summary
@@ -228,6 +270,8 @@
 
 
 (defn generate-global-help
+  "This is where we generate global help, so
+  global attributes and subcommands."
 
   [cfg]
 
@@ -253,6 +297,7 @@
 
 
 (defn generate-subcmd-help
+  "This is where we generate help for a specific subcommand."
   [cfg cmd]
 
   (let [glname (get-in cfg [:app :command])
@@ -280,12 +325,12 @@
 
 
 
-;
-; We parse our command line here
-;
-;
+;; -----------------------------------------------------
+;; Here we parse our command line.
+;; -----------------------------------------------------
 
 (defn mkError
+  "Builds an error condition."
   [config subcommand error text]
   {:subcommand     subcommand
    :subcommand-def (if (or (= error :ERR-UNKNOWN-SUBCMD)
@@ -300,8 +345,19 @@
    :error-text     (asString text)
    })
 
+;; TODO s/fdef
+
 
 (defn parse-cmds
+  "This is where magic happens.
+  We first parse global options, then stop,
+  get the subcommand, parse specific options for the subcommand
+  and if all went well we prepare run it.
+
+  This fuction returns a structure ::S/lineParseResult
+  that containe information about what went wrong or the command
+  to run.
+  "
   [cmdline config]
 
   (let [cli-gl-options (rewrite-opts config nil)
@@ -317,8 +373,6 @@
 
       (some? (:_help_trigger gl-opts))
       (mkError config nil :HELP-GLOBAL nil)
-
-
 
       :else
       (let [subcommand (first gl-args)
@@ -373,6 +427,8 @@
 ;
 
 (defn ->RV
+  "This is a Return Value, i.e. what happens after the
+  parsing is done and possibly the subcommand was invoked."
   [return-code type stdout subcmd stderr]
   (let [fnStrVec (fn [s]
                    (cond
@@ -394,15 +450,19 @@
 
 
 ;
-; Invokes a subcommand.
 ;
-; The subcommand may:
-; - return an integer (to specify exit code)
-; - return nil
-; - throw a Throwable object
+;
 ;
 
 (defn invoke-subcmd
+  "Invokes a subcommand, and produces a Return Value.
+
+   The subcommand may:
+    - return an integer (to specify exit code)
+    - return nil
+    - throw a Throwable object
+
+  "
   [subcommand-def options]
 
   (try
@@ -441,7 +501,16 @@
                               (str "Option error: " (:error-text parsed-opts)))
       :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts)))))
 
+
+
+
+
 (defn run-cmd
+  "This is the actual function that is executed.
+  It wraps run-cmd* and then does the printing
+  of any errors, of help pages and  System.exit.
+
+  "
   [args setup]
   (let [{:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
