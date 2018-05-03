@@ -7,7 +7,7 @@
   "Sums A and B together, and prints it in base `base`"
   [{:keys [a1 a2 base]}]
   (println
-    (Integer/toString (+ a1 a2) base)))
+   (Integer/toString (+ a1 a2) base)))
 
 (defn subtract_numbers
   "Subtracts B from A, and prints it in base `base`"

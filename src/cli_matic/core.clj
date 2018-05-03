@@ -13,8 +13,6 @@
 ;; -----------------------------------------------
 
 
-
-
 (defn assoc-new-multivalue
   "Associates a new multiple value to the
   current parameter map.
@@ -67,9 +65,6 @@
         :args (s/cat :opts ::S/climatic-option)
         :ret some?)
 
-
-
-
 (defn get-subcommand
   "Given args and the canonical name of a subcommand,
   returns the map describing it.
@@ -81,7 +76,6 @@
 (s/fdef get-subcommand
         :args (s/cat :args ::S/climatic-cfg :subcmd string?)
         :ret ::S/a-command)
-
 
 (defn all-subcommands-aliases
   "Maps all subcommands and subcommand aliases
@@ -97,26 +91,24 @@
   (let [subcommands (:commands climatic-args)]
 
     (dissoc
-      (merge
+     (merge
         ;; a map of 'cmd' -> 'cmd'
-        (into {}
-              (map
-                (fn [{:keys [command short]}]
-                  [command command])
-                subcommands))
+      (into {}
+            (map
+             (fn [{:keys [command short]}]
+               [command command])
+             subcommands))
 
-        (into {}
-              (map
-                (fn [{:keys [command short]}]
-                  [short command])
-                subcommands)))
-      nil)))
+      (into {}
+            (map
+             (fn [{:keys [command short]}]
+               [short command])
+             subcommands)))
+     nil)))
 
 (s/fdef all-subcommands-aliases
         :args (s/cat :args ::S/climatic-cfg)
         :ret (s/map-of string? string?))
-
-
 
 (defn all-subcommands
   "Returns all subcommands, as strings.
@@ -129,7 +121,6 @@
         :args (s/cat :args ::S/climatic-cfg)
         :ret set?)
 
-
 (defn canonicalize-subcommand
   "Returns the 'canonical' name of a subcommand,
   i.e. the one that appears in :command, even
@@ -140,8 +131,6 @@
 (s/fdef canonicalize-subcommand
         :args (s/cat :args ::S/climatic-cfg :sub string?)
         :ret string?)
-
-
 
 ;; Out of a cli-matic arg list,
 ;; generates a set of commands for tools.cli
@@ -158,15 +147,13 @@
                (:opts (get-subcommand climatic-args subcmd)))]
     (conj
      (mapv mk-cli-option opts)
-     ["-?" "--help" "" :id :_help_trigger]
-     )))
+     ["-?" "--help" "" :id :_help_trigger])))
 
 (s/fdef rewrite-opts
         :args (s/cat :args some?
                      :mode (s/or :common nil?
                                  :a-subcommand string?))
         :ret some?)
-
 
 ;; ------------------------------------------------
 ;; Stuff to generate help pages
@@ -178,9 +165,7 @@
   [s]
   (if (string? s)
     s
-    (clojure.string/join "\n" s)
-    ))
-
+    (clojure.string/join "\n" s)))
 
 (defn indent-string
   "Indents a single string."
@@ -193,8 +178,7 @@
   [s]
   (if (string? s)
     (indent-string s)
-    (map indent-string s)
-    ))
+    (map indent-string s)))
 
 (defn generate-section
   "Generates a section (as a collection of strings,
@@ -207,9 +191,7 @@
 
     [(str title ":")
      (indent lines)
-     ""]
-    ))
-
+     ""]))
 
 (defn generate-sections
   "Generates all sections.
@@ -218,13 +200,12 @@
   [name version usage commands opts-title opts]
 
   (vec
-    (flatten
-         [(generate-section "NAME" name)
-          (generate-section "USAGE" usage)
-          (generate-section "VERSION" version)
-          (generate-section "COMMANDS" commands)
-          (generate-section opts-title opts)])))
-
+   (flatten
+    [(generate-section "NAME" name)
+     (generate-section "USAGE" usage)
+     (generate-section "VERSION" version)
+     (generate-section "COMMANDS" commands)
+     (generate-section opts-title opts)])))
 
 (defn get-options-summary
   "To get the sumamry of options, we pass options to
@@ -234,9 +215,8 @@
   [cfg subcmd]
   (let [cli-cfg (rewrite-opts cfg subcmd)
         options-str (:summary
-                       (parse-opts [] cli-cfg))]
+                     (parse-opts [] cli-cfg))]
     (clojure.string/split-lines options-str)))
-
 
 (defn generate-a-command
   "Maybe we should use a way to format commands
@@ -253,7 +233,6 @@
        "   "
        description))
 
-
 (defn generate-global-command-list
   "Creates a list of commands and descriptions.
    Commands are of kind ::S/commands
@@ -262,12 +241,9 @@
   (map generate-a-command commands))
 
 (s/fdef
-  generate-global-command-list
-  :args (s/cat :commands ::S/commands)
-  :ret  (s/coll-of string?))
-
-
-
+ generate-global-command-list
+ :args (s/cat :commands ::S/commands)
+ :ret  (s/coll-of string?))
 
 (defn generate-global-help
   "This is where we generate global help, so
@@ -280,28 +256,24 @@
         descr (get-in cfg [:app :description])]
 
     (generate-sections
-      (str name " - " descr)
-      version
-      (str name " [global-options] command [command options] [arguments...]")
-      (generate-global-command-list (:commands cfg))
-      "GLOBAL OPTIONS"
-      (get-options-summary cfg nil)
-      )))
+     (str name " - " descr)
+     version
+     (str name " [global-options] command [command options] [arguments...]")
+     (generate-global-command-list (:commands cfg))
+     "GLOBAL OPTIONS"
+     (get-options-summary cfg nil))))
 
 (s/fdef
-  generate-global-help
-  :args (s/cat :cfg ::S/climatic-cfg)
-  :ret (s/coll-of string?))
-
-
-
+ generate-global-help
+ :args (s/cat :cfg ::S/climatic-cfg)
+ :ret (s/coll-of string?))
 
 (defn generate-subcmd-help
   "This is where we generate help for a specific subcommand."
   [cfg cmd]
 
   (let [glname (get-in cfg [:app :command])
-        cmd-cfg (get-subcommand cfg cmd )
+        cmd-cfg (get-subcommand cfg cmd)
         name (:command cmd-cfg)
         shortname (:short cmd-cfg)
         name-short (if shortname
@@ -310,20 +282,17 @@
         descr (:description cmd-cfg)]
 
     (generate-sections
-      (str glname " " name " - " descr)
-      nil
-      (str glname " " name-short " [command options] [arguments...]")
-      nil
-      "OPTIONS"
-      (get-options-summary cfg cmd)
-      )))
+     (str glname " " name " - " descr)
+     nil
+     (str glname " " name-short " [command options] [arguments...]")
+     nil
+     "OPTIONS"
+     (get-options-summary cfg cmd))))
 
 (s/fdef
-  generate-subcmd-help
-  :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
-  :ret (s/coll-of string?))
-
-
+ generate-subcmd-help
+ :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
+ :ret (s/coll-of string?))
 
 ;; -----------------------------------------------------
 ;; Here we parse our command line.
@@ -336,14 +305,12 @@
    :subcommand-def (if (or (= error :ERR-UNKNOWN-SUBCMD)
                            (= error :ERR-NO-SUBCMD)
                            (= error :ERR-PARMS-GLOBAL)
-                           (= error :HELP-GLOBAL)
-                           )
+                           (= error :HELP-GLOBAL))
                      nil
                      (get-subcommand config subcommand))
    :commandline    {}
    :parse-errors   error
-   :error-text     (asString text)
-   })
+   :error-text     (asString text)})
 
 ;; TODO s/fdef
 
@@ -396,31 +363,23 @@
             (cond
 
               (some? (:_help_trigger cmd-opts))
-              (mkError config canonical-subcommand :HELP-SUBCMD nil)
-
-
-              (nil? cmd-errs)
+              (mkError config canonical-subcommand :HELP-SUBCMD nil) (nil? cmd-errs)
               {:subcommand     canonical-subcommand
                :subcommand-def (get-subcommand config canonical-subcommand)
                :commandline     (into
-                                  (into gl-opts cmd-opts)
-                                  {:_arguments cmd-args})
+                                 (into gl-opts cmd-opts)
+                                 {:_arguments cmd-args})
                :parse-errors    :NONE
-               :error-text     ""
-               }
+               :error-text     ""}
 
               :else
-              (mkError config canonical-subcommand :ERR-PARMS-SUBCMD cmd-errs)
-              )))))))
-
+              (mkError config canonical-subcommand :ERR-PARMS-SUBCMD cmd-errs))))))))
 
 (s/fdef
-  parse-cmds
-  :args (s/cat :args (s/coll-of string?)
-               :opts ::S/climatic-cfg)
-  :ret ::S/lineParseResult
-  )
-
+ parse-cmds
+ :args (s/cat :args (s/coll-of string?)
+              :opts ::S/climatic-cfg)
+ :ret ::S/lineParseResult)
 
 ;
 ; builds a return value
@@ -434,20 +393,18 @@
                    (cond
                      (nil? s) []
                      (string? s) [s]
-                     :else  s ))]
+                     :else  s))]
 
-  {:retval return-code
-   :status type
-   :help   stdout
-   :subcmd subcmd
-   :stderr (fnStrVec stderr)}))
+    {:retval return-code
+     :status type
+     :help   stdout
+     :subcmd subcmd
+     :stderr (fnStrVec stderr)}))
 
 (s/fdef
-  ->RV
-  :args (s/cat :rv int? :status some? :help any? :subcmd any? :stderr any?)
-  :rets ::S/RV)
-
-
+ ->RV
+ :args (s/cat :rv int? :status some? :help any? :subcmd any? :stderr any?)
+ :rets ::S/RV)
 
 ;
 ;
@@ -471,8 +428,7 @@
         (nil? rv)    (->RV 0 :OK nil nil nil)
         (zero? rv)   (->RV 0 :OK nil nil nil)
         (int? rv)    (->RV rv :ERR nil nil nil)
-        :else        (->RV -1 :ERR nil nil nil)
-        ))
+        :else        (->RV -1 :ERR nil nil nil)))
 
     (catch Throwable t
       (->RV -1 :EXCEPTION nil nil
@@ -501,10 +457,6 @@
                               (str "Option error: " (:error-text parsed-opts)))
       :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts)))))
 
-
-
-
-
 (defn run-cmd
   "This is the actual function that is executed.
   It wraps run-cmd* and then does the printing
@@ -518,7 +470,7 @@
       (println
        (asString
         (flatten
-         [ "** ERROR: **" stderr "" ""]))))
+         ["** ERROR: **" stderr "" ""]))))
     (cond
       (= :HELP-GLOBAL help)
       (println (asString (generate-global-help setup)))

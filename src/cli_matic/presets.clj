@@ -25,4 +25,4 @@
     :parse-fn    asDate
     ;;:validate    [#(true)
     ;;              "Must be a date in format YYYY-MM-DD"]
-    }})
+}})

@@ -3,10 +3,8 @@
             [cli-matic.core :refer :all]
             [cli-matic.presets :as PRESETS :refer [parseInt]]))
 
-
 (defn cmd_foo [& opts])
 (defn cmd_bar [& opts])
-
 
 (def cli-options
   [;; First three strings describe a short-option, long-option with optional
@@ -35,9 +33,6 @@
    ["-d" "--[no-]daemon" "Daemonize the process" :default true]
    ["-h" "--help"]])
 
-
-
-
 (def SIMPLE-SUBCOMMAND-CFG
   {:app         {:command     "dummy"
                  :description "I am some command"
@@ -56,37 +51,13 @@
                                 {:option "ff" :as "F" :type :int}]
                   :runs        cmd_bar}]})
 
-
-
-
 (deftest simple-subcommand
   (testing "A simple subcommand"
 
     ;; Normmal subcomamnd
     (is (= (parse-cmds
-             [ "--bb" "1" "foo" "--cc" "2" "--dd" "3"]
-             SIMPLE-SUBCOMMAND-CFG)
-
-           {:commandline {:bb 1 :cc 2 :dd 3 :_arguments []}
-           :subcommand "foo"
-           :parse-errors :NONE
-            :error-text ""
-           :subcommand-def {:command "foo"
-                            :short "f"
-                            :description "I am function foo"
-                            :opts  [{:as     "C"
-                                     :option "cc"
-                                     :type   :int}
-                                    {:as     "D"
-                                     :option "dd"
-                                     :type   :int}]
-                            :runs  cmd_foo}}
-           ))
-
-    ;; short subcommand
-    (is (= (parse-cmds
-             [ "--bb" "1" "f" "--cc" "2" "--dd" "3"]
-             SIMPLE-SUBCOMMAND-CFG)
+            ["--bb" "1" "foo" "--cc" "2" "--dd" "3"]
+            SIMPLE-SUBCOMMAND-CFG)
 
            {:commandline {:bb 1 :cc 2 :dd 3 :_arguments []}
             :subcommand "foo"
@@ -101,22 +72,38 @@
                                      {:as     "D"
                                       :option "dd"
                                       :type   :int}]
-                             :runs  cmd_foo}}
-           ))
+                             :runs  cmd_foo}}))
+
+    ;; short subcommand
+    (is (= (parse-cmds
+            ["--bb" "1" "f" "--cc" "2" "--dd" "3"]
+            SIMPLE-SUBCOMMAND-CFG)
+
+           {:commandline {:bb 1 :cc 2 :dd 3 :_arguments []}
+            :subcommand "foo"
+            :parse-errors :NONE
+            :error-text ""
+            :subcommand-def {:command "foo"
+                             :short "f"
+                             :description "I am function foo"
+                             :opts  [{:as     "C"
+                                      :option "cc"
+                                      :type   :int}
+                                     {:as     "D"
+                                      :option "dd"
+                                      :type   :int}]
+                             :runs  cmd_foo}}))
 
     ;; unknown subcommand
     (is (= (parse-cmds
-             [ "--bb" "1" "unknown" "--cc" "2" "--dd" "3"]
-             SIMPLE-SUBCOMMAND-CFG)
+            ["--bb" "1" "unknown" "--cc" "2" "--dd" "3"]
+            SIMPLE-SUBCOMMAND-CFG)
 
            {:commandline    {}
             :error-text     ""
             :parse-errors   :ERR-UNKNOWN-SUBCMD
             :subcommand     "unknown"
-            :subcommand-def nil}
-           ))
-    ))
-
+            :subcommand-def nil}))))
 
 (deftest subcommands-and-aliases
   (testing "Subcommands and aliases"
@@ -139,14 +126,10 @@
     (is (= (canonicalize-subcommand SIMPLE-SUBCOMMAND-CFG "bar")
            "bar"))))
 
-
-
-
-
 (deftest make-option
   (testing "Build a tools.cli option"
     (are [i o]
-      (= o (mk-cli-option i))
+         (= o (mk-cli-option i))
 
       ; simplest example
       {:option "extra" :short "x" :as "Port number" :type :int}
@@ -161,16 +144,12 @@
       ;  with a default
       {:option "extra"  :as "Port number" :type :int :default 13}
       [nil "--extra N" "Port number"
-       :parse-fn parseInt :default 13]
-
-      )))
-
-
+       :parse-fn parseInt :default 13])))
 
 (deftest run-examples
   (testing "Some real-life behavior for our SIMPLE case"
     (are [i o]
-      (= (run-cmd* SIMPLE-SUBCOMMAND-CFG i) o)
+         (= (run-cmd* SIMPLE-SUBCOMMAND-CFG i) o)
 
       ; no parameters - displays cmd help
       []
@@ -197,9 +176,7 @@
       (->RV 0 :OK :HELP-SUBCMD "bar" nil)
 
       ["f"  "-?"]
-      (->RV 0 :OK :HELP-SUBCMD "foo" nil)
-
-      )))
+      (->RV 0 :OK :HELP-SUBCMD "foo" nil))))
 
 ; Problems
 ; --------
