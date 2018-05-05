@@ -35,7 +35,9 @@
 
 (s/def ::as ::existing-string)
 
-(s/def ::type #{:int :string :int-0 :yyyy-mm-dd})
+(s/def ::type #{:int :string :int-0
+                :float :float-0
+                :yyyy-mm-dd})
 
 (s/def ::default some?)
 

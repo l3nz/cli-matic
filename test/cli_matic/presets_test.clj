@@ -26,11 +26,107 @@
    :subcommand
    :subcommand-def))
 
-; :int
+(defn str-val
+  "Rewrites a value for float comparison to a string"
+  [o]
+  (let [v (get-in o [:commandline :val])
+        vs (str v)]
+    (assoc-in o [:commandline :val] vs)))
 
+; :int values
 
-; :int-0
+(deftest test-ints
 
+  (testing "int value"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :int}))
+            o)
+
+      ; integers
+      ["foo" "--val" "7"]
+      {:commandline  {:_arguments []
+                      :val        7}
+       :error-text   ""
+       :parse-errors :NONE}))
+
+  ;
+  (testing "int-0 value"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :int-0}))
+            o)
+
+      ; integers
+      ["foo" "--val" "7"]
+      {:commandline  {:_arguments []
+                      :val        7}
+       :error-text   ""
+       :parse-errors :NONE}
+
+      ; integers
+      ["foo"]
+      {:commandline  {:_arguments []
+                      :val        0}
+       :error-text   ""
+       :parse-errors :NONE})))
+
+;; float values (float and float-0)
+;; to compare them, we rewrite them to strings
+(deftest test-float
+
+  (testing "float value"
+    (are [i o]
+         (= (str-val (parse-cmds-simpler
+                      i
+                      (mkDummyCfg {:option "val" :as "x" :type :float})))
+
+            (str-val o))
+
+    ; integers as floats
+      ["foo" "--val" "7"]
+      {:commandline  {:_arguments []
+                      :val        7.0}
+       :error-text   ""
+       :parse-errors :NONE}
+
+    ; floats as floats
+      ["foo" "--val" "3.14"]
+      {:commandline  {:_arguments []
+                      :val        3.14}
+       :error-text   ""
+       :parse-errors :NONE}))
+
+  (testing "float0 value"
+    (are [i o]
+         (= (str-val (parse-cmds-simpler
+                      i
+                      (mkDummyCfg {:option "val" :as "x" :type :float-0})))
+
+            (str-val o))
+
+    ; integers as floats
+      ["foo" "--val" "7"]
+      {:commandline  {:_arguments []
+                      :val        7.0}
+       :error-text   ""
+       :parse-errors :NONE}
+
+    ; floats as floats
+      ["foo" "--val" "3.14"]
+      {:commandline  {:_arguments []
+                      :val        3.14}
+       :error-text   ""
+       :parse-errors :NONE}
+
+    ; missing as zero
+      ["foo"]
+      {:commandline  {:_arguments []
+                      :val        0.0}
+       :error-text   ""
+       :parse-errors :NONE})))
 
 ; :string
 (deftest test-string
@@ -38,53 +134,64 @@
     (are [i o]
          (= (parse-cmds-simpler
              i
-             (mkDummyCfg {:option "val" :as "x" :type :string})) o) ["foo" "--val" "abcd"]
-         {:commandline  {:_arguments []
-                         :val        "abcd"}
-          :error-text   ""
-          :parse-errors :NONE}))
+             (mkDummyCfg {:option "val" :as "x" :type :string})) o)
+
+         ;
+      ["foo" "--val" "abcd"]
+      {:commandline  {:_arguments []
+                      :val        "abcd"}
+       :error-text   ""
+       :parse-errors :NONE}))
 
   (testing
    (are [i o]
         (= (parse-cmds-simpler
             i
-            (mkDummyCfg {:option "val" :short "v" :as "x" :type :string})) o) ["foo" "-v" "abcd" "aaarg"]
-        {:commandline  {:_arguments ["aaarg"]
-                        :val        "abcd"}
-         :error-text   ""
-         :parse-errors :NONE}))
+            (mkDummyCfg {:option "val" :short "v" :as "x" :type :string})) o)
+
+        ;
+     ["foo" "-v" "abcd" "aaarg"]
+     {:commandline  {:_arguments ["aaarg"]
+                     :val        "abcd"}
+      :error-text   ""
+      :parse-errors :NONE}))
 
   (testing "multiple strings"
     (are [i o]
          (= (parse-cmds-simpler
              i
-             (mkDummyCfg {:option "val" :as "x" :type :string :multiple true})) o) ["foo" "--val" "abcd"]
-         {:commandline  {:_arguments []
-                         :val        ["abcd"]}
-          :error-text   ""
-          :parse-errors :NONE}
+             (mkDummyCfg {:option "val" :as "x" :type :string :multiple true})) o)
+         ;
+      ["foo" "--val" "abcd"]
+      {:commandline  {:_arguments []
+                      :val        ["abcd"]}
+       :error-text   ""
+       :parse-errors :NONE}
 
-         ["foo" "--val" "abcd" "--val" "defg"]
-         {:commandline  {:_arguments []
-                         :val        ["abcd" "defg"]}
-          :error-text   ""
-          :parse-errors :NONE}))
+      ["foo" "--val" "abcd" "--val" "defg"]
+      {:commandline  {:_arguments []
+                      :val        ["abcd" "defg"]}
+       :error-text   ""
+       :parse-errors :NONE}))
 
   (testing "multiple strings but no multiple option"
     (are [i o]
          (= (parse-cmds-simpler
              i
-             (mkDummyCfg {:option "val" :as "x" :type :string :multiple false})) o) ["foo" "--val" "abcd"]
-         {:commandline  {:_arguments []
-                         :val        "abcd"}
-          :error-text   ""
-          :parse-errors :NONE}
+             (mkDummyCfg {:option "val" :as "x" :type :string :multiple false})) o)
 
-         ["foo" "--val" "abcd" "--val" "defg"]
-         {:commandline  {:_arguments []
-                         :val        "defg"}
-          :error-text   ""
-          :parse-errors :NONE})))
+         ;
+      ["foo" "--val" "abcd"]
+      {:commandline  {:_arguments []
+                      :val        "abcd"}
+       :error-text   ""
+       :parse-errors :NONE}
+
+      ["foo" "--val" "abcd" "--val" "defg"]
+      {:commandline  {:_arguments []
+                      :val        "defg"}
+       :error-text   ""
+       :parse-errors :NONE})))
 
 ; :yyyy-mm-dd
 

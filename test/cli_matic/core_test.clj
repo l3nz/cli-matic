@@ -10,7 +10,6 @@
   {:myopts opts
    :somedata "hiyo"})
 
-
 (def cli-options
   [;; First three strings describe a short-option, long-option with optional
    ;; example argument description, and a description. All three are optional
@@ -50,13 +49,14 @@
                                 {:option "dd" :as "D" :type :int}]
                   :runs        cmd_foo}
 
+                 ; another one
                  {:command     "bar"
                   :description "I am function bar"
                   :opts        [{:option "ee" :as "E" :type :int}
                                 {:option "ff" :as "F" :type :int}]
                   :runs        cmd_bar}
 
-
+                 ; this one to check return structs
                  {:command     "rets"
                   :description "I return a structure"
                   :opts        []
