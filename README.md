@@ -116,7 +116,9 @@ The following pre-sets (`:type`) are available:
 
 For all options, you can then add:
 
-* `:default` the default value, as expected after conversion
+* `:default` the default value, as expected after conversion. If no default, the value will be 
+  passed only if present. If you set `:default :present` this means that Cli-matic will abort
+  if that option is not present (and it appears with a trailing asterisk in the help)
 * `:multiple` if true, the values for all options with the same name are stored in an array
 
 [to be done]

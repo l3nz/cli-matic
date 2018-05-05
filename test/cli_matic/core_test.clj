@@ -157,7 +157,15 @@
       ;  with a default
       {:option "extra"  :as "Port number" :type :int :default 13}
       [nil "--extra N" "Port number"
-       :parse-fn parseInt :default 13])))
+       :parse-fn parseInt :default 13]
+
+     ;  :present means there is no default
+     {:option "extra"  :as "Port number" :type :int :default :present}
+     [nil "--extra N*" "Port number"
+      :parse-fn parseInt]
+
+
+         )))
 
 (deftest run-examples
   (testing "Some real-life behavior for our SIMPLE case"
@@ -193,6 +201,60 @@
 
       ["rets"]
       (->RV 0 :OK nil nil nil))))
+
+
+(def MANDATORY-SUBCOMMAND-CFG
+  {:app         {:command     "dummy"
+                 :description "I am some command"
+                 :version     "0.1.2"}
+   :global-opts [{:option "aa" :as "A" :type :int :default :present}
+                 {:option "bb" :as "B" :type :int}]
+   :commands    [{:command     "foo" :short       "f"
+                  :description "I am function foo"
+                  :opts        [{:option "cc" :as "C" :type :int :default :present}
+                                {:option "dd" :as "D" :type :int}]
+                  :runs        cmd_foo}]})
+
+
+
+(deftest check-mandatory-options
+  (testing "Some real-life behavior with mandatory options"
+    (are [i o]
+      (= (run-cmd* MANDATORY-SUBCOMMAND-CFG i) o)
+
+      ; no parameters - displays cmd help
+      []
+      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
+
+      ["x"]
+      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
+
+      ["--lippa" "foo"]
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Unknown option: \"--lippa\"")
+
+      ; help globale
+      ["-?"]
+      (->RV 0 :OK :HELP-GLOBAL nil nil)
+
+      ; help sub-commands (incl short version)
+      ["foo"  "-?"]
+      (->RV 0 :OK :HELP-SUBCMD "foo" nil)
+
+      ; error no global cmd
+      [ "foo"  "--cc" "1"]
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa")
+
+
+      ; error no sub cmd
+      [ "--aa" "1" "foo"  "--dd" "1"]
+      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" "Option error: Missing option: cc")
+
+
+      ; works
+      [ "--aa" "1" "foo"  "--cc" "1"]
+      (->RV 0 :OK nil nil nil))))
+
+
 
 ; Problems
 ; --------

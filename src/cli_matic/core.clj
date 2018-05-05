@@ -41,18 +41,21 @@
   [{:keys [option short as type default multiple] :as cm-option}]
 
   (let [preset (get PRESETS/known-presets type :unknown)
+        placeholder (str (:placeholder preset)
+                         (if (= :present default) "*" ""))
         positional-opts [(if (string? short)
                            (str "-" short)
                            nil)
-                         (str "--" option " " (:placeholder preset))
+                         (str "--" option " " placeholder)
                          as]
         ;; step 1 - remove :placeholder
         opts-1 (dissoc preset :placeholder)
 
-        ;; step 2 - add default if present
-        opts-2 (if (some? default)
+        ;; step 2 - add default if present and is not ":present"
+        opts-2 (if (and (some? default) (not= :present default))
                  (assoc opts-1 :default default)
                  opts-1)
+
         ;; step 3 - if multivalue, add correct assoc-fns
         opts-3 (if multiple
                  (assoc opts-2 :assoc-fn assoc-new-multivalue)
@@ -82,7 +85,7 @@
   to their canonical name.
   E.g. {'add': 'add', 'a': 'add'}.
 
-  We basicaly add them all, then remove
+  We basically add them all, then remove
   nil keys.
 
   "
@@ -132,6 +135,17 @@
         :args (s/cat :args ::S/climatic-cfg :sub string?)
         :ret string?)
 
+
+(defn get-options-for
+  "Gets specific :options for a subcommand or,
+  if nil, for global."
+  [climatic-args subcmd]
+  (if (nil? subcmd)
+    (:global-opts climatic-args)
+    (:opts (get-subcommand climatic-args subcmd))))
+
+
+
 ;; Out of a cli-matic arg list,
 ;; generates a set of commands for tools.cli
 (defn rewrite-opts
@@ -142,12 +156,9 @@
   to trigger display of helpness.
   "
   [climatic-args subcmd]
-  (let [opts (if (nil? subcmd)
-               (:global-opts climatic-args)
-               (:opts (get-subcommand climatic-args subcmd)))]
     (conj
-     (mapv mk-cli-option opts)
-     ["-?" "--help" "" :id :_help_trigger])))
+     (mapv mk-cli-option (get-options-for climatic-args subcmd))
+     ["-?" "--help" "" :id :_help_trigger]))
 
 (s/fdef rewrite-opts
         :args (s/cat :args some?
@@ -314,6 +325,45 @@
 
 ;; TODO s/fdef
 
+(defn errors-for-missing-mandatory-args-
+  "Gets us a sequence of errors if mandatory options are missing"
+  [options parsedOpts]
+  (let [mandatory-options (filter
+                            #(= :present (:default %))
+                            options)
+        curr-options (:options parsedOpts)
+        _ (prn "Mandatory" mandatory-options "PO" parsedOpts)
+
+        ]
+
+    (reduce
+      (fn [a v]
+        (let [optname  (:option v)
+              val (get curr-options (keyword optname) :MISSING)]
+
+          (if (= :MISSING val)
+            ;
+            (conj a (str "Missing option: " optname))
+            ; it's there
+            a
+            )))
+
+      []
+      mandatory-options)))
+
+(defn errors-for-missing-mandatory-args
+  "Gets us a sequence of errors if mandatory options are missing"
+  [options parsedOpts]
+  (let [x (errors-for-missing-mandatory-args- options parsedOpts)]
+    (prn "R:" x)
+    x
+    ))
+
+
+(s/fdef errors-for-missing-mandatory-args
+        :args (s/cat :options ::S/opts
+                     :parsed-opts map?)
+        :ret (s/coll-of string?))
 
 (defn parse-cmds
   "This is where magic happens.
@@ -328,16 +378,22 @@
   [cmdline config]
 
   (let [cli-gl-options (rewrite-opts config nil)
-        ;_ (prn "Options" cli-top-options)
+        _ (prn "Cmdline" cmdline)
         parsed-gl-opts (parse-opts cmdline cli-gl-options :in-order true)
+        missing-gl-opts (errors-for-missing-mandatory-args
+                          (get-options-for config nil)
+                          parsed-gl-opts)
+
         ;_ (prn "Common cmdline" parsed-common-cmdline)
 
         {gl-errs :errors gl-opts :options gl-args :arguments} parsed-gl-opts]
 
     (cond
+      ; any parse errors?
       (some? gl-errs)
       (mkError config nil :ERR-PARMS-GLOBAL gl-errs)
 
+      ; did we ask for help?
       (some? (:_help_trigger gl-opts))
       (mkError config nil :HELP-GLOBAL nil)
 
@@ -357,13 +413,30 @@
                 cli-cmd-options (rewrite-opts config canonical-subcommand)
                 ;_ (prn "O" cli-cmd-options)
                 parsed-cmd-opts (parse-opts subcommand-parms cli-cmd-options)
+                missing-cmd-opts (errors-for-missing-mandatory-args
+                                  (get-options-for config canonical-subcommand)
+                                  parsed-cmd-opts)
                 ;_ (prn "Subcmd cmdline" parsed-cmd-opts)
+
+                _ (prn "G" missing-gl-opts)
+                _ (prn "C" missing-cmd-opts)
                 {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts]
 
             (cond
-
+              ; asking for help?
               (some? (:_help_trigger cmd-opts))
-              (mkError config canonical-subcommand :HELP-SUBCMD nil) (nil? cmd-errs)
+              (mkError config canonical-subcommand :HELP-SUBCMD nil)
+
+              ; any missing required global parm?
+              (pos? (count missing-gl-opts))
+              (mkError config nil :ERR-PARMS-GLOBAL missing-gl-opts)
+
+              ; missing required parms?
+              (pos? (count missing-cmd-opts))
+              (mkError config canonical-subcommand :ERR-PARMS-SUBCMD missing-cmd-opts)
+
+              ; no errors?
+              (nil? cmd-errs)
               {:subcommand     canonical-subcommand
                :subcommand-def (get-subcommand config canonical-subcommand)
                :commandline     (into
@@ -372,6 +445,8 @@
                :parse-errors    :NONE
                :error-text     ""}
 
+
+              ; having errors....
               :else
               (mkError config canonical-subcommand :ERR-PARMS-SUBCMD cmd-errs))))))))
 
