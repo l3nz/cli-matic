@@ -160,12 +160,9 @@
        :parse-fn parseInt :default 13]
 
      ;  :present means there is no default
-     {:option "extra"  :as "Port number" :type :int :default :present}
-     [nil "--extra N*" "Port number"
-      :parse-fn parseInt]
-
-
-         )))
+      {:option "extra"  :as "Port number" :type :int :default :present}
+      [nil "--extra N*" "Port number"
+       :parse-fn parseInt])))
 
 (deftest run-examples
   (testing "Some real-life behavior for our SIMPLE case"
@@ -202,7 +199,6 @@
       ["rets"]
       (->RV 0 :OK nil nil nil))))
 
-
 (def MANDATORY-SUBCOMMAND-CFG
   {:app         {:command     "dummy"
                  :description "I am some command"
@@ -215,12 +211,10 @@
                                 {:option "dd" :as "D" :type :int}]
                   :runs        cmd_foo}]})
 
-
-
 (deftest check-mandatory-options
   (testing "Some real-life behavior with mandatory options"
     (are [i o]
-      (= (run-cmd* MANDATORY-SUBCOMMAND-CFG i) o)
+         (= (run-cmd* MANDATORY-SUBCOMMAND-CFG i) o)
 
       ; no parameters - displays cmd help
       []
@@ -241,20 +235,12 @@
       (->RV 0 :OK :HELP-SUBCMD "foo" nil)
 
       ; error no global cmd
-      [ "foo"  "--cc" "1"]
-      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa")
-
-
-      ; error no sub cmd
-      [ "--aa" "1" "foo"  "--dd" "1"]
-      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" "Option error: Missing option: cc")
-
-
-      ; works
-      [ "--aa" "1" "foo"  "--cc" "1"]
+      ["foo"  "--cc" "1"]
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa"); error no sub cmd
+      ["--aa" "1" "foo"  "--dd" "1"]
+      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" "Option error: Missing option: cc"); works
+      ["--aa" "1" "foo"  "--cc" "1"]
       (->RV 0 :OK nil nil nil))))
-
-
 
 ; Problems
 ; --------

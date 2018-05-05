@@ -135,7 +135,6 @@
         :args (s/cat :args ::S/climatic-cfg :sub string?)
         :ret string?)
 
-
 (defn get-options-for
   "Gets specific :options for a subcommand or,
   if nil, for global."
@@ -143,8 +142,6 @@
   (if (nil? subcmd)
     (:global-opts climatic-args)
     (:opts (get-subcommand climatic-args subcmd))))
-
-
 
 ;; Out of a cli-matic arg list,
 ;; generates a set of commands for tools.cli
@@ -156,9 +153,9 @@
   to trigger display of helpness.
   "
   [climatic-args subcmd]
-    (conj
-     (mapv mk-cli-option (get-options-for climatic-args subcmd))
-     ["-?" "--help" "" :id :_help_trigger]))
+  (conj
+   (mapv mk-cli-option (get-options-for climatic-args subcmd))
+   ["-?" "--help" "" :id :_help_trigger]))
 
 (s/fdef rewrite-opts
         :args (s/cat :args some?
@@ -325,40 +322,24 @@
 
 ;; TODO s/fdef
 
-(defn errors-for-missing-mandatory-args-
-  "Gets us a sequence of errors if mandatory options are missing"
-  [options parsedOpts]
-  (let [mandatory-options (filter
-                            #(= :present (:default %))
-                            options)
-        curr-options (:options parsedOpts)
-        _ (prn "Mandatory" mandatory-options "PO" parsedOpts)
-
-        ]
-
-    (reduce
-      (fn [a v]
-        (let [optname  (:option v)
-              val (get curr-options (keyword optname) :MISSING)]
-
-          (if (= :MISSING val)
-            ;
-            (conj a (str "Missing option: " optname))
-            ; it's there
-            a
-            )))
-
-      []
-      mandatory-options)))
-
 (defn errors-for-missing-mandatory-args
   "Gets us a sequence of errors if mandatory options are missing"
-  [options parsedOpts]
-  (let [x (errors-for-missing-mandatory-args- options parsedOpts)]
-    (prn "R:" x)
-    x
-    ))
+  [climatic-options parsed-opts]
+  (let [mandatory-options (filter
+                           #(= :present (:default %))
+                           climatic-options)
+        curr-options (:options parsed-opts)]
 
+    (reduce
+     (fn [a v]
+       (let [optname  (:option v)
+             val (get curr-options (keyword optname) :MISSING)]
+
+         (if (= :MISSING val)
+           (conj a (str "Missing option: " optname))
+           a)))
+     []
+     mandatory-options)))
 
 (s/fdef errors-for-missing-mandatory-args
         :args (s/cat :options ::S/opts
@@ -378,14 +359,12 @@
   [cmdline config]
 
   (let [cli-gl-options (rewrite-opts config nil)
-        _ (prn "Cmdline" cmdline)
+        ;_ (prn "Cmdline" cmdline)
         parsed-gl-opts (parse-opts cmdline cli-gl-options :in-order true)
         missing-gl-opts (errors-for-missing-mandatory-args
-                          (get-options-for config nil)
-                          parsed-gl-opts)
-
+                         (get-options-for config nil)
+                         parsed-gl-opts)
         ;_ (prn "Common cmdline" parsed-common-cmdline)
-
         {gl-errs :errors gl-opts :options gl-args :arguments} parsed-gl-opts]
 
     (cond
@@ -417,9 +396,8 @@
                                   (get-options-for config canonical-subcommand)
                                   parsed-cmd-opts)
                 ;_ (prn "Subcmd cmdline" parsed-cmd-opts)
-
-                _ (prn "G" missing-gl-opts)
-                _ (prn "C" missing-cmd-opts)
+                ;_ (prn "G" missing-gl-opts)
+                ;_ (prn "C" missing-cmd-opts)
                 {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts]
 
             (cond
@@ -443,10 +421,7 @@
                                  (into gl-opts cmd-opts)
                                  {:_arguments cmd-args})
                :parse-errors    :NONE
-               :error-text     ""}
-
-
-              ; having errors....
+               :error-text     ""}; having errors....
               :else
               (mkError config canonical-subcommand :ERR-PARMS-SUBCMD cmd-errs))))))))
 
@@ -502,8 +477,8 @@
       (cond
         (nil? rv)    (->RV 0 :OK nil nil nil)
         (int? rv)   (if (zero? rv)
-                          (->RV 0 :OK nil nil nil)
-                          (->RV rv :ERR nil nil nil))
+                      (->RV 0 :OK nil nil nil)
+                      (->RV rv :ERR nil nil nil))
 
         :else        (->RV 0 :OK nil nil nil)))
 
