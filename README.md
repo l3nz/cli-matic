@@ -18,15 +18,6 @@ Or the library can be easily referenced through Github:
 	   :sha "5252413d1cacd9d3db90019fdd059893167c73db"}}}
 
 
-### Transitive dependencies
-
-cli-matic currently depends on:
-
-* org.clojure/clojure 
-* org.clojure/spec.alpha 
-* org.clojure/tools.cli 
-* orchestra 
-
 ## Rationale
 
 Say you want to create a simple script, in Clojure, where you want
@@ -114,10 +105,12 @@ the correct help screen, etc., should ideally not be a concern.
 
 ### Current pre-sets
 
-The following pre-sets (":type") are available:
+The following pre-sets (`:type`) are available:
 
 * `:int` - an integer number
-* `:int-0` - an integre number, with defaults to zero
+* `:int-0` - an integer number, with defaults to zero
+* `:float` - a float number
+* `:float-0` - a float number, with defaults to zero
 * `:string` - a string
 * `:yyyy-mm-dd` - a Date object, expressed as "yyyy-mm-dd" in the local time zone
 
@@ -141,6 +134,17 @@ for the shell process.
 
 Errors and exceptions return an exit code of -1; while normal executions (including invocations 
 of help) return 0.
+
+
+
+### Transitive dependencies
+
+cli-matic currently depends on:
+
+* org.clojure/clojure 
+* org.clojure/spec.alpha 
+* org.clojure/tools.cli 
+* orchestra 
 
 
 ## License
