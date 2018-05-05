@@ -186,7 +186,7 @@
   [s]
   (if (string? s)
     (indent-string s)
-    (map indent-string s)))
+    (map indent-string (flatten s))))
 
 (defn generate-section
   "Generates a section (as a collection of strings,
@@ -226,6 +226,28 @@
                      (parse-opts [] cli-cfg))]
     (clojure.string/split-lines options-str)))
 
+(defn get-first-rest-description-rows
+  "get title and description of description rows"
+  [row-or-rows]
+  (cond
+    (string? row-or-rows)
+    [row-or-rows []]
+
+    (zero? (count row-or-rows))
+    ["?" []]
+
+    :else
+    [(first row-or-rows) (rest row-or-rows)]))
+
+(defn pad
+  "Pads s[, s1] to so many characters"
+  [s s1 len]
+  (subs (str s
+             (when s1
+               (str ", " s1))
+             "                   ")
+        0 len))
+
 (defn generate-a-command
   "Maybe we should use a way to format commands
 
@@ -234,12 +256,11 @@
 
   [{:keys [command short description]}]
 
-  (str "  "
-       command
-       (when short
-         (str ", " short))
-       "   "
-       description))
+  (let [[des0 _] (get-first-rest-description-rows description)]
+    (str "  "
+         (pad command short 20)
+         " "
+         des0)))
 
 (defn generate-global-command-list
   "Creates a list of commands and descriptions.
@@ -261,10 +282,11 @@
 
   (let [name (get-in cfg [:app :command])
         version (get-in cfg [:app :version])
-        descr (get-in cfg [:app :description])]
+        descr (get-in cfg [:app :description])
+        [desc0 descr-extra] (get-first-rest-description-rows descr)]
 
     (generate-sections
-     (str name " - " descr)
+     [(str name " - " desc0) descr-extra]
      version
      (str name " [global-options] command [command options] [arguments...]")
      (generate-global-command-list (:commands cfg))
@@ -287,10 +309,11 @@
         name-short (if shortname
                      (str "[" name "|" shortname "]")
                      name)
-        descr (:description cmd-cfg)]
+        descr (:description cmd-cfg)
+        [desc0 descr-extra] (get-first-rest-description-rows descr)]
 
     (generate-sections
-     (str glname " " name " - " descr)
+     [(str glname " " name " - " desc0) descr-extra]
      nil
      (str glname " " name-short " [command options] [arguments...]")
      nil

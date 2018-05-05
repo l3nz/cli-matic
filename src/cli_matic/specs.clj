@@ -46,7 +46,8 @@
           :opt-un [::short ::default]))
 
 ;; Climatic configuration
-(s/def ::description ::existing-string)
+(s/def ::description (s/or :a-string ::existing-string
+                           :coll-str (s/coll-of ::existing-string)))
 
 (s/def ::version ::existing-string)
 

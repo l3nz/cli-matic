@@ -1,6 +1,7 @@
 (ns cli-matic.toycalc
   (:require [cli-matic.core :refer [run-cmd]]))
 
+;; To run this, try:
 ;; lein run -m cli-matic.toycalc -- --base 12 add --a 1 --b 2
 
 (defn add_numbers
@@ -24,7 +25,9 @@
                   :type    :int
                   :default 10}]
    :commands    [{:command     "add" :short "a"
-                  :description "Adds two numbers together"
+                  :description ["Adds two numbers together"
+                                ""
+                                "Looks great, doesn't it?"]
                   :opts        [{:option "a1" :short "a" :as "First addendum" :type :int :default 0}
                                 {:option "a2" :short "b" :as "Second addendum" :type :int :default 0}]
                   :runs        add_numbers}
