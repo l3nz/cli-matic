@@ -426,9 +426,11 @@
     (let [rv ((:runs subcommand-def)  options)]
       (cond
         (nil? rv)    (->RV 0 :OK nil nil nil)
-        (zero? rv)   (->RV 0 :OK nil nil nil)
-        (int? rv)    (->RV rv :ERR nil nil nil)
-        :else        (->RV -1 :ERR nil nil nil)))
+        (int? rv)   (if (zero? rv)
+                          (->RV 0 :OK nil nil nil)
+                          (->RV rv :ERR nil nil nil))
+
+        :else        (->RV 0 :OK nil nil nil)))
 
     (catch Throwable t
       (->RV -1 :EXCEPTION nil nil

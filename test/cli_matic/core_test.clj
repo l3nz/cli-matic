@@ -6,6 +6,11 @@
 (defn cmd_foo [& opts])
 (defn cmd_bar [& opts])
 
+(defn cmd_returnstructure [opts]
+  {:myopts opts
+   :somedata "hiyo"})
+
+
 (def cli-options
   [;; First three strings describe a short-option, long-option with optional
    ;; example argument description, and a description. All three are optional
@@ -49,7 +54,13 @@
                   :description "I am function bar"
                   :opts        [{:option "ee" :as "E" :type :int}
                                 {:option "ff" :as "F" :type :int}]
-                  :runs        cmd_bar}]})
+                  :runs        cmd_bar}
+
+
+                 {:command     "rets"
+                  :description "I return a structure"
+                  :opts        []
+                  :runs        cmd_returnstructure}]})
 
 (deftest simple-subcommand
   (testing "A simple subcommand"
@@ -110,13 +121,15 @@
     (is (= (all-subcommands-aliases SIMPLE-SUBCOMMAND-CFG)
            {"bar" "bar"
             "f"   "foo"
-            "foo" "foo"})))
+            "foo" "foo"
+            "rets" "rets"})))
 
   (testing "All subcommands"
     (is (= (all-subcommands SIMPLE-SUBCOMMAND-CFG)
            #{"bar"
              "f"
-             "foo"})))
+             "foo"
+             "rets"})))
 
   (testing "Canonicalize-subcommand"
     (is (= (canonicalize-subcommand SIMPLE-SUBCOMMAND-CFG "foo")
@@ -176,7 +189,10 @@
       (->RV 0 :OK :HELP-SUBCMD "bar" nil)
 
       ["f"  "-?"]
-      (->RV 0 :OK :HELP-SUBCMD "foo" nil))))
+      (->RV 0 :OK :HELP-SUBCMD "foo" nil)
+
+      ["rets"]
+      (->RV 0 :OK nil nil nil))))
 
 ; Problems
 ; --------
