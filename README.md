@@ -20,7 +20,7 @@ Or the library can be easily referenced through Github:
 
 ## Rationale
 
-Say you want to create a simple script, in Clojure, where you want
+Say we want to create a short script, in Clojure, where we want
 to run a very simple calculator that either sums A to B or subtracts B from A:
 
 
@@ -31,7 +31,7 @@ to run a very simple calculator that either sums A to B or subtracts B from A:
 	$ clj -m calc --base 16 add -a 30 -b 2
 	20
 
-We would also want it to display its help:
+We also want it to display its help:
 
 	$clj -m calc -?
 	NAME:
@@ -67,9 +67,10 @@ And help for sub-commands:
 	   -?, --help
 
 But while we are coding this, we do not realy want to waste time writing any parsing logic.
-What we care about are functions "add-numbers" and "sub-numbers"; the rest sould just be declared externally.
+What we care about implementing are the functions "add-numbers" and "sub-numbers"; the rest 
+should just be declared externally and/or "just happen".
 
-From your point of view of an application programmer, you'd like to have a function:
+From the point of view of us programmers, we'd like to have a couple of functions like:
 
 	(defn add-number
 		"Sums A and B together, and prints it in base `base`"
