@@ -9,8 +9,7 @@ Clojure is not good for scripting?).
 The library is available on Clojars:
 
 [![Clojars Project](https://img.shields.io/clojars/v/cli-matic.svg)](https://clojars.org/cli-matic)
-
-Docs: [Cljdocs alpha](https://cljdoc.xyz/d/cli-matic/cli-matic/0.1.7/)
+[![Cljdocs alpha](https://img.shields.io/badge/cljdoc-1.0.0-blue.svg)](https://cljdoc.xyz/d/cli-matic/cli-matic/0.1.7/)
 
 
 Or the library can be easily referenced through Github:
