@@ -10,6 +10,9 @@ The library is available on Clojars:
 
 [![Clojars Project](https://img.shields.io/clojars/v/cli-matic.svg)](https://clojars.org/cli-matic)
 
+Docs: [Cljdocs alpha](https://cljdoc.xyz/d/cli-matic/cli-matic/0.1.7/)
+
+
 Or the library can be easily referenced through Github:
 
 	{:deps
