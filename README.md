@@ -1,7 +1,7 @@
-# cli-matic
+# CLI-matic
 
-Compact [sub]command line parsing library, for Clojure.
-
+Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
+Clojure is not good for scripting?).
 
 
 ## Using
