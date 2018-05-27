@@ -245,3 +245,34 @@
        :error-text     ""
        :parse-errors   :NONE})))
 
+; JSON
+
+(deftest test-json
+  (testing "JSON valore singolo"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :json})) o)
+
+      ; one file
+      ["foo" "--val" "{\"a\":1, \"b\":2}"]
+      {:commandline    {:_arguments []
+                        :val        {"a" 1
+                                     "b" 2}}
+       :error-text     ""
+       :parse-errors   :NONE}))
+
+  (testing "Slurping multiline JSON"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :jsonfile})) o)
+
+      ; one file
+      ["foo" "--val" "resources/json_simple.json"]
+      {:commandline    {:_arguments []
+                        :val        {"list"   [1 2 "hi"]
+                                     "intval" 100
+                                     "strval" "good"}}
+       :error-text     ""
+       :parse-errors   :NONE})))

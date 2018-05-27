@@ -39,6 +39,31 @@
   [filename]
   (str/split-lines (asSingleString filename)))
 
+;; ---------------
+;; Cheshire is an optional dependency, so we check for it at compile time.
+;; Taken from core.clj in https://github.com/dakrone/clj-http
+(def json-enabled?
+  (try
+    (require 'cheshire.core)
+    true
+    (catch Throwable _ false)))
+
+(defn ^:dynamic json-decode
+  "Resolve and apply cheshire's json decoding dynamically."
+  [& args]
+  {:pre [json-enabled?]}
+  (apply (ns-resolve (symbol "cheshire.core") (symbol "decode")) args))
+
+(defn asDecodedJsonValue
+  "Decodes the value as a JSON object."
+  [s]
+  (json-decode s))
+
+(defn asDecodedJsonFile
+  "Decodes the contents of a file as a JSON object."
+  [filename]
+  (json-decode (asSingleString filename)))
+
 ;; Remember to add these to
 ;; ::S/type
 (def known-presets
@@ -55,12 +80,19 @@
               :placeholder "N.N"
               :default     0.0}
 
-   :string {:placeholder "S"} :slurp  {:parse-fn    asSingleString
-                                       :placeholder "fn"}
+   :string {:placeholder "S"}
+
+   :slurp  {:parse-fn    asSingleString
+            :placeholder "f"}
    :slurplines {:parse-fn    asLinesString
-                :placeholder "fn"} :yyyy-mm-dd
-   {:placeholder "YYYY-MM-DD"
-    :parse-fn    asDate
+                :placeholder "f"}
+   :json       {:parse-fn asDecodedJsonValue
+                :placeholder "json"}
+   :jsonfile   {:parse-fn asDecodedJsonFile
+                :placeholder "f"}
+
+   ; dates
+   :yyyy-mm-dd {:placeholder "YYYY-MM-DD"     :parse-fn    asDate}
     ;;:validate    [#(true)
     ;;              "Must be a date in format YYYY-MM-DD"]
-}})
+})

@@ -1,4 +1,4 @@
-(defproject cli-matic "0.1.8"
+(defproject cli-matic "0.1.9"
   :description "Compact [sub]command line parsing library, for Clojure"
   :url "https://github.com/l3nz/cli-matic"
   :license {:name "Eclipse Public License, v2"
@@ -6,7 +6,8 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/spec.alpha "0.1.143"]
                  [org.clojure/tools.cli "0.3.7"]
-                 [orchestra "2017.11.12-1"]]
+                 [orchestra "2017.11.12-1"]
+                 [cheshire "5.8.0"]]
   :plugins [[lein-eftest "0.5.1"]
             [jonase/eastwood "0.2.5"]
             [lein-kibit "0.1.6"]

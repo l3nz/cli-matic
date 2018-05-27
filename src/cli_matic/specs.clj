@@ -38,7 +38,8 @@
 (s/def ::type #{:int :string :int-0
                 :float :float-0
                 :yyyy-mm-dd
-                :slurp :slurplines})
+                :slurp :slurplines
+                :json :jsonfile})
 
 (s/def ::default some?)
 
