@@ -454,6 +454,67 @@
               :opts ::S/climatic-cfg)
  :ret ::S/lineParseResult)
 
+
+
+(defn assert-unique-values
+  "Check that all values are unique.
+  name is the area of the configuration
+  vec-opts are the options to check
+  option is the keyword to check.
+  "
+  [name vec-opts option]
+
+  (let [optName (if (nil? name) "global" name)
+        allOptions (filter some? (map option vec-opts))
+        dupes (filterv (fn [[k v]]  (> v 1)) (frequencies allOptions))]
+    (cond
+      (not (empty? dupes))
+      (throw (IllegalAccessException.
+               (str "In option area: " optName " for options of type " option " some option names are not unique: " dupes ))))))
+
+(s/fdef
+  assert-unique-values
+  :args (s/cat :name (s/or :some-subcmd ::S/existing-string
+                           :global  nil?)
+               :vec-opts any? ;::S/commands
+               :option keyword?))
+
+
+
+;;
+;; Asserts sanity of initial configuration.
+;; If this goes wrong, throws an error.
+;;
+(defn assert-cfg-sanity
+  "Checks configuration and throws if anything wrong.
+
+  1. are :option values unique?
+  2. are :short values unique?
+  "
+  [currentCfg]
+
+  (let [all-subcommands (into [nil]
+                              (all-subcommands currentCfg))]
+
+    (mapv #(assert-unique-values %
+                                 (get-options-for currentCfg %)
+                                 :option)
+          all-subcommands)
+
+    (mapv #(assert-unique-values %
+                                 (get-options-for currentCfg %)
+                                 :short)
+          all-subcommands)
+
+    nil
+
+    ))
+
+
+(s/fdef assert-cfg-sanity
+        :args (s/cat :opts ::S/climatic-cfg))
+
+
 ;
 ; builds a return value
 ;

@@ -253,3 +253,89 @@
 ; and nothing else
 
 
+;; VALIDATION OF CONFIGURATION
+;;
+
+
+
+
+(deftest check-unique-options
+  (testing "Unique options"
+    (are [i o]
+      (= (try
+           (apply assert-unique-values i)
+           (catch Throwable e
+             :ERR))
+         o)
+
+      ; empty
+      ["a" [] :x]
+      nil
+
+      ; ok
+      ["pippo"
+      [{:option "a" :as "Parameter A" :type :int :default 0}
+       {:option "b" :as "Parameter B" :type :int :default 0}]
+      :option]
+      nil
+
+      ; dupe
+      ["pippo"
+       [{:option "a" :as "Parameter A" :type :int :default 0}
+        {:option "a" :as "Parameter B" :type :int :default 0}]
+       :option]
+      :ERR
+
+      )))
+
+
+(deftest check-cfg-format
+  (testing "Cfg format"
+    (are [i o]
+      (= (try
+           (assert-cfg-sanity i)
+           (catch Throwable e
+             :ERR))
+         o)
+
+      ; OK
+      {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
+
+       :global-opts [{:option  "base" :as      "T"  :type    :int :default 10}]
+
+       :commands    [{:command     "add"                      :description "Adds" :runs identity
+                      :opts        [{:option "a" :as "Addendum 1" :type :int}
+                                    {:option "b" :as "Addendum 2" :type :int :default 0}]}
+
+                     ]}
+      nil
+
+
+      ; double in global
+      {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
+
+       :global-opts [{:option  "base" :as      "T"  :type    :int :default 10}
+                     {:option  "base" :as      "X"  :type    :int :default 10}]
+
+       :commands    [{:command     "add"                      :description "Adds" :runs identity
+                      :opts        [{:option "a" :as "Addendum 1" :type :int}
+                                    {:option "b" :as "Addendum 2" :type :int :default 0}]}
+
+                     ]}
+      :ERR
+
+
+
+      ; double in specific
+      {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
+
+       :global-opts [{:option  "base" :as      "T"  :type    :int :default 10}]
+
+       :commands    [{:command     "add"                      :description "Adds" :runs identity
+                      :opts        [{:option "a" :short "q" :as "Addendum 1" :type :int}
+                                    {:option "b" :short "q" :as "Addendum 2" :type :int :default 0}]}
+
+                     ]}
+      :ERR
+      
+      )))
