@@ -116,6 +116,9 @@ The following pre-sets (`:type`) are available:
 * `:float-0` - a float number, with defaults to zero
 * `:string` - a string
 * `:yyyy-mm-dd` - a Date object, expressed as "yyyy-mm-dd" in the local time zone
+* `:slurp` - Receives a file name - reads is as text and returns it as a single string. Handles URIs correctly.
+* `:slurplines` - Receives a file name - reads is as text and returns it as a seq of strings. Handles URIs correctly.
+
 
 For all options, you can then add:
 

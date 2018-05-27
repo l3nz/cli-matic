@@ -216,3 +216,32 @@
        :error-text     ""
        :parse-errors   :NONE})))
 
+; Slurping di file di testo
+
+(deftest test-slurping
+  (testing "Slurping all-in-one"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :slurp})) o)
+
+      ; one file
+      ["foo" "--val" "resources/three_lines.txt"]
+      {:commandline    {:_arguments []
+                        :val        "L1\nLine2\nline 3\n"}
+       :error-text     ""
+       :parse-errors   :NONE}))
+
+  (testing "Slurping multiline"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :slurplines})) o)
+
+      ; one file
+      ["foo" "--val" "resources/three_lines.txt"]
+      {:commandline    {:_arguments []
+                        :val        ["L1" "Line2" "line 3"]}
+       :error-text     ""
+       :parse-errors   :NONE})))
+

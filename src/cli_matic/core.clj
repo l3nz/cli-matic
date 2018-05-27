@@ -454,8 +454,6 @@
               :opts ::S/climatic-cfg)
  :ret ::S/lineParseResult)
 
-
-
 (defn assert-unique-values
   "Check that all values are unique.
   name is the area of the configuration
@@ -470,16 +468,14 @@
     (cond
       (not (empty? dupes))
       (throw (IllegalAccessException.
-               (str "In option area: " optName " for options of type " option " some option names are not unique: " dupes ))))))
+              (str "In option area: " optName " for options of type " option " some option names are not unique: " dupes))))))
 
 (s/fdef
-  assert-unique-values
-  :args (s/cat :name (s/or :some-subcmd ::S/existing-string
-                           :global  nil?)
-               :vec-opts any? ;::S/commands
-               :option keyword?))
-
-
+ assert-unique-values
+ :args (s/cat :name (s/or :some-subcmd ::S/existing-string
+                          :global  nil?)
+              :vec-opts any? ; ::S/commands
+              :option keyword?))
 
 ;;
 ;; Asserts sanity of initial configuration.
@@ -490,6 +486,9 @@
 
   1. are :option values unique?
   2. are :short values unique?
+
+  First we make a list of `nil` plus all subcmds.
+
   "
   [currentCfg]
 
@@ -498,22 +497,16 @@
 
     (mapv #(assert-unique-values %
                                  (get-options-for currentCfg %)
-                                 :option)
-          all-subcommands)
+                                 :option) all-subcommands)
 
     (mapv #(assert-unique-values %
                                  (get-options-for currentCfg %)
-                                 :short)
-          all-subcommands)
-
-    nil
-
-    ))
-
+                                 :short) all-subcommands)
+    ; just say nil
+    nil))
 
 (s/fdef assert-cfg-sanity
         :args (s/cat :opts ::S/climatic-cfg))
-
 
 ;
 ; builds a return value

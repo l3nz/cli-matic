@@ -37,7 +37,8 @@
 
 (s/def ::type #{:int :string :int-0
                 :float :float-0
-                :yyyy-mm-dd})
+                :yyyy-mm-dd
+                :slurp :slurplines})
 
 (s/def ::default some?)
 
