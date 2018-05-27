@@ -115,11 +115,11 @@ The following pre-sets (`:type`) are available:
 * `:float` - a float number
 * `:float-0` - a float number, with defaults to zero
 * `:string` - a string
-* `:json` - a JSON literla value, that will be decoded an returned as a Clojure structure.
+* `:json` - a JSON literal value, that will be decoded an returned as a Clojure structure.
 * `:yyyy-mm-dd` - a Date object, expressed as "yyyy-mm-dd" in the local time zone
 * `:slurp` - Receives a file name - reads is as text and returns it as a single string. Handles URIs correctly.
 * `:slurplines` - Receives a file name - reads is as text and returns it as a seq of strings. Handles URIs correctly.
-* `:jsonfile` - a file (or URL) containing JSON, that will be decoded an returned as a Clojure structure.
+* `:jsonfile` - a file (or URL) containing JSON, that will be decoded and returned as a Clojure structure.
 
 
 For all options, you can then add:
