@@ -1,7 +1,7 @@
 # CLI-matic
 
 Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
-Clojure is not good for scripting?).
+Clojure is not good for scripting?). 
 
 
 ## Using
@@ -69,8 +69,7 @@ And help for sub-commands:
 	   -?, --help
 
 But while we are coding this, we do not realy want to waste time writing any parsing logic.
-What we care about implementing are the functions "add-numbers" and "sub-numbers"; the rest 
-should just be declared externally and/or "just happen".
+What we care about implementing are the functions `add-numbers` and `sub-numbers` where we do actual work; the rest should be declared externally and/or "just happen".
 
 From the point of view of us programmers, we'd like to have a couple of functions like:
 
@@ -110,8 +109,8 @@ the correct help screen, etc., should ideally not be a concern.**
 This is a very simple example; but we want to:
 
 * **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
-* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all paramaters at once. Again, the more you have in declarative code, the less room for mistakes. 
-* **Read environment variables.** Passing Environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
+* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters at once. Again, the more you have in declarative code, the less room for mistakes. 
+* **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
 
 
 
@@ -162,8 +161,8 @@ of help) return 0.
 
 ### Positional arguments
 
-If there are values that are not options in your command line, CLI-matic will usually just return them in an array of unparsed entries, as strings.
-But if you use the positional syntax for `short`:
+If there are values that are not options in your command line, CLI-matic will usually return them in an array of unparsed entries, as strings.
+But  - if you use the positional syntax for `short`:
 
 	{:option "a1" :short 0 :as "First addendum" :type :int :default 23}
 
