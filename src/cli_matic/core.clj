@@ -252,7 +252,11 @@
   "Maybe we should use a way to format commands
 
    E.g.
-   (pp/cl-format true \"~{ ~vA  ~vA  ~vA ~}\" v)"
+   (pp/cl-format true \"~{ ~vA  ~vA  ~vA ~}\" v)
+
+
+   (clojure.pprint/cl-format true \"~3a ~a\" \"pippo\" \"pluto\")
+   "
 
   [{:keys [command short description]}]
 
@@ -590,7 +594,7 @@
   "This is the actual function that is executed.
   It wraps run-cmd* and then does the printing
   of any errors, of help pages and  System.exit.
-
+  As it invokes Sys.exit you cannot use it from a REPL.
   "
   [args setup]
   (let [{:keys [help stderr subcmd retval]}

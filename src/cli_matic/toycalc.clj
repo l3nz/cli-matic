@@ -11,7 +11,7 @@
    (Integer/toString (+ a1 a2) base)))
 
 (defn subtract_numbers
-  "Subtracts B from A, and prints it in base `base`"
+  "Subtracts B from A, and prints it in base `base` "
   [{:keys [pa pb base]}]
   (println
    (Integer/toString (- pa pb) base)))
@@ -40,6 +40,6 @@
 (defn -main
   "This is our entry point.
   Just pass parameters and configuration.
-  Commands will be invoked as appropriate."
+  Commands (functions) will be invoked as appropriate."
   [& args]
   (run-cmd args CONFIGURATION))
