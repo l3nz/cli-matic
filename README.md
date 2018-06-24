@@ -79,8 +79,8 @@ From the point of view of us programmers, we'd like to have a couple of function
 		[{:keys [a b base]}]
 		(Integer/toString (+ a b) base))
 
-And nothing more; the fact that both parameters exist, are of the right type, have the right defaults, print
-the correct help screen, etc., should ideally not be a concern.
+And nothing more; **the fact that both parameters exist, are of the right type, have the right defaults, print
+the correct help screen, etc., should ideally not be a concern.**
 
 
 	(def CONFIGURATION
@@ -105,6 +105,20 @@ the correct help screen, etc., should ideally not be a concern.
 	                                {:option "b" :as "Parameter B" :type :int :default 0}]
 	                  :runs        subtract_numbers}
 	                 ]})
+
+
+This is a very simple example; but we want to:
+
+* **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
+* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all paramaters at once. Again, the more you have in declarative code, the less room for mistakes. 
+* **Read environment variables.** Passing Environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
+
+
+
+
+
+
+
 
 ### Current pre-sets
 
