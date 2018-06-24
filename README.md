@@ -17,7 +17,7 @@ Or the library can be easily referenced through Github:
 	{:deps
 	 {cli-matic
 	  {:git/url "https://github.com/l3nz/cli-matic.git"
-	   :sha "5252413d1cacd9d3db90019fdd059893167c73db"}}}
+	   :sha "b27bc676a879542b4e83f1bef3b9776e600018e3"}}}
 
 
 ## Rationale
@@ -125,10 +125,10 @@ The following pre-sets (`:type`) are available:
 For all options, you can then add:
 
 * `:default` the default value, as expected after conversion. If no default, the value will be 
-  passed only if present. If you set `:default :present` this means that Cli-matic will abort
+  passed only if present. If you set `:default :present` this means that CLI-matic will abort
   if that option is not present (and it appears with a trailing asterisk in the help)
 * `:multiple` if true, the values for all options with the same name are stored in an array
-* `short`: a short version of the command, or a positional argument (see below)
+* `:short`: a shortened name for the command (if a string), or a positional argument if integer (see below)
 
 [to be done]
 
@@ -148,21 +148,30 @@ of help) return 0.
 
 ### Positional arguments
 
-CLI-matic will usually just return an array of unparsed entries, as strings.
-If you use the syntax:
+If there are values that are not options in your command line, CLI-matic will usually just return them in an array of unparsed entries, as strings.
+But if you use the positional syntax for `short`:
 
 	{:option "a1" :short 0 :as "First addendum" :type :int :default 23}
 
 You 'bind' the 	option 'a1' to the first unparsed element; this means that
 you can apply all presets/defaults/validation rules as if it was a named option.
 
-The named option stays, so you can use either version. Bound entries are not removed
-from the unparsed command line entries.
+So you could call your script as:
+
+	clj -m calc add --a2 3 5
+
+And CLI-matic would set 'a2' to 3 and have "5" as an unparsed argument; and then bind it to "a1", so it will be cast to an integer. You function will be called with:
+
+	{:a1 5, :a2 3}
+
+That is what you wanted from the start.
+
+At the same time, the named option remains, so you can use either version. Bound entries are not removed from the unparsed command line entries.
 
 
 ### Transitive dependencies
 
-cli-matic currently depends on:
+CLI-matic currently depends on:
 
 * org.clojure/clojure 
 * org.clojure/spec.alpha 
@@ -170,6 +179,7 @@ cli-matic currently depends on:
 * orchestra 
 
 To use Json decoding, you need Cheshire to be on the classpath; otherwise it will break.
+If you do not need JSON parsing, you can do without.
 
 ## License
 
