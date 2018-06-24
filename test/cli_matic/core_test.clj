@@ -5,6 +5,11 @@
 
 (defn cmd_foo [& opts])
 (defn cmd_bar [& opts])
+(defn cmd_save_opts [& opts]
+  (prn "Called" opts)
+
+  opts)
+
 
 (defn cmd_returnstructure [opts]
   {:myopts opts
@@ -253,6 +258,11 @@
 ; and nothing else
 
 
+
+
+
+
+
 ;; VALIDATION OF CONFIGURATION
 ;;
 
@@ -290,10 +300,11 @@
          (= (try
               (assert-cfg-sanity i)
               (catch Throwable e
+                ;;(prn e)
                 :ERR))
             o)
 
-      ; OK
+      ;; OK
       {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
 
        :global-opts [{:option  "base" :as      "T"  :type    :int :default 10}]
@@ -301,7 +312,9 @@
        :commands    [{:command     "add"                      :description "Adds" :runs identity
                       :opts        [{:option "a" :as "Addendum 1" :type :int}
                                     {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
-      nil; double in global
+      nil
+
+      ;; double in global
       {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
 
        :global-opts [{:option  "base" :as      "T"  :type    :int :default 10}
@@ -310,7 +323,9 @@
        :commands    [{:command     "add"                      :description "Adds" :runs identity
                       :opts        [{:option "a" :as "Addendum 1" :type :int}
                                     {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
-      :ERR; double in specific
+      :ERR
+
+      ;; double in specific
       {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
 
        :global-opts [{:option  "base" :as      "T"  :type    :int :default 10}]
@@ -318,4 +333,67 @@
        :commands    [{:command     "add"                      :description "Adds" :runs identity
                       :opts        [{:option "a" :short "q" :as "Addendum 1" :type :int}
                                     {:option "b" :short "q" :as "Addendum 2" :type :int :default 0}]}]}
-      :ERR)))
+      :ERR
+
+      ;; positional subcmds in global opts
+     {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
+
+      :global-opts [{:option  "base"  :short 0 :as      "T"  :type    :int :default 10}]
+
+      :commands    [{:command     "add"                      :description "Adds" :runs identity
+                     :opts        [{:option "a" :short "q" :as "Addendum 1" :type :int}
+                                   {:option "b" :short "d" :as "Addendum 2" :type :int :default 0}]}]}
+     :ERR
+
+
+         )))
+
+
+
+
+(def POSITIONAL-SUBCOMMAND-CFG
+  {:app         {:command     "dummy"
+                 :description "I am some command"
+                 :version     "0.1.2"}
+   :global-opts [{:option "aa" :as "A" :type :int :default :present}
+                 {:option "bb" :as "B" :type :int}]
+   :commands    [{:command     "foo" :short       "f"
+                  :description "I am function foo"
+                  :opts        [{:option "cc" :short 0 :as "C" :type :int :default :present}
+                                {:option "dd" :as "D" :type :int}
+                                {:option "ee"  :short 1 :as "E" :type :int}
+                                ]
+                  :runs        cmd_save_opts}]})
+
+(deftest check-positional-options
+  (testing "Some real-life behavior with mandatory options"
+    (are [i o]
+      (= (select-keys
+           (parse-cmds i POSITIONAL-SUBCOMMAND-CFG)
+           [:commandline :error-text]) o)
+
+
+      ;; a simple case
+      ["--aa" "10" "foo"  "1" "2"]
+      {:commandline {:_arguments ["1"  "2"]
+                     :aa         10
+                     :cc         1
+                     :ee         2}
+       :error-text  ""}
+
+      ;; positional arg does not exist but is default present
+      ["--aa" "10" "foo" ]
+      {:commandline {}
+       :error-text  "Missing option: cc"}
+
+
+      ;; positional arg does not exist and it is not default present
+      ["--aa" "10" "foo" "1"]
+      {:commandline {:_arguments ["1" ]
+                     :aa         10
+                     :cc         1
+                     }
+       :error-text  ""}
+
+
+      )))

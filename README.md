@@ -128,6 +128,7 @@ For all options, you can then add:
   passed only if present. If you set `:default :present` this means that Cli-matic will abort
   if that option is not present (and it appears with a trailing asterisk in the help)
 * `:multiple` if true, the values for all options with the same name are stored in an array
+* `short`: a short version of the command, or a positional argument (see below)
 
 [to be done]
 
@@ -145,6 +146,18 @@ for the shell process.
 Errors and exceptions return an exit code of -1; while normal executions (including invocations 
 of help) return 0.
 
+### Positional arguments
+
+CLI-matic will usually just return an array of unparsed entries, as strings.
+If you use the syntax:
+
+	{:option "a1" :short 0 :as "First addendum" :type :int :default 23}
+
+You 'bind' the 	option 'a1' to the first unparsed element; this means that
+you can apply all presets/defaults/validation rules as if it was a named option.
+
+The named option stays, so you can use either version. Bound entries are not removed
+from the unparsed command line entries.
 
 
 ### Transitive dependencies

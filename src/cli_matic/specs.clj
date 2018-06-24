@@ -31,7 +31,11 @@
 ;; Cli-matic option definition
 (s/def ::option ::existing-string) ;; ex-string
 
-(s/def ::short ::existing-string)
+(s/def ::positional-arg (s/and integer?
+                               (s/or :z zero? :p pos?)))
+
+(s/def ::short (s/or :str ::existing-string
+                     :pos ::positional-arg))
 
 (s/def ::as ::existing-string)
 

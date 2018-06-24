@@ -163,6 +163,75 @@
                                  :a-subcommand string?))
         :ret some?)
 
+;; -------------------------------------------------------------
+;; POSITIONAL PARAMETERS
+; Positional parameters:
+; 1- are only valid in subcommands
+; 2- appear on help
+; 3- capture from the "leftovers" vector :_arguments
+;; --------------------------------------------------------------
+
+
+(defn list-positional-parms
+  "Extracts all positional parameters from the configuration."
+  [cfg subcmd]
+  ;;(prn "CFG" cfg "Sub" subcmd)
+  (let [opts (get-options-for cfg subcmd)
+        rv (filterv #(integer? (:short %)) opts)]
+    ;;(prn "Subcmd" subcmd "OPTS" opts "RV" rv )
+    rv))
+
+(s/fdef
+  list-positional-parms
+  :args (s/cat :cfg ::S/climatic-cfg :cmd (s/or :cmd ::S/command :global nil?))
+  :ret (s/coll-of ::S/climatic-option))
+
+
+(defn a-positional-parm
+  "Reads one positional parameter from the arguments.
+  Returns a vector [parm value]
+  The value is NOT solved, so it's always a string."
+  [args option]
+  (let [pos (:short option)
+        lbl (:option option)
+        val (get args pos nil)]
+    [(keyword lbl) val]))
+
+(s/fdef
+  a-positional-parm
+  :args (s/cat :args sequential?
+               :opt  ::S/climatic-option)
+  :ret vector?)
+
+
+(defn capture-positional-parms
+  "Captures positional parameters in the remaining-args of
+  a subcommand."
+  [cfg subcmd remaining-args]
+  (let [pp (list-positional-parms cfg subcmd)]
+    (into {}
+          (map (partial a-positional-parm remaining-args) pp)
+          )))
+
+
+(s/fdef
+  capture-positional-parms
+  :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command :args sequential?)
+  :ret map?)
+
+
+(defn arg-list-with-positional-entries
+  "Creates the `[arguments...]`"
+  [cfg cmd]
+  (let [pos-args (sort-by :short (list-positional-parms cfg cmd))]
+    (if (empty? pos-args)
+      "[arguments...]"
+      (str
+        (apply str (map :option pos-args))
+        " ..."))))
+
+
+
 ;; ------------------------------------------------
 ;; Stuff to generate help pages
 ;; ------------------------------------------------
@@ -314,12 +383,13 @@
                      (str "[" name "|" shortname "]")
                      name)
         descr (:description cmd-cfg)
-        [desc0 descr-extra] (get-first-rest-description-rows descr)]
+        [desc0 descr-extra] (get-first-rest-description-rows descr)
+        arglist (arg-list-with-positional-entries cfg cmd)]
 
     (generate-sections
      [(str glname " " name " - " desc0) descr-extra]
      nil
-     (str glname " " name-short " [command options] [arguments...]")
+     (str glname " " name-short " [command options] " arglist)
      nil
      "OPTIONS"
      (get-options-summary cfg cmd))))
@@ -349,18 +419,62 @@
 
 ;; TODO s/fdef
 
+
+
+(defn parse-single-arg
+  "Parses and validates a single command.
+  Returns its value, and an error message,
+  in a vector [:keyword err val].
+  Parsing is OK if error message is nil.
+
+  Sequence is:
+  - parsing (eg `2` -> 2), on exception parse error
+  - validation via spec
+  - validation via function, on exception validation error
+
+  "
+  [optionDef stringValue]
+  (let [label (get optionDef :option)
+        parseFn (get optionDef :parse-fn identity)
+        valdationSpec (get optionDef :xx identity)
+        validationFn (get optionDef :validate-fn (constantly true))]
+
+    (try
+      (let [v-parsed (parseFn stringValue)]
+        [label nil v-parsed])
+
+      (catch Throwable t
+        [label (str "Cannot parse " label) nil]))))
+
+
+
+(s/fdef
+  parse-single-arg
+  :args (s/cat :opt ::S/climatic-option :val string?)
+  :ret (s/cat :lbl keyword?
+              :err (s/or :s string? :n nil?)
+              :val any?)
+  )
+
+
+
+
 (defn errors-for-missing-mandatory-args
-  "Gets us a sequence of errors if mandatory options are missing"
-  [climatic-options parsed-opts]
+  "Gets us a sequence of errors if mandatory options are missing.
+  Options read by cli module are merged with other options, e.g.
+  positional parameters.
+  "
+  [climatic-options parsed-opts other-options]
   (let [mandatory-options (filter
                            #(= :present (:default %))
                            climatic-options)
-        curr-options (:options parsed-opts)]
+        curr-options (:options parsed-opts)
+        all-curr-options (into other-options curr-options)]
 
     (reduce
      (fn [a v]
        (let [optname  (:option v)
-             val (get curr-options (keyword optname) :MISSING)]
+             val (get all-curr-options (keyword optname) :MISSING)]
 
          (if (= :MISSING val)
            (conj a (str "Missing option: " optname))
@@ -370,8 +484,58 @@
 
 (s/fdef errors-for-missing-mandatory-args
         :args (s/cat :options ::S/opts
-                     :parsed-opts map?)
+                     :parsed-opts map?
+                     :other-options map?)
         :ret (s/coll-of string?))
+
+
+
+;; RUN ANALYSIS
+
+(defn mk-fake-args
+  "Builds the set of fake arguments that we postpend to subcommands' cli
+  when we have positional parameters.
+  If value is nil, option is not added.
+  "
+  [parms]
+  (flatten
+    (map (fn [[k v]]
+           (if (nil? v)
+             []
+             [(str "--" (name k)) (str v)]))
+         parms)))
+
+
+(defn parse-cmds-with-positions
+  "To process positional parameters, first we run some parsing; if
+  all goes well, we capture the values of positional
+  arguments and run aprsing again with a command line that has those
+  items as if they were expressed.
+
+  This means that type casting and validation just happen in one place
+  (CLI parsing) and  we don't have to do them separately.
+  "
+  [config canonical-subcommand subcommand-parms]
+  (let [cli-cmd-options (rewrite-opts config canonical-subcommand)
+        ;_ (prn "O" cli-cmd-options)
+        parsed-cmd-opts (parse-opts subcommand-parms cli-cmd-options)
+        cmd-args (:arguments parsed-cmd-opts)
+
+        ;; capture positional parms
+        ;; if they exist, we inject them at the ned of the command line
+        ;; and parse again
+        positional-parms (capture-positional-parms config canonical-subcommand cmd-args)]
+
+    (cond
+      (pos? (count positional-parms))
+      (let [addl-args (mk-fake-args positional-parms)
+            newcmdline (into subcommand-parms addl-args)]
+        (parse-opts newcmdline cli-cmd-options))
+
+      :else
+      parsed-cmd-opts)))
+
+
 
 (defn parse-cmds
   "This is where magic happens.
@@ -379,8 +543,8 @@
   get the subcommand, parse specific options for the subcommand
   and if all went well we prepare run it.
 
-  This fuction returns a structure ::S/lineParseResult
-  that containe information about what went wrong or the command
+  This function returns a structure ::S/lineParseResult
+  that contains information about what went wrong or the command
   to run.
   "
   [cmdline config]
@@ -390,7 +554,7 @@
         parsed-gl-opts (parse-opts cmdline cli-gl-options :in-order true)
         missing-gl-opts (errors-for-missing-mandatory-args
                          (get-options-for config nil)
-                         parsed-gl-opts)
+                         parsed-gl-opts {})
         ;_ (prn "Common cmdline" parsed-common-cmdline)
         {gl-errs :errors gl-opts :options gl-args :arguments} parsed-gl-opts]
 
@@ -416,16 +580,20 @@
 
           :else
           (let [canonical-subcommand (canonicalize-subcommand config subcommand)
-                cli-cmd-options (rewrite-opts config canonical-subcommand)
-                ;_ (prn "O" cli-cmd-options)
-                parsed-cmd-opts (parse-opts subcommand-parms cli-cmd-options)
-                missing-cmd-opts (errors-for-missing-mandatory-args
-                                  (get-options-for config canonical-subcommand)
-                                  parsed-cmd-opts)
+                parsed-cmd-opts (parse-cmds-with-positions config canonical-subcommand subcommand-parms)
+
+
                 ;_ (prn "Subcmd cmdline" parsed-cmd-opts)
                 ;_ (prn "G" missing-gl-opts)
                 ;_ (prn "C" missing-cmd-opts)
-                {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts]
+                {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts
+
+
+                ;; run checks on parameters
+                missing-cmd-opts (errors-for-missing-mandatory-args
+                                   (get-options-for config canonical-subcommand)
+                                   parsed-cmd-opts {})
+                ]
 
             (cond
               ; asking for help?
@@ -444,11 +612,14 @@
               (nil? cmd-errs)
               {:subcommand     canonical-subcommand
                :subcommand-def (get-subcommand config canonical-subcommand)
-               :commandline     (into
-                                 (into gl-opts cmd-opts)
-                                 {:_arguments cmd-args})
+               :commandline    (-> {}
+                                   (into gl-opts)
+                                   (into cmd-opts)
+                                   (into {:_arguments cmd-args}))
                :parse-errors    :NONE
-               :error-text     ""}; having errors....
+               :error-text     ""}
+
+              ;; sth went wrong
               :else
               (mkError config canonical-subcommand :ERR-PARMS-SUBCMD cmd-errs))))))))
 
@@ -490,22 +661,40 @@
 
   1. are :option values unique?
   2. are :short values unique?
+  3. do we have any positional arguments in global config?
 
   First we make a list of `nil` plus all subcmds.
 
   "
   [currentCfg]
 
-  (let [all-subcommands (into [nil]
-                              (all-subcommands currentCfg))]
+  (do
+    ;; checks positional parameters
 
-    (mapv #(assert-unique-values %
-                                 (get-options-for currentCfg %)
-                                 :option) all-subcommands)
+    (let [global-positional-parms (list-positional-parms currentCfg nil)]
 
-    (mapv #(assert-unique-values %
-                                 (get-options-for currentCfg %)
-                                 :short) all-subcommands)
+      (if (pos? (count global-positional-parms))
+        (throw (IllegalAccessException.
+               (str "Positional parameters not allowed in global options. " global-positional-parms)))))
+
+
+    ;; checks subcommands
+    (let [all-subcommands (into [nil]
+                                (all-subcommands currentCfg))]
+
+      (mapv #(assert-unique-values %
+                                   (get-options-for currentCfg %)
+                                   :option) all-subcommands)
+
+      (mapv #(assert-unique-values %
+                                   (get-options-for currentCfg %)
+                                   :short) all-subcommands)
+
+
+
+      )
+
+
     ; just say nil
     nil))
 
