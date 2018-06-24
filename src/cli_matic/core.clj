@@ -182,10 +182,9 @@
     rv))
 
 (s/fdef
-  list-positional-parms
-  :args (s/cat :cfg ::S/climatic-cfg :cmd (s/or :cmd ::S/command :global nil?))
-  :ret (s/coll-of ::S/climatic-option))
-
+ list-positional-parms
+ :args (s/cat :cfg ::S/climatic-cfg :cmd (s/or :cmd ::S/command :global nil?))
+ :ret (s/coll-of ::S/climatic-option))
 
 (defn a-positional-parm
   "Reads one positional parameter from the arguments.
@@ -198,11 +197,10 @@
     [(keyword lbl) val]))
 
 (s/fdef
-  a-positional-parm
-  :args (s/cat :args sequential?
-               :opt  ::S/climatic-option)
-  :ret vector?)
-
+ a-positional-parm
+ :args (s/cat :args sequential?
+              :opt  ::S/climatic-option)
+ :ret vector?)
 
 (defn capture-positional-parms
   "Captures positional parameters in the remaining-args of
@@ -210,15 +208,12 @@
   [cfg subcmd remaining-args]
   (let [pp (list-positional-parms cfg subcmd)]
     (into {}
-          (map (partial a-positional-parm remaining-args) pp)
-          )))
-
+          (map (partial a-positional-parm remaining-args) pp))))
 
 (s/fdef
-  capture-positional-parms
-  :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command :args sequential?)
-  :ret map?)
-
+ capture-positional-parms
+ :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command :args sequential?)
+ :ret map?)
 
 (defn arg-list-with-positional-entries
   "Creates the `[arguments...]`"
@@ -227,10 +222,8 @@
     (if (empty? pos-args)
       "[arguments...]"
       (str
-        (apply str (map :option pos-args))
-        " ..."))))
-
-
+       (apply str (map :option pos-args))
+       " ..."))))
 
 ;; ------------------------------------------------
 ;; Stuff to generate help pages
@@ -420,7 +413,6 @@
 ;; TODO s/fdef
 
 
-
 (defn parse-single-arg
   "Parses and validates a single command.
   Returns its value, and an error message,
@@ -446,18 +438,12 @@
       (catch Throwable t
         [label (str "Cannot parse " label) nil]))))
 
-
-
 (s/fdef
-  parse-single-arg
-  :args (s/cat :opt ::S/climatic-option :val string?)
-  :ret (s/cat :lbl keyword?
-              :err (s/or :s string? :n nil?)
-              :val any?)
-  )
-
-
-
+ parse-single-arg
+ :args (s/cat :opt ::S/climatic-option :val string?)
+ :ret (s/cat :lbl keyword?
+             :err (s/or :s string? :n nil?)
+             :val any?))
 
 (defn errors-for-missing-mandatory-args
   "Gets us a sequence of errors if mandatory options are missing.
@@ -488,8 +474,6 @@
                      :other-options map?)
         :ret (s/coll-of string?))
 
-
-
 ;; RUN ANALYSIS
 
 (defn mk-fake-args
@@ -499,12 +483,11 @@
   "
   [parms]
   (flatten
-    (map (fn [[k v]]
-           (if (nil? v)
-             []
-             [(str "--" (name k)) (str v)]))
-         parms)))
-
+   (map (fn [[k v]]
+          (if (nil? v)
+            []
+            [(str "--" (name k)) (str v)]))
+        parms)))
 
 (defn parse-cmds-with-positions
   "To process positional parameters, first we run some parsing; if
@@ -534,8 +517,6 @@
 
       :else
       parsed-cmd-opts)))
-
-
 
 (defn parse-cmds
   "This is where magic happens.
@@ -580,20 +561,13 @@
 
           :else
           (let [canonical-subcommand (canonicalize-subcommand config subcommand)
-                parsed-cmd-opts (parse-cmds-with-positions config canonical-subcommand subcommand-parms)
-
-
-                ;_ (prn "Subcmd cmdline" parsed-cmd-opts)
+                parsed-cmd-opts (parse-cmds-with-positions config canonical-subcommand subcommand-parms);_ (prn "Subcmd cmdline" parsed-cmd-opts)
                 ;_ (prn "G" missing-gl-opts)
                 ;_ (prn "C" missing-cmd-opts)
-                {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts
-
-
-                ;; run checks on parameters
+                {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts;; run checks on parameters
                 missing-cmd-opts (errors-for-missing-mandatory-args
-                                   (get-options-for config canonical-subcommand)
-                                   parsed-cmd-opts {})
-                ]
+                                  (get-options-for config canonical-subcommand)
+                                  parsed-cmd-opts {})]
 
             (cond
               ; asking for help?
@@ -675,10 +649,7 @@
 
       (if (pos? (count global-positional-parms))
         (throw (IllegalAccessException.
-               (str "Positional parameters not allowed in global options. " global-positional-parms)))))
-
-
-    ;; checks subcommands
+                (str "Positional parameters not allowed in global options. " global-positional-parms)))));; checks subcommands
     (let [all-subcommands (into [nil]
                                 (all-subcommands currentCfg))]
 
@@ -688,14 +659,7 @@
 
       (mapv #(assert-unique-values %
                                    (get-options-for currentCfg %)
-                                   :short) all-subcommands)
-
-
-
-      )
-
-
-    ; just say nil
+                                   :short) all-subcommands)); just say nil
     nil))
 
 (s/fdef assert-cfg-sanity
