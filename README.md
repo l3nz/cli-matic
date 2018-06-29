@@ -25,7 +25,7 @@ Especially when scripting, you should write interesting code, not boilerplate.
 
 * Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent `tools.cli`.
 * **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
-* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters at once. Again, the more you have in declarative code, the less room for mistakes. 
+* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters at once. Again, the more you have in declarative code, the less room for mistakes.  [TBD]
 * **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
 * **Capture unnamed parameters** as if they were named parameters, with casting, validation, etc.
 
