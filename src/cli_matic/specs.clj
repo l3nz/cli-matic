@@ -47,9 +47,11 @@
 
 (s/def ::default some?)
 
+(s/def ::env ::existing-string)
+
 (s/def ::climatic-option
   (s/keys :req-un [::option  ::as  ::type]
-          :opt-un [::short ::default]))
+          :opt-un [::short ::default ::env]))
 
 ;; Climatic configuration
 (s/def ::description (s/or :a-string ::existing-string
@@ -89,3 +91,8 @@
 (s/def ::error-text string?)
 
 (s/def ::lineParseResult (s/keys :req-un [::subcommand ::subcommand-def ::commandline ::parse-errors ::error-text]))
+
+;; Rturn value of parsing with tools.cli
+(s/def ::parsedCliOpts map?)
+
+(s/def ::mapOfCliParams (s/map-of string? (s/or :empty nil? :str string?)))

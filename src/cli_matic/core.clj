@@ -3,7 +3,8 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.spec.alpha :as s]
             [orchestra.spec.test :as st]
-            [cli-matic.presets :as PRESETS]))
+            [cli-matic.presets :as PRESETS]
+            [cli-matic.platform :as P]))
 
 ;; ================ ATTENTION ====================
 ;; Cli-matic has one main entry-point: run!
@@ -34,11 +35,22 @@
 ;;  https://github.com/clojure/tools.cli/blob/master/src/main/clojure/clojure/tools/cli.clj#L488
 ;;
 
+(defn mk-env-name
+  "Writes a description with the env name by the end."
+  [description env for-parsing?]
+  (if (and (not for-parsing?)
+           (some? env))
+    (str description " [$" env "]")
+    description))
+
 (defn mk-cli-option
   "Builds a tools.cli option out of our own format.
 
+  If for-parsing is true, the option will be used for parsing;
+  if false, for generating help messages.
+
   "
-  [{:keys [option short as type default multiple] :as cm-option}]
+  [{:keys [option short as type default multiple env] :as cm-option}]
 
   (let [preset (get PRESETS/known-presets type :unknown)
         placeholder (str (:placeholder preset)
@@ -47,12 +59,14 @@
                            (str "-" short)
                            nil)
                          (str "--" option " " placeholder)
-                         as]
+                         (mk-env-name as env false)]
+
         ;; step 1 - remove :placeholder
         opts-1 (dissoc preset :placeholder)
 
         ;; step 2 - add default if present and is not ":present"
-        opts-2 (if (and (some? default) (not= :present default))
+        opts-2 (if (and (some? default)
+                        (not= :present default))
                  (assoc opts-1 :default default)
                  opts-1)
 
@@ -145,6 +159,18 @@
 
 ;; Out of a cli-matic arg list,
 ;; generates a set of commands for tools.cli
+(defn cm-opts->cli-opts
+  "
+  Out of a cli-matic arg list, generates a set of
+  options for tools.cli.
+  It also adds in the -? and --help options
+  to trigger display of helpness.
+  "
+  [climatic-opts]
+  (conj
+   (mapv mk-cli-option climatic-opts)
+   ["-?" "--help" "" :id :_help_trigger]))
+
 (defn rewrite-opts
   "
   Out of a cli-matic arg list, generates a set of
@@ -153,9 +179,7 @@
   to trigger display of helpness.
   "
   [climatic-args subcmd]
-  (conj
-   (mapv mk-cli-option (get-options-for climatic-args subcmd))
-   ["-?" "--help" "" :id :_help_trigger]))
+  (cm-opts->cli-opts (get-options-for climatic-args subcmd)))
 
 (s/fdef rewrite-opts
         :args (s/cat :args some?
@@ -194,7 +218,7 @@
   (let [pos (:short option)
         lbl (:option option)
         val (get args pos nil)]
-    [(keyword lbl) val]))
+    [lbl val]))
 
 (s/fdef
  a-positional-parm
@@ -213,7 +237,7 @@
 (s/fdef
  capture-positional-parms
  :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command :args sequential?)
- :ret map?)
+ :ret ::S/mapOfCliParams)
 
 (defn arg-list-with-positional-entries
   "Creates the `[arguments...]`"
@@ -283,7 +307,7 @@
   Parsing will fail but we get the :summary.
   We then split it into a collection of lines."
   [cfg subcmd]
-  (let [cli-cfg (rewrite-opts cfg subcmd)
+  (let [cli-cfg (rewrite-opts cfg subcmd false)
         options-str (:summary
                      (parse-opts [] cli-cfg))]
     (clojure.string/split-lines options-str)))
@@ -411,7 +435,14 @@
    :error-text     (asString text)})
 
 ;; TODO s/fdef
-
+(s/fdef
+ mkError
+ :args (s/cat :config ::S/climatic-cfg
+              :subcmd ::S/subcommand
+              :err    (s/or :err ::S/climatic-errors
+                            :help ::S/help)
+              :text   any?)
+ :ret ::S/lineParseResult)
 
 (defn parse-single-arg
   "Parses and validates a single command.
@@ -477,35 +508,91 @@
 ;; RUN ANALYSIS
 
 (defn mk-fake-args
-  "Builds the set of fake arguments that we postpend to subcommands' cli
+  "Builds the set of fake arguments that we append to our
+  subcommands' own CLI items
   when we have positional parameters.
   If value is nil, option is not added.
+
+  We receive a map of options and output a vector of strings.
   "
   [parms]
-  (flatten
-   (map (fn [[k v]]
-          (if (nil? v)
-            []
-            [(str "--" (name k)) (str v)]))
-        parms)))
+  (vec
+   (flatten
+    (map (fn [[k v]]
+           (if (nil? v)
+             []
+             [(str "--" (name k)) (str v)]))
+         parms))))
+
+(s/fdef
+ mk-fake-args
+ :args (s/cat :parms ::S/mapOfCliParams)
+ :ret (s/coll-of string?))
+
+(defn parse-cmds-with-defaults
+  "Parses a command line with environemt defaults.
+   We want environment defaults to be PARSED, so they will go through
+   the same validation/check cycle as other elements.
+   So - if any of them - we first run parsing disabling defaults,
+   then go check if they are available in parsed elements;
+   if they are not, we inject them as options to the left of argv
+   and parse again.
+   (as a side effect, if you have a wrong value for your option, and a
+   default, the default will be used - YMMV).
+
+  "
+
+  [cmt-options argv in-order? fn-env]
+  (let [cli-cmd-options (cm-opts->cli-opts cmt-options)
+        env-options (filter :env cmt-options)
+        argv+ (if (not (empty? env-options))
+                ;; I have env variables
+
+                (let [parse1 (parse-opts argv cli-cmd-options
+                                         :in-order in-order?
+                                         ::no-defaults true)
+                      set-keys-in (set (keys (:options parse1)))
+                      missing-cmt-options (filter (complement set-keys-in) env-options)
+                      map-missing-keys (into {}
+                                             (map
+                                              (fn [{:keys [option env]}]
+                                                [option (fn-env env)])
+                                              missing-cmt-options))]
+                  (into (mk-fake-args map-missing-keys) argv))
+
+                ;; no env variables - we are good
+                argv)]
+
+    (parse-opts argv+ cli-cmd-options :in-order in-order?)))
+
+(s/fdef
+ parse-cmds-with-defaults
+ :args (s/cat :opts ::S/opts
+              :argv (s/coll-of string?)
+              :in-order boolean?
+              :fn-env any?)
+ :ret  ::S/parsedCliOpts)
 
 (defn parse-cmds-with-positions
   "To process positional parameters, first we run some parsing; if
   all goes well, we capture the values of positional
-  arguments and run aprsing again with a command line that has those
+  arguments and run parsing again with a command line that has those
   items as if they were expressed.
 
   This means that type casting and validation just happen in one place
   (CLI parsing) and  we don't have to do them separately.
+
+  This function is used both for global and subcmd parsing,
+  but when doing global parsing, positional parameters are
+  not allowed, so they never come in.
   "
   [config canonical-subcommand subcommand-parms]
-  (let [cli-cmd-options (rewrite-opts config canonical-subcommand)
-        ;_ (prn "O" cli-cmd-options)
-        parsed-cmd-opts (parse-opts subcommand-parms cli-cmd-options)
+  (let [cmt-options (get-options-for config canonical-subcommand)
+        parsed-cmd-opts (parse-cmds-with-defaults cmt-options subcommand-parms false P/read-env)
         cmd-args (:arguments parsed-cmd-opts)
 
         ;; capture positional parms
-        ;; if they exist, we inject them at the ned of the command line
+        ;; if they exist, we inject them at the end of the command line
         ;; and parse again
         positional-parms (capture-positional-parms config canonical-subcommand cmd-args)]
 
@@ -513,7 +600,7 @@
       (pos? (count positional-parms))
       (let [addl-args (mk-fake-args positional-parms)
             newcmdline (into subcommand-parms addl-args)]
-        (parse-opts newcmdline cli-cmd-options))
+        (parse-cmds-with-defaults cmt-options newcmdline false P/read-env))
 
       :else
       parsed-cmd-opts)))
@@ -528,11 +615,11 @@
   that contains information about what went wrong or the command
   to run.
   "
-  [cmdline config]
+  [argv config]
 
-  (let [cli-gl-options (rewrite-opts config nil)
+  (let [gl-options (get-options-for config nil)
         ;_ (prn "Cmdline" cmdline)
-        parsed-gl-opts (parse-opts cmdline cli-gl-options :in-order true)
+        parsed-gl-opts (parse-cmds-with-defaults gl-options argv true P/read-env) ;(parse-opts cmdline cli-gl-options :in-order true)
         missing-gl-opts (errors-for-missing-mandatory-args
                          (get-options-for config nil)
                          parsed-gl-opts {})
@@ -550,7 +637,7 @@
 
       :else
       (let [subcommand (first gl-args)
-            subcommand-parms (vec (rest gl-args))]
+            subcommand-argv (vec (rest gl-args))]
 
         (cond
           (nil? subcommand)
@@ -561,7 +648,7 @@
 
           :else
           (let [canonical-subcommand (canonicalize-subcommand config subcommand)
-                parsed-cmd-opts (parse-cmds-with-positions config canonical-subcommand subcommand-parms);_ (prn "Subcmd cmdline" parsed-cmd-opts)
+                parsed-cmd-opts (parse-cmds-with-positions config canonical-subcommand subcommand-argv);_ (prn "Subcmd cmdline" parsed-cmd-opts)
                 ;_ (prn "G" missing-gl-opts)
                 ;_ (prn "C" missing-cmd-opts)
                 {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts;; run checks on parameters
@@ -762,6 +849,6 @@
       (println (asString (generate-global-help setup)))
       (= :HELP-SUBCMD help)
       (println (asString (generate-subcmd-help setup subcmd))))
-    (System/exit retval)))
+    (P/exit-script retval)))
 
 (st/instrument)

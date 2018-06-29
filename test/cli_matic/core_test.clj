@@ -7,7 +7,6 @@
 (defn cmd_bar [& opts])
 (defn cmd_save_opts [& opts]
   (prn "Called" opts)
-
   opts)
 
 (defn cmd_returnstructure [opts]
@@ -240,9 +239,13 @@
 
       ; error no global cmd
       ["foo"  "--cc" "1"]
-      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa"); error no sub cmd
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa")
+
+         ;; error no sub cmd
       ["--aa" "1" "foo"  "--dd" "1"]
-      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" "Option error: Missing option: cc"); works
+      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" "Option error: Missing option: cc")
+
+         ;; works
       ["--aa" "1" "foo"  "--cc" "1"]
       (->RV 0 :OK nil nil nil))))
 
@@ -357,7 +360,9 @@
     (are [i o]
          (= (select-keys
              (parse-cmds i POSITIONAL-SUBCOMMAND-CFG)
-             [:commandline :error-text]) o);; a simple case
+             [:commandline :error-text]) o)
+
+      ;; a simple case
       ["--aa" "10" "foo"  "1" "2"]
       {:commandline {:_arguments ["1"  "2"]
                      :aa         10
@@ -368,9 +373,61 @@
       ;; positional arg does not exist but is default present
       ["--aa" "10" "foo"]
       {:commandline {}
-       :error-text  "Missing option: cc"};; positional arg does not exist and it is not default present
+       :error-text  "Missing option: cc"}
+
+      ;; positional arg does not exist and it is not default present
       ["--aa" "10" "foo" "1"]
       {:commandline {:_arguments ["1"]
                      :aa         10
                      :cc         1}
        :error-text  ""})))
+
+(defn env-helper [s]
+  (get {"VARA" "10"
+        "VARB" "HELLO"} s))
+
+(deftest check-environmental-vars
+  (testing "Parsing with env - global opts"
+    (are [opts cmdline result]
+         (= (dissoc (parse-cmds-with-defaults opts cmdline true env-helper) :summary) result)
+
+      ;; a simple case - no env vars
+      [{:option "cc" :short 0 :as "C" :type :int :default :present}
+       {:option "dd" :as "D" :type :string}]
+
+      ["--cc" "0" "pippo" "pluto"]
+
+      {:arguments ["pippo" "pluto"]
+       :errors    nil
+       :options   {:cc 0}}
+
+      ;; a simple case - absent, with env set, integer
+      [{:option "cc" :short 0 :as "C" :type :int :default :present}
+       {:option "dd" :as "D" :type :int :env "VARA"}]
+
+      ["--cc" "0" "pippo" "pluto"]
+
+      {:arguments ["pippo" "pluto"]
+       :errors    nil
+       :options   {:cc 0 :dd 10}}
+
+      ;; present, with env set, integer
+      [{:option "cc" :short 0 :as "C" :type :int :default :present}
+       {:option "dd" :as "D" :type :int :env "VARA"}]
+
+      ["--cc" "0" "--dd" "23" "pippo" "pluto"]
+
+      {:arguments ["pippo" "pluto"]
+       :errors    nil
+       :options   {:cc 0 :dd 23}}
+
+      ;; absent, with env missing, integer
+      [{:option "cc" :short 0 :as "C" :type :int :default :present}
+       {:option "dd" :as "D" :type :int :env "NO-VARA"}]
+
+      ["--cc" "0"  "pippo" "pluto"]
+
+      {:arguments ["pippo" "pluto"]
+       :errors    nil
+       :options   {:cc 0}})))
+

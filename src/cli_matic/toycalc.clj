@@ -28,7 +28,7 @@
                   :description ["Adds two numbers together"
                                 ""
                                 "Looks great, doesn't it?"]
-                  :opts        [{:option "a1" :short "a" :as "First addendum" :type :int :default 0}
+                  :opts        [{:option "a1" :short "a" :env "AA" :as "First addendum" :type :int :default 0}
                                 {:option "a2" :short "b" :as "Second addendum" :type :int :default 0}]
                   :runs        add_numbers}
                  {:command     "sub"  :short "s"

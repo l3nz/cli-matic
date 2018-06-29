@@ -19,6 +19,18 @@ Or the library can be easily referenced through Github:
 	  {:git/url "https://github.com/l3nz/cli-matic.git"
 	   :sha "b27bc676a879542b4e83f1bef3b9776e600018e3"}}}
 
+## Features
+
+Especially when scripting, you should write interesting code, not boilerplate.
+
+* Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent `tools.cli`.
+* **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
+* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters at once. Again, the more you have in declarative code, the less room for mistakes. 
+* **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
+* **Capture unnamed parameters** as if they were named parameters, with casting, validation, etc.
+
+While targeted at scripting, CLI-matic of course works with any program receiving CLI arguments.
+
 
 ## Rationale
 
@@ -106,18 +118,6 @@ the correct help screen, etc., should ideally not be a concern.**
 	                 ]})
 
 
-This is a very simple example; but we want to:
-
-* **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
-* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters at once. Again, the more you have in declarative code, the less room for mistakes. 
-* **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
-
-
-
-
-
-
-
 
 ### Current pre-sets
 
@@ -142,13 +142,13 @@ For all options, you can then add:
   if that option is not present (and it appears with a trailing asterisk in the help)
 * `:multiple` if true, the values for all options with the same name are stored in an array
 * `:short`: a shortened name for the command (if a string), or a positional argument if integer (see below)
+* `:env` if set, the default is taken from the current value of an envirnonment variable. For capture to happen, either the option must be mising, or its value must be invalid.
 
 [to be done]
 
 * boolean types
 * having a library of ready-made types that cover most cases
 * using spec for checking values
-* `:env` if set, the default is taken from the current value of an envirnoment variable
 
 
 ### Return values
