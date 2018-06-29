@@ -96,6 +96,9 @@ And nothing more; **the fact that both parameters exist, are of the right type, 
 the correct help screen, etc., should ideally not be a concern.**
 
 
+So we define a configuration:
+
+
 	(def CONFIGURATION
 	  {:app         {:command     "toycalc"
 	                 :description "A command-line toy calculator"
@@ -118,6 +121,14 @@ the correct help screen, etc., should ideally not be a concern.**
 	                                {:option "b" :as "Parameter B" :type :int :default 0}]
 	                  :runs        subtract_numbers}
 	                 ]})
+
+It contains:
+
+* Information on the app itself (name, version)
+* The list of global parameters, i.e. the ones that apply to al subcommands (may be empty)
+* A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`.
+
+That's it!
 
 
 
