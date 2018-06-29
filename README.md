@@ -3,6 +3,8 @@
 Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
 Clojure is not good for scripting?). 
 
+Especially when scripting, you should write interesting code, not boilerplate. Command line apps are usually so tiny that there is absolutely no reason why your code should not be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
+
 
 ## Using
 
@@ -19,9 +21,9 @@ Or the library can be easily referenced through Github:
 	  {:git/url "https://github.com/l3nz/cli-matic.git"
 	   :sha "b27bc676a879542b4e83f1bef3b9776e600018e3"}}}
 
+
 ## Features
 
-Especially when scripting, you should write interesting code, not boilerplate.
 
 * Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent `tools.cli`.
 * **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
@@ -142,7 +144,7 @@ For all options, you can then add:
   if that option is not present (and it appears with a trailing asterisk in the help)
 * `:multiple` if true, the values for all options with the same name are stored in an array
 * `:short`: a shortened name for the command (if a string), or a positional argument if integer (see below).
-* `:env` if set, the default is read from the current value of an env variable you specify. For capture to happen, either the option must be missing, or its value must be invalid. If an option has an `:env` value specified to FOO, its decription in the help shows `[$FOO]`. 
+* `:env` if set, the default is read from the current value of an env variable you specify. For capture to happen, either the option must be missing, or its value must be invalid. If an option has an `:env` value specified to FOO, its description in the help shows `[$FOO]`. 
 
 [to be done]
 
