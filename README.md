@@ -141,8 +141,8 @@ For all options, you can then add:
   passed only if present. If you set `:default :present` this means that CLI-matic will abort
   if that option is not present (and it appears with a trailing asterisk in the help)
 * `:multiple` if true, the values for all options with the same name are stored in an array
-* `:short`: a shortened name for the command (if a string), or a positional argument if integer (see below)
-* `:env` if set, the default is taken from the current value of an envirnonment variable. For capture to happen, either the option must be mising, or its value must be invalid.
+* `:short`: a shortened name for the command (if a string), or a positional argument if integer (see below).
+* `:env` if set, the default is read from the current value of an env variable you specify. For capture to happen, either the option must be missing, or its value must be invalid. If an option has an `:env` value specified to FOO, its decription in the help shows `[$FOO]`. 
 
 [to be done]
 
