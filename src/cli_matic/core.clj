@@ -3,6 +3,7 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.spec.alpha :as s]
             [orchestra.spec.test :as st]
+            [clojure.string :as str]
             [cli-matic.presets :as PRESETS]
             [cli-matic.platform :as P]))
 
@@ -259,7 +260,7 @@
   [s]
   (if (string? s)
     s
-    (clojure.string/join "\n" s)))
+    (str/join "\n" s)))
 
 (defn indent-string
   "Indents a single string."
@@ -302,15 +303,15 @@
      (generate-section opts-title opts)])))
 
 (defn get-options-summary
-  "To get the sumamry of options, we pass options to
+  "To get the summary of options, we pass options to
   tools.cli parse-opts and an empty set of arguments.
   Parsing will fail but we get the :summary.
   We then split it into a collection of lines."
   [cfg subcmd]
-  (let [cli-cfg (rewrite-opts cfg subcmd false)
+  (let [cli-cfg (rewrite-opts cfg subcmd)
         options-str (:summary
                      (parse-opts [] cli-cfg))]
-    (clojure.string/split-lines options-str)))
+    (str/split-lines options-str)))
 
 (defn get-first-rest-description-rows
   "get title and description of description rows"
@@ -739,15 +740,14 @@
                 (str "Positional parameters not allowed in global options. " global-positional-parms)))));; checks subcommands
     (let [all-subcommands (into [nil]
                                 (all-subcommands currentCfg))]
-
-      (mapv #(assert-unique-values %
-                                   (get-options-for currentCfg %)
-                                   :option) all-subcommands)
-
-      (mapv #(assert-unique-values %
-                                   (get-options-for currentCfg %)
-                                   :short) all-subcommands)); just say nil
-    nil))
+      (doall (map #(assert-unique-values %
+                                         (get-options-for currentCfg %)
+                                         :option) all-subcommands))
+      (doall (map #(assert-unique-values %
+                                         (get-options-for currentCfg %)
+                                         :short) all-subcommands))))
+  ;; just say nil
+  nil)
 
 (s/fdef assert-cfg-sanity
         :args (s/cat :opts ::S/climatic-cfg))

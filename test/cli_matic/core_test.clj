@@ -297,7 +297,7 @@
          (= (try
               (assert-cfg-sanity i)
               (catch Throwable e
-                ;;(prn e)
+                (prn e)
                 :ERR))
             o)
 
@@ -311,35 +311,35 @@
                                     {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
       nil
 
-      ;; double in global
-      {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
+           ;; double in global
+      {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
-       :global-opts [{:option  "base" :as      "T"  :type    :int :default 10}
-                     {:option  "base" :as      "X"  :type    :int :default 10}]
+       :global-opts [{:option "base" :as "T" :type :int :default 10}
+                     {:option "base" :as "X" :type :int :default 10}]
 
-       :commands    [{:command     "add"                      :description "Adds" :runs identity
-                      :opts        [{:option "a" :as "Addendum 1" :type :int}
-                                    {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
+       :commands    [{:command "add" :description "Adds" :runs identity
+                      :opts    [{:option "a" :as "Addendum 1" :type :int}
+                                {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
       :ERR
 
-      ;; double in specific
-      {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
+           ;; double in specific
+      {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
-       :global-opts [{:option  "base" :as      "T"  :type    :int :default 10}]
+       :global-opts [{:option "base" :as "T" :type :int :default 10}]
 
-       :commands    [{:command     "add"                      :description "Adds" :runs identity
-                      :opts        [{:option "a" :short "q" :as "Addendum 1" :type :int}
-                                    {:option "b" :short "q" :as "Addendum 2" :type :int :default 0}]}]}
+       :commands    [{:command "add" :description "Adds" :runs identity
+                      :opts    [{:option "a" :short "q" :as "Addendum 1" :type :int}
+                                {:option "b" :short "q" :as "Addendum 2" :type :int :default 0}]}]}
       :ERR
 
-      ;; positional subcmds in global opts
-      {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
+           ;; positional subcmds in global opts
+      {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
-       :global-opts [{:option  "base"  :short 0 :as      "T"  :type    :int :default 10}]
+       :global-opts [{:option "base" :short 0 :as "T" :type :int :default 10}]
 
-       :commands    [{:command     "add"                      :description "Adds" :runs identity
-                      :opts        [{:option "a" :short "q" :as "Addendum 1" :type :int}
-                                    {:option "b" :short "d" :as "Addendum 2" :type :int :default 0}]}]}
+       :commands    [{:command "add" :description "Adds" :runs identity
+                      :opts    [{:option "a" :short "q" :as "Addendum 1" :type :int}
+                                {:option "b" :short "d" :as "Addendum 2" :type :int :default 0}]}]}
       :ERR)))
 
 (def POSITIONAL-SUBCOMMAND-CFG

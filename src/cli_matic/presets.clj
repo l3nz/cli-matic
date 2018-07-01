@@ -1,5 +1,5 @@
 (ns cli-matic.presets
-  [:require [clojure.string :as str]])
+  (:require [clojure.string :as str]))
 
 ;; Known presets
 (defn parseInt
