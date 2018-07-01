@@ -4,6 +4,10 @@ Before commit:
 
 	lein clean && lein eftest
 
+Then let's see if the linter notices something.
+
+	lein eastwood
+
 Then, let's format sources:
 
 	lein cljfmt check
