@@ -1,4 +1,4 @@
-(ns cli-matic.toycalc
+(ns toycalc
   (:require [cli-matic.core :refer [run-cmd]]))
 
 ;; To run this, try:
