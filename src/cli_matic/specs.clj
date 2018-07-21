@@ -43,7 +43,8 @@
                 :float :float-0
                 :yyyy-mm-dd
                 :slurp :slurplines
-                :json :jsonfile})
+                :json :jsonfile
+                :yaml :yamlfile})
 
 (s/def ::default some?)
 

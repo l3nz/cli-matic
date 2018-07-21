@@ -8,6 +8,7 @@
                  [org.clojure/tools.cli "0.3.7"]
                  [orchestra "2017.11.12-1"]
                  [cheshire "5.8.0" :scope "provided"]
+                 [io.forward/yaml "1.0.9" :scope "provided"]
                 ]
   :scm {:name "git"
         ;; :tag "..."
