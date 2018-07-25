@@ -44,7 +44,8 @@
                 :yyyy-mm-dd
                 :slurp :slurplines
                 :edn :ednfile
-                :json :jsonfile})
+                :json :jsonfile
+                :yaml :yamlfile})
 
 (s/def ::default some?)
 

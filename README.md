@@ -144,11 +144,13 @@ The following pre-sets (`:type`) are available:
 * `:string` - a string
 * `:edn` - an EDN literal value, that will be decoded and returned.
 * `:json` - a JSON literal value, that will be decoded an returned as a Clojure structure.
+* `:yaml` - a YAML literal value, that will be decoded and returned as a Clojure structure. Does NOT work with GraalVM.
 * `:yyyy-mm-dd` - a Date object, expressed as "yyyy-mm-dd" in the local time zone
 * `:slurp` - Receives a file name - reads is as text and returns it as a single string. Handles URIs correctly.
 * `:slurplines` - Receives a file name - reads is as text and returns it as a seq of strings. Handles URIs correctly.
 * `:ednfile` - a file (or URL) containing EDN, that will be decoded and returned as a Clojure structure.
 * `:jsonfile` - a file (or URL) containing JSON, that will be decoded and returned as a Clojure structure.
+* `:yamlfile` - a file (or URL) containing YAML, that will be decoded and returned as a Clojure structure. Does NOT work with GraalVM
 
 
 For all options, you can then add:
@@ -209,6 +211,10 @@ CLI-matic currently depends on:
 
 To use Json decoding, you need Cheshire to be on the classpath; otherwise it will break.
 If you do not need JSON parsing, you can do without.
+
+To use Yaml decoding, you need io.forward/yaml on your classpath; otherwise it will break.
+If you do not need YAML parsing, you can do without.
+Note that the YAML library has reflection in it, and so is incompatible with GraalVM native images.
 
 ## License
 
