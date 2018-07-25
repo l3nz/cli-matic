@@ -276,3 +276,35 @@
                                      "strval" "good"}}
        :error-text     ""
        :parse-errors   :NONE})))
+
+; EDN
+
+(deftest test-edn
+  (testing "EDN valore singolo"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :edn})) o)
+
+      ; one file
+      ["foo" "--val" "{:a 1, :b 2}"]
+      {:commandline    {:_arguments []
+                        :val        {:a 1
+                                     :b 2}}
+       :error-text     ""
+       :parse-errors   :NONE}))
+
+  (testing "Slurping multiline EDN"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :ednfile})) o)
+
+      ; one file
+      ["foo" "--val" "resources/edn_simple.edn"]
+      {:commandline    {:_arguments []
+                        :val        {:list   [1 2 "hi"]
+                                     :intval 100
+                                     :strval "good"}}
+       :error-text     ""
+       :parse-errors   :NONE})))
