@@ -64,6 +64,34 @@
   [filename]
   (json-decode (asSingleString filename)))
 
+;; ---------------
+;; YAML is an optional dependency, so we check for it at compile time.
+;; Taken from core.clj in https://github.com/dakrone/clj-http
+(def yaml-enabled?
+  (try
+    (require 'yaml.core)
+    true
+    (catch Throwable _ false)))
+
+(defn ^:dynamic yaml-decode
+  "Resolve and apply io.forward/yaml's yaml decoding dynamically."
+  [& args]
+  {:pre [yaml-enabled?]}
+  ((ns-resolve (symbol "yaml.core") (symbol "parse-string"))
+   (if (string? args) args (str/join args))
+   :keywords identity
+   :constructor (ns-resolve (symbol "yaml.reader") (symbol "passthrough-constructor"))))
+
+(defn asDecodedYamlValue
+  "Decodes the value as a YAML object."
+  [s]
+  (yaml-decode s))
+
+(defn asDecodedYamlFile
+  "Decodes the contents of a file as a JSON object."
+  [filename]
+  (yaml-decode (asSingleString filename)))
+
 ;; Remember to add these to
 ;; ::S/type
 (def known-presets
@@ -89,6 +117,10 @@
    :json       {:parse-fn asDecodedJsonValue
                 :placeholder "json"}
    :jsonfile   {:parse-fn asDecodedJsonFile
+                :placeholder "f"}
+   :yaml       {:parse-fn asDecodedYamlValue
+                :placeholder "yaml"}
+   :yamlfile   {:parse-fn asDecodedYamlFile
                 :placeholder "f"}
 
    ; dates
