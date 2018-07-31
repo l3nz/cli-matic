@@ -1,4 +1,4 @@
-(defproject cli-matic "0.1.14"
+(defproject cli-matic "0.1.15"
   :description "Compact [sub]command line parsing library, for Clojure"
   :url "https://github.com/l3nz/cli-matic"
   :license {:name "Eclipse Public License, v2"
@@ -8,8 +8,7 @@
                  [org.clojure/tools.cli "0.3.7"]
                  [orchestra "2017.11.12-1"]
                  [cheshire "5.8.0" :scope "provided"]
-                 [io.forward/yaml "1.0.9" :scope "provided"]
-                ]
+                 [io.forward/yaml "1.0.9" :scope "provided"]]
   :scm {:name "git"
         ;; :tag "..."
         :url "https://github.com/l3nz/cli-matic" }
