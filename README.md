@@ -142,11 +142,13 @@ The following pre-sets (`:type`) are available:
 * `:float` - a float number
 * `:float-0` - a float number, with defaults to zero
 * `:string` - a string
-* `:json` - a JSON literal value, that will be decoded and returned as a Clojure structure.
+* `:edn` - an EDN literal value, that will be decoded and returned.
+* `:json` - a JSON literal value, that will be decoded an returned as a Clojure structure.
 * `:yaml` - a YAML literal value, that will be decoded and returned as a Clojure structure. Does NOT work with GraalVM.
 * `:yyyy-mm-dd` - a Date object, expressed as "yyyy-mm-dd" in the local time zone
 * `:slurp` - Receives a file name - reads is as text and returns it as a single string. Handles URIs correctly.
 * `:slurplines` - Receives a file name - reads is as text and returns it as a seq of strings. Handles URIs correctly.
+* `:ednfile` - a file (or URL) containing EDN, that will be decoded and returned as a Clojure structure.
 * `:jsonfile` - a file (or URL) containing JSON, that will be decoded and returned as a Clojure structure.
 * `:yamlfile` - a file (or URL) containing YAML, that will be decoded and returned as a Clojure structure. Does NOT work with GraalVM
 

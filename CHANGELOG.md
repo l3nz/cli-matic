@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. This change
 ## [Unreleased]
 ### Changed
 - Add a new arity to `make-widget-async` to provide a different widget shape.
+- Added EDN support.
 - Added optional yaml parsing, but using it breaks graal
 
 ## [0.1.1] - 2018-03-31

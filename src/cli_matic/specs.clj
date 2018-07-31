@@ -43,6 +43,7 @@
                 :float :float-0
                 :yyyy-mm-dd
                 :slurp :slurplines
+                :edn :ednfile
                 :json :jsonfile
                 :yaml :yamlfile})
 
