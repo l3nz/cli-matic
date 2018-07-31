@@ -1,5 +1,6 @@
 (ns cli-matic.presets
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.edn :as edn]))
 
 ;; Known presets
 (defn parseInt
@@ -38,6 +39,17 @@
   "Reads a text file and returns it as a collection of lines."
   [filename]
   (str/split-lines (asSingleString filename)))
+
+(defn asDecodedEdnValue
+  "Decodes the value as an EDN structure."
+  [s]
+  ;;(edn/read-string (if (string? s) s (str/join s)))
+  (edn/read-string s))
+
+(defn asDecodedEdnFile
+  "Decodes the contents of a file as a JSON object."
+  [filename]
+  (edn/read-string (asSingleString filename)))
 
 ;; ---------------
 ;; Cheshire is an optional dependency, so we check for it at compile time.
@@ -113,6 +125,10 @@
    :slurp  {:parse-fn    asSingleString
             :placeholder "f"}
    :slurplines {:parse-fn    asLinesString
+                :placeholder "f"}
+   :edn        {:parse-fn asDecodedEdnValue
+                :placeholder "edn"}
+   :ednfile    {:parse-fn asDecodedEdnFile
                 :placeholder "f"}
    :json       {:parse-fn asDecodedJsonValue
                 :placeholder "json"}

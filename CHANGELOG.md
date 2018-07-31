@@ -5,4 +5,3 @@ All notable changes to this project will be documented in this file. This change
 ### Changed
 - Added EDN support (tks jwhitlark)
 - Added optional YAML parsing, but using it breaks Graal (tks jwhitlark)
-
