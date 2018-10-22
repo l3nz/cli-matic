@@ -1,8 +1,8 @@
 (ns toycalc
   (:require [cli-matic.core :refer [run-cmd]]))
 
-;; To run this, try:
-;; lein run -m cli-matic.toycalc -- --base 12 add --a 1 --b 2
+;; To run this, try (from the parent directory):
+;; clj -m toycalc add -a 40 -b 2
 
 (defn add_numbers
   "Sums A and B together, and prints it in base `base`"
