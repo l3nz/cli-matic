@@ -104,6 +104,16 @@
   [filename]
   (yaml-decode (asSingleString filename)))
 
+(defn- replace-double-colon
+  [s]
+  (if (str/starts-with? s "::")
+    (str/replace s "::" ":user/")
+    s))
+
+(defn asKeyword
+  [s]
+  (-> s replace-double-colon edn/read-string keyword))
+  
 ;; Remember to add these to
 ;; ::S/type
 (def known-presets
@@ -121,6 +131,9 @@
               :default     0.0}
 
    :string {:placeholder "S"}
+
+   :keyword {:placeholder "S"
+             :parse-fn asKeyword}
 
    :slurp  {:parse-fn    asSingleString
             :placeholder "f"}
