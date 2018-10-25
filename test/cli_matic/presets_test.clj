@@ -128,6 +128,46 @@
        :error-text   ""
        :parse-errors :NONE})))
 
+;; :keyword
+(deftest test-keyword
+  (testing "simple keyword"
+    (are [i o]
+        (= (parse-cmds-simpler
+            i
+            (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+
+                                        ;
+      ["foo" "--val" "abcd"]
+      {:commandline  {:_arguments []
+                      :val        :abcd}
+       :error-text   ""
+       :parse-errors :NONE}))
+  (testing "Already keyword"
+    (are [i o]
+        (= (parse-cmds-simpler
+            i
+            (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+
+                                        ;
+      ["foo" "--val" ":core/xyz"]
+      {:commandline  {:_arguments []
+                      :val        :core/xyz}
+       :error-text   ""
+       :parse-errors :NONE}))
+  (testing "double colon"
+    (are [i o]
+        (= (parse-cmds-simpler
+            i
+            (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+
+                                        ;
+      ["foo" "--val" "::abcd"]
+      {:commandline  {:_arguments []
+                      :val        :user/abcd}
+       :error-text   ""
+       :parse-errors :NONE})))
+
+
 ; :string
 (deftest test-string
   (testing "just strings"

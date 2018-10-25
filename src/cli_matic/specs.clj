@@ -39,7 +39,8 @@
 
 (s/def ::as ::existing-string)
 
-(s/def ::type #{:int :string :int-0
+(s/def ::type #{:int :int-0
+                :string :keyword
                 :float :float-0
                 :yyyy-mm-dd
                 :slurp :slurplines
