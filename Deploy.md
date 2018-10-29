@@ -15,6 +15,8 @@ Then, let's format sources:
 
 And commit with a message "Fixing #XX - Description"
 
+Do not forget to edit the Changelog.
+
 ## Pushing to Clojars
 
 First advance the version in project.clj.
