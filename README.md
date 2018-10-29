@@ -28,7 +28,7 @@ Or the library can be easily referenced through Github:
 
 * Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent `tools.cli`.
 * **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
-* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters at once. Again, the more you have in declarative code, the less room for mistakes.  [TBD]
+* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters of the subcommand at once. Again, the more you have in declarative code, the less room for mistakes.  
 * **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
 * **Capture unnamed parameters** as if they were named parameters, with casting, validation, etc.
 
@@ -113,7 +113,7 @@ So we define a configuration:
 	   :commands    [{:command     "add"
 	                  :description "Adds two numbers together"
 	                  :opts        [{:option "a" :as "Addendum 1" :type :int}
-	                                {:option "b" :as "Addendum 2" :type :int :default 0}]
+	                                {:option "b" :as "Addendum 2" :type :int :default 0}]              
 	                  :runs        add_numbers}
 
 	                 {:command     "sub"
@@ -127,9 +127,9 @@ It contains:
 
 * Information on the app itself (name, version)
 * The list of global parameters, i.e. the ones that apply to al subcommands (may be empty)
-* A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`.
+* A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`. You can optionally validate the full parameter-map that is received by subcommand at once by passing a Spec into `:spec`.
 
-That's it!
+And...that's it!
 
 
 
@@ -162,12 +162,12 @@ For all options, you can then add:
 * `:multiple` if true, the values for all options with the same name are stored in an array
 * `:short`: a shortened name for the command (if a string), or a positional argument if integer (see below).
 * `:env` if set, the default is read from the current value of an env variable you specify. For capture to happen, either the option must be missing, or its value must be invalid. If an option has an `:env` value specified to FOO, its description in the help shows `[$FOO]`.
+* `:spec`: a Spec that will be used to validate the the parameter, after any coercion/transformation.
 
 [to be done]
 
 * boolean types
 * having a library of ready-made types that cover most cases
-* using spec for checking values
 
 
 ### Return values

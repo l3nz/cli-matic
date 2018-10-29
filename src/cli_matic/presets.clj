@@ -113,7 +113,7 @@
 (defn asKeyword
   [s]
   (-> s replace-double-colon edn/read-string keyword))
-  
+
 ;; Remember to add these to
 ;; ::S/type
 (def known-presets

@@ -1,6 +1,9 @@
 (ns cli-matic.specs
   (:require [clojure.spec.alpha :as s]))
 
+(s/def ::anything (s/or :nil nil?
+                        :some some?))
+
 (s/def ::existing-string string?)
 
 (s/def ::climatic-errors #{:ERR-CFG
@@ -52,9 +55,11 @@
 
 (s/def ::env ::existing-string)
 
+(s/def ::spec some?) ; \TODO how do we know it's a valid spec?
+
 (s/def ::climatic-option
   (s/keys :req-un [::option  ::as  ::type]
-          :opt-un [::short ::default ::env]))
+          :opt-un [::short ::default ::env ::spec]))
 
 ;; Climatic configuration
 (s/def ::description (s/or :a-string ::existing-string
@@ -73,7 +78,7 @@
 (s/def ::global-opts ::opts)
 
 (s/def ::a-command (s/keys :req-un [::command ::opts ::runs]
-                           :opt-un [::short ::description]))
+                           :opt-un [::short ::description ::spec]))
 
 (s/def ::commands (s/coll-of ::a-command))
 
@@ -95,7 +100,7 @@
 
 (s/def ::lineParseResult (s/keys :req-un [::subcommand ::subcommand-def ::commandline ::parse-errors ::error-text]))
 
-;; Rturn value of parsing with tools.cli
+;; Return value of parsing with tools.cli
 (s/def ::parsedCliOpts map?)
 
 (s/def ::mapOfCliParams (s/map-of string? (s/or :empty nil? :str string?)))

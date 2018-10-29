@@ -132,9 +132,9 @@
 (deftest test-keyword
   (testing "simple keyword"
     (are [i o]
-        (= (parse-cmds-simpler
-            i
-            (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
 
                                         ;
       ["foo" "--val" "abcd"]
@@ -144,9 +144,9 @@
        :parse-errors :NONE}))
   (testing "Already keyword"
     (are [i o]
-        (= (parse-cmds-simpler
-            i
-            (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
 
                                         ;
       ["foo" "--val" ":core/xyz"]
@@ -156,9 +156,9 @@
        :parse-errors :NONE}))
   (testing "double colon"
     (are [i o]
-        (= (parse-cmds-simpler
-            i
-            (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
 
                                         ;
       ["foo" "--val" "::abcd"]
@@ -166,7 +166,6 @@
                       :val        :user/abcd}
        :error-text   ""
        :parse-errors :NONE})))
-
 
 ; :string
 (deftest test-string
