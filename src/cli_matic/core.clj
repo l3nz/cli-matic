@@ -901,6 +901,18 @@
             (str "JVM Exception: "
                  (with-out-str (println t)))))))
 
+(defn deep-merge [& maps]
+  ; See https://gist.github.com/danielpcox/c70a8aa2c36766200a95#gistcomment-2308595
+  (apply merge-with (fn [& args]
+                      (if (every? map? args)
+                        (apply deep-merge args)
+                        (last args)))
+         maps))
+
+(def setup-defaults
+  {:app {:global-help generate-global-help
+         :subcmd-help generate-subcmd-help}})
+
 ;; Executes our code.
 ;; It will try and parse the arguments via clojure.tools.cli
 ;; and detect our subcommand.
@@ -923,10 +935,6 @@
                               (str "Option error: " (:error-text parsed-opts)))
       :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts)))))
 
-(def setup-defaults
-  {:global-help generate-global-help
-   :subcmd-help generate-subcmd-help})
-
 (defn run-cmd
   "This is the actual function that is executed.
   It wraps run-cmd* and then does the printing
@@ -934,8 +942,7 @@
   As it invokes Sys.exit you cannot use it from a REPL.
   "
   [args supplied-setup]
-  (println "* THIS IS RUN-CMD *")
-  (let [setup (merge setup-defaults supplied-setup)
+  (let [setup (deep-merge setup-defaults supplied-setup)
         {:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
     (if (not (empty? stderr))
