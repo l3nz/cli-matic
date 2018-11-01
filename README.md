@@ -200,6 +200,26 @@ That is what you wanted from the start.
 At the same time, the named option remains, so you can use either version. Bound entries are not removed from the unparsed command line entries.
 
 
+### Help text generation
+
+CLI-matic comes with pre-packaged help text generators for global and sub-command help.
+These generators can be overridden by supplying one or more of your own functions in the `:app` section of the configuration:
+
+
+	(defn my-command-help [setup]
+	  " ... ")
+	
+	(defn gen-sub-command-help [setup subcmd]
+	  " ... ")
+	
+	{:app {:global-help my-command-help
+	       :subcmd-help gen-sub-command-help}}
+
+
+The function specified for `:global-help` accepts the CLI configuration, and `:subcmd-help` additionally accepts the sub-command it was called with.
+Each function returns a string that CLI-matic prints verbatim to the user as the full help text.
+
+
 ### Transitive dependencies
 
 CLI-matic currently depends on:
