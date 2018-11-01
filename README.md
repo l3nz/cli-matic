@@ -28,7 +28,7 @@ Or the library can be easily referenced through Github:
 
 * Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent `tools.cli`.
 * **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
-* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters of the subcommand at once. Again, the more you have in declarative code, the less room for mistakes.  
+* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters of the subcommand at once, and emit sane error messages. Again, the more you have in declarative code, the less room for mistakes.  
 * **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
 * **Capture unnamed parameters** as if they were named parameters, with casting, validation, etc.
 
@@ -200,6 +200,12 @@ That is what you wanted from the start.
 
 At the same time, the named option remains, so you can use either version. Bound entries are not removed from the unparsed command line entries.
 
+### Validation with Spec (and Expound)
+
+Cli-matic can validate any parameter with Spec, and uses Expound to produce sane error messages. An example is under `examples` as `toycalc-spec.clj`.
+
+
+
 
 ### Help text generation
 
@@ -228,6 +234,7 @@ CLI-matic currently depends on:
 * org.clojure/clojure
 * org.clojure/spec.alpha
 * org.clojure/tools.cli
+* expound
 * orchestra
 
 #### Optional dependencies
