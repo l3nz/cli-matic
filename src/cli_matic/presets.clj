@@ -1,6 +1,7 @@
 (ns cli-matic.presets
   (:require [clojure.string :as str]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [cli-matic.optionals :as opt]))
 
 ;; Known presets
 (defn parseInt
@@ -51,58 +52,25 @@
   [filename]
   (edn/read-string (asSingleString filename)))
 
-;; ---------------
-;; Cheshire is an optional dependency, so we check for it at compile time.
-;; Taken from core.clj in https://github.com/dakrone/clj-http
-(def json-enabled?
-  (try
-    (require 'cheshire.core)
-    true
-    (catch Throwable _ false)))
-
-(defn ^:dynamic json-decode
-  "Resolve and apply cheshire's json decoding dynamically."
-  [& args]
-  {:pre [json-enabled?]}
-  (apply (ns-resolve (symbol "cheshire.core") (symbol "decode")) args))
-
 (defn asDecodedJsonValue
   "Decodes the value as a JSON object."
   [s]
-  (json-decode s))
+  (opt/json-decode-cheshire s))
 
 (defn asDecodedJsonFile
   "Decodes the contents of a file as a JSON object."
   [filename]
-  (json-decode (asSingleString filename)))
-
-;; ---------------
-;; YAML is an optional dependency, so we check for it at compile time.
-;; Taken from core.clj in https://github.com/dakrone/clj-http
-(def yaml-enabled?
-  (try
-    (require 'yaml.core)
-    true
-    (catch Throwable _ false)))
-
-(defn ^:dynamic yaml-decode
-  "Resolve and apply io.forward/yaml's yaml decoding dynamically."
-  [& args]
-  {:pre [yaml-enabled?]}
-  ((ns-resolve (symbol "yaml.core") (symbol "parse-string"))
-   (if (string? args) args (str/join args))
-   :keywords identity
-   :constructor (ns-resolve (symbol "yaml.reader") (symbol "passthrough-constructor"))))
+  (opt/json-decode-cheshire (asSingleString filename)))
 
 (defn asDecodedYamlValue
   "Decodes the value as a YAML object."
   [s]
-  (yaml-decode s))
+  (opt/yaml-decode s))
 
 (defn asDecodedYamlFile
   "Decodes the contents of a file as a JSON object."
   [filename]
-  (yaml-decode (asSingleString filename)))
+  (opt/yaml-decode (asSingleString filename)))
 
 (defn- replace-double-colon
   [s]

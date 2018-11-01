@@ -5,7 +5,8 @@
             [orchestra.spec.test :as st]
             [clojure.string :as str]
             [cli-matic.presets :as PRESETS]
-            [cli-matic.platform :as P]))
+            [cli-matic.platform :as P]
+            [expound.alpha :as expound]))
 
 ;; ================ ATTENTION ====================
 ;; Cli-matic has one main entry-point: run!
@@ -612,20 +613,27 @@
   If there is an error raised, creates a fake spec result.
 
   explain-data return nil if everything okay.
+
+  expound-string returns 'Success!\n' if all goes well.
+
+
   "
-  [name spec value]
+  [name type spec value]
   (try
-    (let [ed (s/explain-data spec value)]
-      (if (some? ed)
-        (str "Spec failure for '" name "': value '" value "' is invalid.")
+    (let [ed (expound/expound-str spec value)]
+      (if (not= ed "Success!\n")
+        ;(str "Spec failure for '" name "': value '" value "' is invalid.")
+        (str "Spec failure for " type " '" name "'\n" ed)
+
         nil))
 
     (catch Throwable t
-      (str "Spec failure for '" name "': with value '" value "' got " t))))
+      (str "Spec failure for " type " '" name "': with value '" value "' got " t))))
 
 (s/fdef
  check-one-spec
  :args (s/cat :name string?
+              :type string?
               :spec ::S/spec
               :value ::S/anything)
  :ret  (s/or :nil nil?
@@ -635,10 +643,11 @@
   "Given a set of option (so, global options, or a subcommand's options)
   and the fully parsed results, we assert that any defined specs pass.
   "
-  [options parsed-results]
+  [options parsed-results type]
   ;(prn "Validating Specs" options parsed-results)
   (let [cmds-with-specs (filter #(some? (:spec %)) options)
         specs-applied (map #(check-one-spec (:option %)
+                                            type
                                             (:spec %)
                                             (get parsed-results (keyword (:option %))))
                            cmds-with-specs)]
@@ -647,7 +656,8 @@
 (s/fdef
  check-specs-on-parameters
  :args (s/cat :options ::S/opts
-              :parsed-results map?))
+              :parsed-results map?
+              :type string?))
 
 (defn check-specs-on-parsed-args
   "As a last step, before we call the subcommand itself, we assert
@@ -671,9 +681,9 @@
         ;_ (prn "SUB: def" subcmd-opts)
         ;_ (prn "Spec for subcmd " subcmd-spec)
 
-        failing-global-spec (first (check-specs-on-parameters globals-opts parsed-args))
-        failing-subcmd-spec (first (check-specs-on-parameters subcmd-opts parsed-args))
-        failing-subcmd-general (check-one-spec canonical-subcommand subcmd-spec parsed-args)
+        failing-global-spec (first (check-specs-on-parameters globals-opts parsed-args "global option"))
+        failing-subcmd-spec (first (check-specs-on-parameters subcmd-opts parsed-args "option"))
+        failing-subcmd-general (check-one-spec canonical-subcommand "subcommand" subcmd-spec parsed-args)
 
         ; 
         ;_ (prn "Failing global" failing-global-spec)

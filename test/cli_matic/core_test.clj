@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [cli-matic.core :refer :all]
             [cli-matic.presets :as PRESETS :refer [parseInt]]
-            [clojure.spec.alpha :as s]))
+            [clojure.spec.alpha :as s]
+            [clojure.string :as str]))
 
 (defn cmd_foo [& opts])
 (defn cmd_bar [& opts])
@@ -458,9 +459,28 @@
                   :spec        ::GENERAL-SPEC-FOO
                   :runs        cmd_save_opts}]})
 
+(defn keep-1st-line-stderr
+  "To avoid issues with expound changing messages, we remove all
+  but the first line in stderr for testing."
+  [{:keys [stderr] :as all}]
+
+  (let [nv
+
+        (if (and (vector? stderr) (pos? (count stderr)))
+
+          (let [lines (str/split-lines (first stderr))
+                vec-of-fline [(first lines)]]
+
+            vec-of-fline) stderr)]
+
+    (assoc all
+           :stderr nv)))
+
+;; ------------
+
 (deftest check-specs
   (are [i o]
-       (= (run-cmd* SPEC-CFG i)  o)
+       (= (keep-1st-line-stderr (run-cmd* SPEC-CFG i))  o)
 
     ; all of the should pass
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
@@ -468,17 +488,17 @@
 
     ; aa (global) non è dispari
     ["--aa" "2" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
-    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for 'aa': value '2' is invalid."])
+    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for global option 'aa'"])
 
     ; bb non esiste proprio
     ["--aa" "3"  "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
-    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for 'bb': with value '' got java.lang.IllegalArgumentException: Argument must be an integer: "])
+    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for global option 'bb': with value '' got java.lang.IllegalArgumentException: Argument must be an integer: "])
 
     ; dd (local)
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "4" "--ee" "99"]
-    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" ["Option error: Spec failure for 'dd': value '4' is invalid."])
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" ["Option error: Spec failure for option 'dd'"])
 
     ; ee non 99 (validazione globale subcmd)
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "5" "--ee" "97"]
-    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" ["Option error: Spec failure for 'foo': value '{:aa 3, :bb 7, :cc 2, :dd 5, :ee 97, :_arguments []}' is invalid."])))
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" ["Option error: Spec failure for subcommand 'foo'"])))
 

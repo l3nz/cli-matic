@@ -8,7 +8,8 @@
                  [org.clojure/tools.cli "0.4.1"]
                  [orchestra "2017.11.12-1"]
                  [cheshire "5.8.0" :scope "provided"]
-                 [io.forward/yaml "1.0.9" :scope "provided"]]
+                 [io.forward/yaml "1.0.9" :scope "provided"]
+                 [expound "0.7.1"]]
   :scm {:name "git"
         ;; :tag "..."
         :url "https://github.com/l3nz/cli-matic" }
