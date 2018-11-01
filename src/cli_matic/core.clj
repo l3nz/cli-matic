@@ -830,14 +830,19 @@
                               (str "Option error: " (:error-text parsed-opts)))
       :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts)))))
 
+(def setup-defaults
+  {:global-help generate-global-help
+   :subcmd-help generate-subcmd-help})
+
 (defn run-cmd
   "This is the actual function that is executed.
   It wraps run-cmd* and then does the printing
   of any errors, of help pages and  System.exit.
   As it invokes Sys.exit you cannot use it from a REPL.
   "
-  [args setup]
-  (let [{:keys [help stderr subcmd retval]}
+  [args supplied-setup]
+  (let [setup (merge setup-defaults supplied-setup)
+        {:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
     (if (not (empty? stderr))
       (println
@@ -846,9 +851,9 @@
          ["** ERROR: **" stderr "" ""]))))
     (cond
       (= :HELP-GLOBAL help)
-      (println (asString (generate-global-help setup)))
+      (println (asString ((setup :global-help) setup)))
       (= :HELP-SUBCMD help)
-      (println (asString (generate-subcmd-help setup subcmd))))
+      (println (asString ((setup :subcmd-help) setup subcmd))))
     (P/exit-script retval)))
 
 (st/instrument)
