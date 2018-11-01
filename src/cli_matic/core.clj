@@ -636,7 +636,7 @@
   and the fully parsed results, we assert that any defined specs pass.
   "
   [options parsed-results]
-  (prn "Validating Specs" options parsed-results)
+  ;(prn "Validating Specs" options parsed-results)
   (let [cmds-with-specs (filter #(some? (:spec %)) options)
         specs-applied (map #(check-one-spec (:option %)
                                             (:spec %)
@@ -666,15 +666,20 @@
         ; if we have no subcmd spec, we just call (true) instead
         subcmd-spec  (get subcmd-def :spec (constantly true))
 
-        _ (prn "SUB: globals" globals-opts)
-        _ (prn "SUB: def" subcmd-opts)
-        _ (prn "Spec for subcmd " subcmd-spec)
+        ;
+        ;_ (prn "SUB: globals" globals-opts)
+        ;_ (prn "SUB: def" subcmd-opts)
+        ;_ (prn "Spec for subcmd " subcmd-spec)
 
         failing-global-spec (first (check-specs-on-parameters globals-opts parsed-args))
         failing-subcmd-spec (first (check-specs-on-parameters subcmd-opts parsed-args))
-        failing-subcmd-general (check-one-spec canonical-subcommand subcmd-spec parsed-args) _ (prn "Failing global" failing-global-spec)
-        _ (prn "Failing local" failing-subcmd-spec)
-        _ (prn "Failing total" failing-subcmd-general)]
+        failing-subcmd-general (check-one-spec canonical-subcommand subcmd-spec parsed-args)
+
+        ; 
+        ;_ (prn "Failing global" failing-global-spec)
+        ;_ (prn "Failing local" failing-subcmd-spec)
+        ;_ (prn "Failing total" failing-subcmd-general))
+]
 
     (cond
       (some? failing-global-spec)
