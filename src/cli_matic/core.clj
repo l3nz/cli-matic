@@ -934,6 +934,7 @@
   As it invokes Sys.exit you cannot use it from a REPL.
   "
   [args supplied-setup]
+  (println "* THIS IS RUN-CMD *")
   (let [setup (merge setup-defaults supplied-setup)
         {:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
