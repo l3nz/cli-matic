@@ -606,6 +606,101 @@
       :else
       parsed-cmd-opts)))
 
+(defn check-one-spec
+  "Checks one spec.
+  If spec passes, returns nil; if not, returns the failure.
+  If there is an error raised, creates a fake spec result.
+
+  explain-data return nil if everything okay.
+  "
+  [name spec value]
+  (try
+    (let [ed (s/explain-data spec value)]
+      (if (some? ed)
+        (str "Spec failure for '" name "': value '" value "' is invalid.")
+        nil))
+
+    (catch Throwable t
+      (str "Spec failure for '" name "': with value '" value "' got " t))))
+
+(s/fdef
+ check-one-spec
+ :args (s/cat :name string?
+              :spec ::S/spec
+              :value ::S/anything)
+ :ret  (s/or :nil nil?
+             :str string?))
+
+(defn check-specs-on-parameters
+  "Given a set of option (so, global options, or a subcommand's options)
+  and the fully parsed results, we assert that any defined specs pass.
+  "
+  [options parsed-results]
+  (prn "Validating Specs" options parsed-results)
+  (let [cmds-with-specs (filter #(some? (:spec %)) options)
+        specs-applied (map #(check-one-spec (:option %)
+                                            (:spec %)
+                                            (get parsed-results (keyword (:option %))))
+                           cmds-with-specs)]
+    (filter some? specs-applied)))
+
+(s/fdef
+ check-specs-on-parameters
+ :args (s/cat :options ::S/opts
+              :parsed-results map?))
+
+(defn check-specs-on-parsed-args
+  "As a last step, before we call the subcommand itself, we assert
+  that any spec that was actually defined is passed.
+
+  We just care about the first spec that fails, so we can get a
+  lazy list of failures and get the first of them (or nil).
+  "
+
+  [parsed-args canonical-subcommand config]
+
+  (let [globals-opts (get-options-for config nil)
+        subcmd-def  (get-subcommand config canonical-subcommand)
+        subcmd-opts  (get-options-for config canonical-subcommand)
+
+        ; if we have no subcmd spec, we just call (true) instead
+        subcmd-spec  (get subcmd-def :spec (constantly true))
+
+        _ (prn "SUB: globals" globals-opts)
+        _ (prn "SUB: def" subcmd-opts)
+        _ (prn "Spec for subcmd " subcmd-spec)
+
+        failing-global-spec (first (check-specs-on-parameters globals-opts parsed-args))
+        failing-subcmd-spec (first (check-specs-on-parameters subcmd-opts parsed-args))
+        failing-subcmd-general (check-one-spec canonical-subcommand subcmd-spec parsed-args) _ (prn "Failing global" failing-global-spec)
+        _ (prn "Failing local" failing-subcmd-spec)
+        _ (prn "Failing total" failing-subcmd-general)]
+
+    (cond
+      (some? failing-global-spec)
+      (mkError config nil :ERR-PARMS-GLOBAL failing-global-spec)
+
+      (some? failing-subcmd-spec)
+      (mkError config canonical-subcommand :ERR-PARMS-SUBCMD failing-subcmd-spec)
+
+      (some? failing-subcmd-general)
+      (mkError config canonical-subcommand :ERR-PARMS-SUBCMD failing-subcmd-general)
+
+      :else
+      ; all went well.... phew!
+      {:subcommand     canonical-subcommand
+       :subcommand-def subcmd-def
+       :commandline    parsed-args
+       :parse-errors    :NONE
+       :error-text     ""})))
+
+(s/fdef
+ check-specs-on-parsed-args
+ :args (s/cat :parsed-args map?
+              :canonical-subcommand string?
+              :config ::S/climatic-cfg)
+ :ret ::S/lineParseResult)
+
 (defn parse-cmds
   "This is where magic happens.
   We first parse global options, then stop,
@@ -671,15 +766,13 @@
               (mkError config canonical-subcommand :ERR-PARMS-SUBCMD missing-cmd-opts)
 
               ; no errors?
+              ; as a last step, we assert that specs are okay
               (nil? cmd-errs)
-              {:subcommand     canonical-subcommand
-               :subcommand-def (get-subcommand config canonical-subcommand)
-               :commandline    (-> {}
-                                   (into gl-opts)
-                                   (into cmd-opts)
-                                   (into {:_arguments cmd-args}))
-               :parse-errors    :NONE
-               :error-text     ""}
+              (let [parsed-opts (-> {}
+                                    (into gl-opts)
+                                    (into cmd-opts)
+                                    (into {:_arguments cmd-args}))]
+                (check-specs-on-parsed-args parsed-opts canonical-subcommand config))
 
               ;; sth went wrong
               :else

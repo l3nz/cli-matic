@@ -1,7 +1,7 @@
 # CLI-matic
 
 Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
-Clojure is not good for scripting?). 
+Clojure is not good for scripting?).
 
 Especially when scripting, you should write interesting code, not boilerplate. Command line apps are usually so tiny that there is absolutely no reason why your code should not be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
 
@@ -28,7 +28,7 @@ Or the library can be easily referenced through Github:
 
 * Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent `tools.cli`.
 * **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
-* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters at once. Again, the more you have in declarative code, the less room for mistakes.  [TBD]
+* **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters of the subcommand at once. Again, the more you have in declarative code, the less room for mistakes.  
 * **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
 * **Capture unnamed parameters** as if they were named parameters, with casting, validation, etc.
 
@@ -113,7 +113,7 @@ So we define a configuration:
 	   :commands    [{:command     "add"
 	                  :description "Adds two numbers together"
 	                  :opts        [{:option "a" :as "Addendum 1" :type :int}
-	                                {:option "b" :as "Addendum 2" :type :int :default 0}]
+	                                {:option "b" :as "Addendum 2" :type :int :default 0}]              
 	                  :runs        add_numbers}
 
 	                 {:command     "sub"
@@ -127,9 +127,9 @@ It contains:
 
 * Information on the app itself (name, version)
 * The list of global parameters, i.e. the ones that apply to al subcommands (may be empty)
-* A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`.
+* A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`. You can optionally validate the full parameter-map that is received by subcommand at once by passing a Spec into `:spec`.
 
-That's it!
+And...that's it!
 
 
 
@@ -142,31 +142,32 @@ The following pre-sets (`:type`) are available:
 * `:float` - a float number
 * `:float-0` - a float number, with defaults to zero
 * `:string` - a string
+* `:keyword` - a string representation of a keyword, leading colon is optional, if no namespace is specified. ::foo will be converted to :user/foo, otherwise it will work as expected.
 * `:json` - a JSON literal value, that will be decoded and returned as a Clojure structure.
-* `:yaml` - a YAML literal value, that will be decoded and returned as a Clojure structure. 
+* `:yaml` - a YAML literal value, that will be decoded and returned as a Clojure structure.
 * `:edn` - an EDN literal value, that will be decoded and returned.
 * `:yyyy-mm-dd` - a Date object, expressed as "yyyy-mm-dd" in the local time zone
 * `:slurp` - Receives a file name - reads is as text and returns it as a single string. Handles URIs correctly.
 * `:slurplines` - Receives a file name - reads is as text and returns it as a seq of strings. Handles URIs correctly.
 * `:ednfile` - a file (or URL) containing EDN, that will be decoded and returned as a Clojure structure.
 * `:jsonfile` - a file (or URL) containing JSON, that will be decoded and returned as a Clojure structure.
-* `:yamlfile` - a file (or URL) containing YAML, that will be decoded and returned as a Clojure structure. 
+* `:yamlfile` - a file (or URL) containing YAML, that will be decoded and returned as a Clojure structure.
 
 
 For all options, you can then add:
 
-* `:default` the default value, as expected after conversion. If no default, the value will be 
+* `:default` the default value, as expected after conversion. If no default, the value will be
   passed only if present. If you set `:default :present` this means that CLI-matic will abort
   if that option is not present (and it appears with a trailing asterisk in the help)
 * `:multiple` if true, the values for all options with the same name are stored in an array
 * `:short`: a shortened name for the command (if a string), or a positional argument if integer (see below).
-* `:env` if set, the default is read from the current value of an env variable you specify. For capture to happen, either the option must be missing, or its value must be invalid. If an option has an `:env` value specified to FOO, its description in the help shows `[$FOO]`. 
+* `:env` if set, the default is read from the current value of an env variable you specify. For capture to happen, either the option must be missing, or its value must be invalid. If an option has an `:env` value specified to FOO, its description in the help shows `[$FOO]`.
+* `:spec`: a Spec that will be used to validate the the parameter, after any coercion/transformation.
 
 [to be done]
 
 * boolean types
 * having a library of ready-made types that cover most cases
-* using spec for checking values
 
 
 ### Return values
@@ -174,7 +175,7 @@ For all options, you can then add:
 The function called can return an integer; if it does, it is used as an exit code
 for the shell process.
 
-Errors and exceptions return an exit code of -1; while normal executions (including invocations 
+Errors and exceptions return an exit code of -1; while normal executions (including invocations
 of help) return 0.
 
 ### Positional arguments
@@ -224,10 +225,10 @@ Each function returns a string that CLI-matic prints verbatim to the user as the
 
 CLI-matic currently depends on:
 
-* org.clojure/clojure 
-* org.clojure/spec.alpha 
-* org.clojure/tools.cli 
-* orchestra 
+* org.clojure/clojure
+* org.clojure/spec.alpha
+* org.clojure/tools.cli
+* orchestra
 
 #### Optional dependencies
 
@@ -247,4 +248,3 @@ By using this software in any fashion, you are agreeing to be bound by
 the terms of this license.
 
 You must not remove this notice, or any other, from this software.
-

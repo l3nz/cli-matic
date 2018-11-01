@@ -1,7 +1,8 @@
 (ns cli-matic.core-test
   (:require [clojure.test :refer :all]
             [cli-matic.core :refer :all]
-            [cli-matic.presets :as PRESETS :refer [parseInt]]))
+            [cli-matic.presets :as PRESETS :refer [parseInt]]
+            [clojure.spec.alpha :as s]))
 
 (defn cmd_foo [& opts])
 (defn cmd_bar [& opts])
@@ -430,4 +431,54 @@
       {:arguments ["pippo" "pluto"]
        :errors    nil
        :options   {:cc 0}})))
+
+; =======================================================================
+; ========                    S P E C S                        ==========
+; =======================================================================
+
+; We add a stupid spec check
+; Specs are checked after parsing, both on parameters and globally.
+
+(s/def ::ODD-NUMBER odd?)
+
+(s/def ::GENERAL-SPEC-FOO #(= 99 (:ee %)))
+
+(def SPEC-CFG
+  {:app         {:command     "dummy"
+                 :description "I am some command"
+                 :version     "0.1.2"}
+   :global-opts [{:option "aa" :as "A" :type :int :default :present :spec ::ODD-NUMBER}
+                 {:option "bb" :as "B" :type :int :spec ::ODD-NUMBER}]
+   :commands    [{:command     "foo"
+                  :short       "f"
+                  :description "I am function foo"
+                  :opts        [{:option "cc" :short 0 :as "C" :type :int :default :present}
+                                {:option "dd" :as "D" :type :int :spec ::ODD-NUMBER}
+                                {:option "ee"  :short 1 :as "E" :type :int :spec ::ODD-NUMBER}]
+                  :spec        ::GENERAL-SPEC-FOO
+                  :runs        cmd_save_opts}]})
+
+(deftest check-specs
+  (are [i o]
+       (= (run-cmd* SPEC-CFG i)  o)
+
+    ; all of the should pass
+    ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
+    (->RV 0 :OK nil nil [])
+
+    ; aa (global) non è dispari
+    ["--aa" "2" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
+    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for 'aa': value '2' is invalid."])
+
+    ; bb non esiste proprio
+    ["--aa" "3"  "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
+    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for 'bb': with value '' got java.lang.IllegalArgumentException: Argument must be an integer: "])
+
+    ; dd (local)
+    ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "4" "--ee" "99"]
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" ["Option error: Spec failure for 'dd': value '4' is invalid."])
+
+    ; ee non 99 (validazione globale subcmd)
+    ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "5" "--ee" "97"]
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" ["Option error: Spec failure for 'foo': value '{:aa 3, :bb 7, :cc 2, :dd 5, :ee 97, :_arguments []}' is invalid."])))
 
