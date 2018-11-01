@@ -952,9 +952,9 @@
          ["** ERROR: **" stderr "" ""]))))
     (cond
       (= :HELP-GLOBAL help)
-      (println (asString ((get-in setup :app :global-help) setup)))
+      (println (asString ((get-in setup [:app :global-help]) setup)))
       (= :HELP-SUBCMD help)
-      (println (asString ((get-in setup :app :subcmd-help) setup subcmd))))
+      (println (asString ((get-in setup [:app :subcmd-help]) setup subcmd))))
     (P/exit-script retval)))
 
 (st/instrument)
