@@ -205,7 +205,7 @@ At the same time, the named option remains, so you can use either version. Bound
 CLI-matic can optionally validate any parameter, and the set of parameters you use to call the subcommand function, with Spec, and uses the excellent Expound https://github.com/bhb/expound to produce sane error messages. An example is under `examples` as `toycalc-spec.clj` - see https://github.com/l3nz/cli-matic/blob/master/examples/toycalc-spec.clj
 
 By using and including Expound as a depencency, you can add error descriptions where the raw Spec would be hard to read, and use a nice set of
-pre-built specs included in Expound - se https://github.com/bhb/expound/blob/master/src/expound/specs.cljc
+pre-built specs with readable descriptions that come with Expound - see https://github.com/bhb/expound/blob/master/src/expound/specs.cljc
 
 
 ### Transitive dependencies
