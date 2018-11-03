@@ -26,7 +26,7 @@ Or the library can be easily referenced through Github:
 ## Features
 
 
-* Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent `tools.cli`.
+* Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent - but lower level - `tools.cli`.
 * **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
 * **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters of the subcommand at once, and emit sane error messages. Again, the more you have in declarative code, the less room for mistakes.  
 * **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
@@ -226,6 +226,13 @@ If you do not need JSON parsing, you can do without.
 To use Yaml decoding, you need `io.forward/yaml` on your classpath; otherwise it will break.
 If you do not need YAML parsing, you can do without.
 Note that the YAML library has reflection in it, and so is incompatible with GraalVM native images.
+
+## See also
+
+If you would like to capture the build environment at compile time (e.g. the exact GIT revision, or when/where 
+the program was built, or the version of your project as defined in `project.clj`) so you can print
+meaningful version numbers without manual intervention, you may want to include https://github.com/l3nz/say-cheez and 
+use it to provide everything to you.
 
 ## License
 
