@@ -916,6 +916,18 @@
             (str "JVM Exception: "
                  (with-out-str (println t)))))))
 
+(defn deep-merge [& maps]
+  ; See https://gist.github.com/danielpcox/c70a8aa2c36766200a95#gistcomment-2308595
+  (apply merge-with (fn [& args]
+                      (if (every? map? args)
+                        (apply deep-merge args)
+                        (last args)))
+         maps))
+
+(def setup-defaults
+  {:app {:global-help generate-global-help
+         :subcmd-help generate-subcmd-help}})
+
 ;; Executes our code.
 ;; It will try and parse the arguments via clojure.tools.cli
 ;; and detect our subcommand.
@@ -944,8 +956,9 @@
   of any errors, of help pages and  System.exit.
   As it invokes Sys.exit you cannot use it from a REPL.
   "
-  [args setup]
-  (let [{:keys [help stderr subcmd retval]}
+  [args supplied-setup]
+  (let [setup (deep-merge setup-defaults supplied-setup)
+        {:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
     (if (not (empty? stderr))
       (println
@@ -954,9 +967,9 @@
          ["** ERROR: **" stderr "" ""]))))
     (cond
       (= :HELP-GLOBAL help)
-      (println (asString (generate-global-help setup)))
+      (println (asString ((get-in setup [:app :global-help]) setup)))
       (= :HELP-SUBCMD help)
-      (println (asString (generate-subcmd-help setup subcmd))))
+      (println (asString ((get-in setup [:app :subcmd-help]) setup subcmd))))
     (P/exit-script retval)))
 
 (st/instrument)
