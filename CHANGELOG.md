@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.1.18 - 2018-11-04
+### Changed
+* Fixes #45 - Overridable help text generation (tks ty-i3) 
+
+
 ## 0.1.17 - 2018-11-01
 ### Changed
 * Fixes #41 - Use expound for sane error messages with spec
