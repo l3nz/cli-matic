@@ -128,6 +128,9 @@ It contains:
 * Information on the app itself (name, version)
 * The list of global parameters, i.e. the ones that apply to al subcommands (may be empty)
 * A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`. You can optionally validate the full parameter-map that is received by subcommand at once by passing a Spec into `:spec`.
+* If within the subcommand you add a 0-arity function to `:on-shutdown`, it will be called when the JVM terminates. This is
+  mostly useful for long running servers, or to do some clean-up. Note that the hook is always called - whether the shutdown 
+  is forced by pressing (say) Ctrl+C or just by the JVM exiting. See the examples. 
 
 And...that's it!
 
@@ -226,6 +229,7 @@ These generators can be overridden by supplying one or more of your own function
 
 The function specified for `:global-help` accepts the CLI configuration, and `:subcmd-help` additionally accepts the sub-command it was called with.
 Each function returns a string that CLI-matic prints verbatim to the user as the full help text.
+
 
 
 ### Transitive dependencies

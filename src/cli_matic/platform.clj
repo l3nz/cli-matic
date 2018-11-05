@@ -1,11 +1,14 @@
-(ns cli-matic.platform)
+(ns cli-matic.platform
+  "
+  ## Platform-specific functions for the JVM.
 
-;; In this namespace, we store platform-specific
-;; functions.
-;; In this file we have them for the JVM, so we
-;; can have a different one for JS.
+  If running on ClojureScript, we can have a different file for JS.
 
-;; In this NS, we avoid using Spec / Orchestra.
+  BTW, in this NS, we avoid using Spec / Orchestra.
+
+  "
+  )
+
 
 (defn read-env
   "Reads an environment variable.
@@ -17,3 +20,17 @@
   "Terminates execution with a return value."
   [retval]
   (System/exit retval))
+
+
+(defn add-shutdown-hook
+  "Add a shutdown hook. If `nil`, simply ignores it.
+
+  The shutdown hook is run in a new thread.
+
+  "
+  [fnToCallOnShutdown]
+
+  (if (ifn? fnToCallOnShutdown)
+    (.addShutdownHook
+      (Runtime/getRuntime)
+      (Thread. fnToCallOnShutdown))))

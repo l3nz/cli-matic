@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.1.19 - 2018-11-05
+## Changed
+* Fixes #46 - Adding JVM shutdown hook
+
+
 ## 0.1.18 - 2018-11-04
 ### Changed
 * Fixes #45 - Overridable help text generation (tks ty-i3) 
