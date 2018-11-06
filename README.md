@@ -3,7 +3,7 @@
 Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
 Clojure is not good for scripting?).
 
-Especially when scripting, you should write interesting code, not boilerplate. Command line apps are usually so tiny that there is absolutely no reason why your code should not be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
+*Especially when scripting, you should write interesting code, not boilerplate.* Command line apps are usually so tiny that there is absolutely no reason why your code should not be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
 
 CLI-matic works with GraalVM, giving unbeatable performance for stand-alone command-line apps that do not even need a Java installation - see [Command-line apps with Clojure and GraalVM: 300x better start-up times](https://www.astrecipes.net/blog/2018/07/20/cmd-line-apps-with-clojure-and-graalvm/).
 
@@ -26,7 +26,7 @@ Or the library can be easily referenced through Github:
 ## Features
 
 
-* Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent `tools.cli`.
+* Create **all-in-one scripts with subcommands and help**, in a way more compact than the excellent - but lower level - `tools.cli`.
 * **Avoid common pre-processing.** Parsing dates, integers, reading small files, downloading a JSON URL.... it should just happen. The more you declare, the less time you waste.
 * **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters of the subcommand at once, and emit sane error messages. Again, the more you have in declarative code, the less room for mistakes.  
 * **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
@@ -128,6 +128,9 @@ It contains:
 * Information on the app itself (name, version)
 * The list of global parameters, i.e. the ones that apply to al subcommands (may be empty)
 * A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`. You can optionally validate the full parameter-map that is received by subcommand at once by passing a Spec into `:spec`.
+* If within the subcommand you add a 0-arity function to `:on-shutdown`, it will be called when the JVM terminates. This is
+  mostly useful for long running servers, or to do some clean-up. Note that the hook is always called - whether the shutdown 
+  is forced by pressing (say) Ctrl+C or just by the JVM exiting. See the examples. 
 
 And...that's it!
 
@@ -202,9 +205,10 @@ At the same time, the named option remains, so you can use either version. Bound
 
 ### Validation with Spec (and Expound)
 
-Cli-matic can validate any parameter with Spec, and uses Expound to produce sane error messages. An example is under `examples` as `toycalc-spec.clj`.
+CLI-matic can optionally validate any parameter, and the set of parameters you use to call the subcommand function, with Spec, and uses the excellent Expound https://github.com/bhb/expound to produce sane error messages. An example is under `examples` as `toycalc-spec.clj` - see https://github.com/l3nz/cli-matic/blob/master/examples/toycalc-spec.clj
 
-
+By using and including Expound as a depencency, you can add error descriptions where the raw Spec would be hard to read, and use a nice set of
+pre-built specs with readable descriptions that come with Expound - see https://github.com/bhb/expound/blob/master/src/expound/specs.cljc
 
 
 ### Help text generation
@@ -227,6 +231,7 @@ The function specified for `:global-help` accepts the CLI configuration, and `:s
 Each function returns a string that CLI-matic prints verbatim to the user as the full help text.
 
 
+
 ### Transitive dependencies
 
 CLI-matic currently depends on:
@@ -245,6 +250,13 @@ If you do not need JSON parsing, you can do without.
 To use Yaml decoding, you need `io.forward/yaml` on your classpath; otherwise it will break.
 If you do not need YAML parsing, you can do without.
 Note that the YAML library has reflection in it, and so is incompatible with GraalVM native images.
+
+## See also
+
+If you would like to capture the build environment at compile time (e.g. the exact GIT revision, or when/where 
+the program was built, or the version of your project as defined in `project.clj`) so you can print
+meaningful version numbers without manual intervention, you may want to include https://github.com/l3nz/say-cheez and 
+use it to provide everything to you.
 
 ## License
 

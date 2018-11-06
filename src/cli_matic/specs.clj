@@ -61,7 +61,7 @@
   (s/keys :req-un [::option  ::as  ::type]
           :opt-un [::short ::default ::env ::spec]))
 
-;; Climatic configuration
+;; CLI-matic configuration
 (s/def ::description (s/or :a-string ::existing-string
                            :coll-str (s/coll-of ::existing-string)))
 
@@ -73,12 +73,14 @@
 
 (s/def ::runs ifn?)
 
+(s/def ::on-shutdown ifn?)
+
 (s/def ::app (s/keys :req-un [::command ::description ::version]))
 
 (s/def ::global-opts ::opts)
 
 (s/def ::a-command (s/keys :req-un [::command ::opts ::runs]
-                           :opt-un [::short ::description ::spec]))
+                           :opt-un [::short ::description ::spec ::on-shutdown]))
 
 (s/def ::commands (s/coll-of ::a-command))
 

@@ -21,6 +21,12 @@ Do not forget to edit the Changelog.
 
 First advance the version in project.clj.
 
+Then create a lightweight tag and push it
+
+	git tag v0.1.18
+ 	git push origin v0.1.18
+
+
 Then check your Clojars credentials and push:
 
 	lein deploy clojars

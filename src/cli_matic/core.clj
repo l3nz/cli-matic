@@ -1,4 +1,12 @@
 (ns cli-matic.core
+  "
+  ### ATTENTION
+
+  CLI-matic has one main entry-point: [[run!]].
+
+  Actually, most of the logic will be run in [[run*]] to make testing easier.
+
+  "
   (:require [cli-matic.specs :as S]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.spec.alpha :as s]
@@ -7,13 +15,6 @@
             [cli-matic.presets :as PRESETS]
             [cli-matic.platform :as P]
             [expound.alpha :as expound]))
-
-;; ================ ATTENTION ====================
-;; Cli-matic has one main entry-point: run!
-;; Actually, most of the logic will be run in run*
-;; to make testing easier.
-;;
-;; -----------------------------------------------
 
 
 (defn assoc-new-multivalue
@@ -28,14 +29,6 @@
                   [v])]
     (assoc parameter-map option new-val)))
 
-;; Rewrite options from our format
-;; {:opt "x" :as "Port number" :type :int}
-;; to tools.cli:
-;; ["-x" nil "Port number"
-;;  :parse-fn #(Integer/parseInt %)]
-;; as specified in
-;;  https://github.com/clojure/tools.cli/blob/master/src/main/clojure/clojure/tools/cli.clj#L488
-;;
 
 (defn mk-env-name
   "Writes a description with the env name by the end."
@@ -894,15 +887,24 @@
   "Invokes a subcommand, and produces a Return Value.
 
    The subcommand may:
-    - return an integer (to specify exit code)
-    - return nil
-    - throw a Throwable object
+
+   * return an integer (to specify exit code)
+   * return nil
+   * throw a Throwable object
+
+
+   If there is a shutdown hook defined, we also add the shutdown hook
+   before the command is run. If there is a shutdown hook,
+   it is called anyway when the JVM terminates - if you only want this
+   called on early shutdowns, it's up to you to keep some state
+   in a shared atom and decide whether to do something or not.
 
   "
   [subcommand-def options]
 
   (try
-    (let [rv ((:runs subcommand-def)  options)]
+    (let [_  (P/add-shutdown-hook (:on-shutdown subcommand-def))
+          rv ((:runs subcommand-def)  options)]
       (cond
         (nil? rv)    (->RV 0 :OK nil nil nil)
         (int? rv)   (if (zero? rv)
@@ -916,13 +918,30 @@
             (str "JVM Exception: "
                  (with-out-str (println t)))))))
 
-;; Executes our code.
-;; It will try and parse the arguments via clojure.tools.cli
-;; and detect our subcommand.
+(defn deep-merge [& maps]
+  ; See https://gist.github.com/danielpcox/c70a8aa2c36766200a95#gistcomment-2308595
+  (apply merge-with (fn [& args]
+                      (if (every? map? args)
+                        (apply deep-merge args)
+                        (last args)))
+         maps))
 
-;; If no subcommand was found, it will print the error reminder.
-;; On exceptions, it will raise an exception message.
+(def setup-defaults
+  {:app {:global-help generate-global-help
+         :subcmd-help generate-subcmd-help}})
+
 (defn run-cmd*
+  "
+  Executes our code.
+
+  It will try and parse the arguments via `clojure.tools.cli` and detect our subcommand.
+
+  If no subcommand was found, it will print the error reminder.
+
+  On exceptions, it will raise an exception message.
+
+  "
+
   [setup args]
   (let [parsed-opts (parse-cmds args setup)]
     ;; maybe there was an error parsing
@@ -938,18 +957,15 @@
                               (str "Option error: " (:error-text parsed-opts)))
       :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts)))))
 
-(def setup-defaults
-  {:global-help generate-global-help
-   :subcmd-help generate-subcmd-help})
-
 (defn run-cmd
   "This is the actual function that is executed.
-  It wraps run-cmd* and then does the printing
-  of any errors, of help pages and  System.exit.
-  As it invokes Sys.exit you cannot use it from a REPL.
+  It wraps [[run-cmd*]] and then does the printing
+  of any errors, of help pages and  `System.exit`.
+
+  As it invokes `System.exit` you cannot use it from a REPL.
   "
   [args supplied-setup]
-  (let [setup (merge setup-defaults supplied-setup)
+  (let [setup (deep-merge setup-defaults supplied-setup)
         {:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
     (if (not (empty? stderr))
@@ -959,9 +975,9 @@
          ["** ERROR: **" stderr "" ""]))))
     (cond
       (= :HELP-GLOBAL help)
-      (println (asString ((setup :global-help) setup)))
+      (println (asString ((get-in setup [:app :global-help]) setup)))
       (= :HELP-SUBCMD help)
-      (println (asString ((setup :subcmd-help) setup subcmd))))
+      (println (asString ((get-in setup [:app :subcmd-help]) setup subcmd))))
     (P/exit-script retval)))
 
 (st/instrument)
