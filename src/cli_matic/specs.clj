@@ -6,6 +6,7 @@
 (s/def ::climatic-errors #{:ERR-CFG
                            :ERR-NO-SUBCMD
                            :ERR-UNKNOWN-SUBCMD
+                           :SUGGEST-SUBCMD
                            :ERR-PARMS-GLOBAL
                            :ERR-PARMS-SUBCMD})
 

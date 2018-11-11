@@ -1,5 +1,6 @@
 (ns cli-matic.core
   (:require [cli-matic.specs :as S]
+            [cli-matic.utils :as utils]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.spec.alpha :as s]
             [orchestra.spec.test :as st]
@@ -426,6 +427,7 @@
   [config subcommand error text]
   {:subcommand     subcommand
    :subcommand-def (if (or (= error :ERR-UNKNOWN-SUBCMD)
+                           (= error :SUGGEST-SUBCMD)
                            (= error :ERR-NO-SUBCMD)
                            (= error :ERR-PARMS-GLOBAL)
                            (= error :HELP-GLOBAL))
@@ -645,7 +647,9 @@
           (mkError config nil :ERR-NO-SUBCMD "")
 
           (nil? ((all-subcommands config) subcommand))
-          (mkError config subcommand :ERR-UNKNOWN-SUBCMD "")
+          (if-let [suggestion (first (utils/suggestions (all-subcommands config) subcommand))]
+            (mkError config subcommand :SUGGEST-SUBCMD (format "You called %s, did you mean to call %s?" subcommand suggestion))
+          (mkError config subcommand :ERR-UNKNOWN-SUBCMD ""))
 
           :else
           (let [canonical-subcommand (canonicalize-subcommand config subcommand)
@@ -730,22 +734,21 @@
   "
   [currentCfg]
 
-  (do
-    ;; checks positional parameters
+  ;; checks positional parameters
 
-    (let [global-positional-parms (list-positional-parms currentCfg nil)]
+  (let [global-positional-parms (list-positional-parms currentCfg nil)]
 
-      (if (pos? (count global-positional-parms))
-        (throw (IllegalAccessException.
-                (str "Positional parameters not allowed in global options. " global-positional-parms)))));; checks subcommands
-    (let [all-subcommands (into [nil]
-                                (all-subcommands currentCfg))]
-      (doall (map #(assert-unique-values %
-                                         (get-options-for currentCfg %)
-                                         :option) all-subcommands))
-      (doall (map #(assert-unique-values %
-                                         (get-options-for currentCfg %)
-                                         :short) all-subcommands))))
+    (if (pos? (count global-positional-parms))
+      (throw (IllegalArgumentException. ;;IllegalAccessException.
+              (str "Positional parameters not allowed in global options. " global-positional-parms)))));; checks subcommands
+  (let [all-subcommands (into [nil]
+                              (all-subcommands currentCfg))]
+    (doall (map #(assert-unique-values %
+                                       (get-options-for currentCfg %)
+                                       :option) all-subcommands))
+    (doall (map #(assert-unique-values %
+                                       (get-options-for currentCfg %)
+                                       :short) all-subcommands)))
   ;; just say nil
   nil)
 
@@ -822,6 +825,7 @@
       :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in cli-matic configuration")
       :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
       :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
+      :SUGGEST-SUBCMD (->RV -1 :SUGGEST-SUBCMD :HELP-SUGGEST nil (:error-text parsed-opts))
       :HELP-GLOBAL (->RV 0 :OK :HELP-GLOBAL nil nil)
       :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil
                               (str "Global option error: " (:error-text parsed-opts)))
@@ -848,7 +852,10 @@
       (= :HELP-GLOBAL help)
       (println (asString (generate-global-help setup)))
       (= :HELP-SUBCMD help)
-      (println (asString (generate-subcmd-help setup subcmd))))
+      (println (asString (generate-subcmd-help setup subcmd)))
+      ;;(= :HELP-SUGGEST help)
+      ;;(println stderr)
+      )
     (P/exit-script retval)))
 
 (st/instrument)
