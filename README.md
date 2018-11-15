@@ -240,7 +240,6 @@ CLI-matic currently depends on:
 * org.clojure/spec.alpha
 * org.clojure/tools.cli
 * expound
-* orchestra
 
 #### Optional dependencies
 
@@ -250,6 +249,11 @@ If you do not need JSON parsing, you can do without.
 To use Yaml decoding, you need `io.forward/yaml` on your classpath; otherwise it will break.
 If you do not need YAML parsing, you can do without.
 Note that the YAML library has reflection in it, and so is incompatible with GraalVM native images.
+
+If Orchestra is present on the classpath, loading most namespaces triggers
+an instrumentation. As we already have Expound, we get easy-to-read messages
+for free.
+
 
 ## See also
 

@@ -29,6 +29,7 @@
                   :default 10}]
    :commands    [{:command     "add" :short "a"
                   :description ["Adds two numbers together"
+                                (str cli-matic.optionals/with-orchestra?)
                                 ""
                                 "Looks great, doesn't it?"]
                   :opts        [{:option "a1" :short "a" :env "AA" :as "First addendum" :type :int :default 0}

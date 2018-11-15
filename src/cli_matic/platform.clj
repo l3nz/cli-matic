@@ -6,9 +6,7 @@
 
   BTW, in this NS, we avoid using Spec / Orchestra.
 
-  "
-  )
-
+  ")
 
 (defn read-env
   "Reads an environment variable.
@@ -21,7 +19,6 @@
   [retval]
   (System/exit retval))
 
-
 (defn add-shutdown-hook
   "Add a shutdown hook. If `nil`, simply ignores it.
 
@@ -32,5 +29,5 @@
 
   (if (ifn? fnToCallOnShutdown)
     (.addShutdownHook
-      (Runtime/getRuntime)
-      (Thread. fnToCallOnShutdown))))
+     (Runtime/getRuntime)
+     (Thread. fnToCallOnShutdown))))

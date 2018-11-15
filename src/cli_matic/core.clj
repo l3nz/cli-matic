@@ -10,12 +10,11 @@
   (:require [cli-matic.specs :as S]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.spec.alpha :as s]
-            [orchestra.spec.test :as st]
             [clojure.string :as str]
             [cli-matic.presets :as PRESETS]
             [cli-matic.platform :as P]
-            [expound.alpha :as expound]))
-
+            [expound.alpha :as expound]
+            [cli-matic.optionals :as opt]))
 
 (defn assoc-new-multivalue
   "Associates a new multiple value to the
@@ -28,7 +27,6 @@
                   (conj curr-val v)
                   [v])]
     (assoc parameter-map option new-val)))
-
 
 (defn mk-env-name
   "Writes a description with the env name by the end."
@@ -980,4 +978,4 @@
       (println (asString ((get-in setup [:app :subcmd-help]) setup subcmd))))
     (P/exit-script retval)))
 
-(st/instrument)
+(opt/orchestra-instrument)

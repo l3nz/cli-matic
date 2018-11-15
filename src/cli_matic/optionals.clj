@@ -9,7 +9,9 @@
   Detection is taken from `core.clj` in https://github.com/dakrone/clj-http
 
   "
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [expound.alpha :as expound]
+            [clojure.spec.alpha :as s]))
 
 ;; CHESHIRE
 
@@ -41,3 +43,32 @@
    (if (string? args) args (str/join args))
    :keywords identity
    :constructor (ns-resolve (symbol "yaml.reader") (symbol "passthrough-constructor"))))
+
+;; ORCHESTRA
+
+(def with-orchestra?
+  (try
+    (require 'orchestra.spec.test)
+    true
+    (catch Throwable _ false)))
+
+(defn ^:dynamic orchestra-instrument
+  "If Orchestra present, runs instrumentation.
+  If absent, do do nothing.
+
+  While we are at it, we use expound to
+  print meaningful errors.
+
+  Expound is a mandatory dependency,  so
+  we assume it's there.
+  "
+  []
+  (if with-orchestra?
+    (do
+      ;; orchestra.spec.test/instrument
+      ((ns-resolve (symbol "orchestra.spec.test")
+                   (symbol "instrument")))
+
+      ;; as we have expound, we'd better use it.
+      (set! s/*explain-out* expound/printer))))
+
