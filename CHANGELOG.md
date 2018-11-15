@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.2.0 - 2018-11-15
+## Changed
+* Fixes #48 / #22 - Orchestra is not a mandatory dependecy anymore.
+
+
 ## 0.1.19 - 2018-11-05
 ## Changed
 * Fixes #46 - Adding JVM shutdown hook
