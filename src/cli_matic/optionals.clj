@@ -5,6 +5,7 @@
 
   * JSON (Cheshire)
   * YAML (io.forward/yaml)
+  * Orchestra
 
   Detection is taken from `core.clj` in https://github.com/dakrone/clj-http
 
@@ -22,7 +23,7 @@
     (catch Throwable _ false)))
 
 (defn ^:dynamic json-decode-cheshire
-  "Resolve and apply cheshire's json decoding dynamically."
+  "Resolve and apply Cheshire's json decoding dynamically."
   [& args]
   {:pre [with-cheshire?]}
   (apply (ns-resolve (symbol "cheshire.core") (symbol "decode")) args))
@@ -53,14 +54,14 @@
     (catch Throwable _ false)))
 
 (defn ^:dynamic orchestra-instrument
-  "If Orchestra present, runs instrumentation.
-  If absent, do do nothing.
+  "If Orchestra is present, runs instrumentation.
+  If absent, do nothing.
 
-  While we are at it, we use expound to
+  While we are at it, we set up Expound to
   print meaningful errors.
 
   Expound is a mandatory dependency,  so
-  we assume it's there.
+  we take for granted it's there.
   "
   []
   (if with-orchestra?
