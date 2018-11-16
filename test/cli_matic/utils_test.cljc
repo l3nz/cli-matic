@@ -14,9 +14,37 @@
     ; a vector of strings
     [ "a" "b"] "a\nb"
 
+    ; a vector of vectors
+    [ "a" ["b" "c"] "d"]  "a\nb\nc\nd"
+
+
 
     ; add more cases.....
   ))
+
+
+
+
+(deftest asStrVec-test
+
+  (are [i o]  (= (asStrVec i) o)
+
+              ; a string
+              "x" ["x"]
+
+              ; a vector of strings
+              nil []
+
+              ; a vector of vectors
+              [ "a" ["b" "c"] "d"]  [ "a" ["b" "c"] "d"]
+
+
+
+              ; add more cases.....
+              ))
+
+
+
 
 (deftest indent-string-test
   (are [i o]  (= (indent-string i) o)
@@ -154,3 +182,46 @@
       {:option "extra"  :as "Port number" :type :int :default :present}
       [nil "--extra N*" "Port number"
        :parse-fn P/parseInt])))
+
+(deftest str-distance-test
+  (are [s1 s2 d]
+    (= d (str-distance s1 s2))
+
+    ; same string = 0
+    "pippo" "pippo" 0
+
+    ; one change
+    "pippo" "Pippo" 1/5
+
+    ; compute as prc of longest
+    "pippox" "Pippo" 2/6
+
+    ; nils?
+    "xxx" nil 1
+
+    ; both empty
+    "" "" 0
+
+    ; both nil
+    nil nil 0
+
+    ))
+
+(deftest candidate-suggestions-test
+
+  (are [c t r]
+    (= r (vec (candidate-suggestions c t 1/2)))
+
+    ; only one
+    ["foo" "bar" "baz" "buzz"] "baar" ["bar" "baz"]
+
+    ;none
+    ["foo" "bar" "baz" "buzz"] "zebra" []
+
+    ; best comes first
+    ["foo" "bara" "barrr" "buzz" "o"] "bar" ["bara" "barrr"]
+
+    ;none found
+    ["foo" "bara" "barrr" "buzz" "o"] "qaqaqa" []
+
+    ))

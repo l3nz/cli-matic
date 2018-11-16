@@ -8,7 +8,7 @@
 (defn cmd_foo [& opts])
 (defn cmd_bar [& opts])
 (defn cmd_save_opts [& opts]
-  (prn "Called" opts)
+  ;(prn "Called" opts)
   opts)
 
 (defn cmd_returnstructure [opts]
@@ -116,7 +116,7 @@
             SIMPLE-SUBCOMMAND-CFG)
 
            {:commandline    {}
-            :error-text     ""
+            :error-text     "dummy: unknown sub-command 'unknown'."
             :parse-errors   :ERR-UNKNOWN-SUBCMD
             :subcommand     "unknown"
             :subcommand-def nil}))))
@@ -130,10 +130,10 @@
 
       ; no parameters - displays cmd help
       []
-      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
+      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified.")
 
       ["x"]
-      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
+      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "dummy: unknown sub-command 'x'.")
 
       ["--lippa" "foo"]
       (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Unknown option: \"--lippa\"")
@@ -177,10 +177,10 @@
 
       ; no parameters - displays cmd help
       []
-      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
+      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified.")
 
       ["x"]
-      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
+      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "dummy: unknown sub-command 'x'.")
 
       ["--lippa" "foo"]
       (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Unknown option: \"--lippa\"")
@@ -253,7 +253,7 @@
          (= (try
               (assert-cfg-sanity i)
               (catch Throwable e
-                (prn e)
+                ;(prn e)
                 :ERR))
             o)
 

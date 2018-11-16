@@ -25,11 +25,6 @@
             [expound.alpha :as expound]
             ))
 
-
-;; -----------------------------------------------------
-;; Here we parse our command line.
-;; -----------------------------------------------------
-
 (defn mkError
   "Builds an error condition."
   [config subcommand error text]
@@ -324,11 +319,13 @@
               :config ::S/climatic-cfg)
  :ret ::S/lineParseResult)
 
+
+
 (defn parse-cmds
   "This is where magic happens.
   We first parse global options, then stop,
   get the subcommand, parse specific options for the subcommand
-  and if all went well we prepare run it.
+  and if all went well we prepare to run it.
 
   This function returns a structure ::S/lineParseResult
   that contains information about what went wrong or the command
@@ -363,7 +360,9 @@
           (mkError config nil :ERR-NO-SUBCMD "")
 
           (nil? ((U/all-subcommands config) subcommand))
-          (mkError config subcommand :ERR-UNKNOWN-SUBCMD "")
+          (mkError config subcommand :ERR-UNKNOWN-SUBCMD
+                   (H/generate-help-possible-mistypes config subcommand))
+
 
           :else
           (let [canonical-subcommand (U/canonicalize-subcommand config subcommand)
@@ -476,17 +475,11 @@
   "This is a Return Value, i.e. what happens after the
   parsing is done and possibly the subcommand was invoked."
   [return-code type stdout subcmd stderr]
-  (let [fnStrVec (fn [s]
-                   (cond
-                     (nil? s) []
-                     (string? s) [s]
-                     :else  s))]
-
     {:retval return-code
      :status type
      :help   stdout
      :subcmd subcmd
-     :stderr (fnStrVec stderr)}))
+     :stderr (U/asStrVec stderr)})
 
 (s/fdef
  ->RV
@@ -552,19 +545,20 @@
   "
 
   [setup args]
-  (let [parsed-opts (parse-cmds args setup)]
+  (let [{:keys [subcommand subcommand-def parse-errors error-text commandline]}
+        (parse-cmds args setup)]
     ;; maybe there was an error parsing
-    (condp = (:parse-errors parsed-opts)
-      :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in cli-matic configuration")
-      :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified")
-      :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command")
+    (condp = parse-errors
+      :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in CLI-matic configuration.")
+      :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified.")
+      :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil error-text)
       :HELP-GLOBAL (->RV 0 :OK :HELP-GLOBAL nil nil)
       :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil
-                              (str "Global option error: " (:error-text parsed-opts)))
-      :HELP-SUBCMD (->RV 0 :OK :HELP-SUBCMD (:subcommand parsed-opts) nil)
-      :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD (:subcommand parsed-opts)
-                              (str "Option error: " (:error-text parsed-opts)))
-      :NONE (invoke-subcmd (:subcommand-def parsed-opts) (:commandline parsed-opts)))))
+                              (str "Global option error: " error-text))
+      :HELP-SUBCMD (->RV 0 :OK :HELP-SUBCMD subcommand nil)
+      :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD subcommand
+                              (str "Option error: " error-text))
+      :NONE (invoke-subcmd subcommand-def commandline))))
 
 (defn run-cmd
   "This is the actual function that is executed.
@@ -579,9 +573,7 @@
         (run-cmd* setup (if (nil? args) [] args))]
     (if (not (empty? stderr))
       (println
-       (U/asString
-        (flatten
-         ["** ERROR: **" stderr "" ""]))))
+       (U/asString ["** ERROR: **" stderr "" ""])))
     (cond
       (= :HELP-GLOBAL help)
       (println (U/asString ((get-in setup [:app :global-help]) setup)))

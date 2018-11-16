@@ -58,10 +58,10 @@
     (catch Throwable t
       nil)))
 
-  (defn parseEdn
-        "
+(defn parseEdn
+  "
         Decodes EDN through clojure.edn.
         "
-        [edn-in]
-        (edn/read-string edn-in))
+  [edn-in]
+  (edn/read-string edn-in))
 

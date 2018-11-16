@@ -161,3 +161,61 @@
   generate-subcmd-help
   :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
   :ret (s/coll-of string?))
+
+(def MISTYPE-ERR-RATIO 1/3)
+
+(defn generate-possible-mistypes
+  "We go searching if we have any candidates
+  to be considered mistypes.
+
+  We require a miss ratio of [[MISTYPE-ERR-RATIO]]
+  and we return them by similarity.
+
+  "
+  [wrong-subcmd commands aliases]
+  (let [all-subcmds (-> []
+                        (into commands)
+                        (into aliases))]
+    (U/candidate-suggestions all-subcmds wrong-subcmd MISTYPE-ERR-RATIO)))
+
+(s/fdef
+  generate-possible-mistypes
+  :args (s/cat :wrong-cmd string?
+               :subcmd (s/coll-of (s/or :s string? :nil nil?))
+               :aliases (s/coll-of (s/or :s string? :nil nil?)))
+  :ret (s/coll-of string?)
+  )
+
+(defn generate-help-possible-mistypes
+  "If we have a wrong subcommand, can we guess what the correct
+  one could have been?
+
+
+  "
+  [cfg wrong-subcmd]
+  (let [appName (get-in cfg [:app :command] "?")
+        commands (map :command (:commands cfg))
+        aliases (map :short (:commnads cfg))
+
+        candidates (generate-possible-mistypes wrong-subcmd commands aliases)
+
+        error (str appName ": unknown sub-command '" wrong-subcmd "'.")
+
+        ]
+
+    (if (empty? candidates)
+      ; No candidates, just the error
+      [error]
+
+      ; Have some, let's show them.
+      [error
+       ""
+       "The most similar subcommands are:"
+       (mapv U/indent candidates)])))
+
+(s/fdef
+  generate-help-possible-mistypes
+  :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
+  :ret (s/coll-of string?)
+  )
+
