@@ -243,19 +243,37 @@ CLI-matic currently depends on:
 
 #### Optional dependencies
 
-To use JSON decoding, you need Cheshire `cheshire/cheshire` to be on the classpath; otherwise it will break.
+To use **JSON decoding**, you need Cheshire `cheshire/cheshire` to be on the classpath; otherwise it will break.
 If you do not need JSON parsing, you can do without.
 
-To use Yaml decoding, you need `io.forward/yaml` on your classpath; otherwise it will break.
+To use **Yaml decoding**, you need `io.forward/yaml` on your classpath; otherwise it will break.
 If you do not need YAML parsing, you can do without.
 Note that the YAML library has reflection in it, and so is incompatible with GraalVM native images.
 
-If Orchestra is present on the classpath, loading most namespaces triggers
+If Orchestra `orchestra` is present on the classpath, loading most namespaces triggers
 an instrumentation. As we already have Expound, we get easy-to-read messages
 for free.
 
 
-## See also
+## Tips & tricks
+
+### Reducing startup time with skip-macros
+
+If you run your script with the property `clojure.spec.skip-macros=true` you get significant 
+savings:
+
+		time clj -J-Dclojure.spec.skip-macros=true -m recap sv
+		real	0m2.587s - user	0m6.997 - sys	0m0.332s
+
+Versus the default:
+
+		time clj -J-Dclojure.spec.skip-macros=false -m recap sv
+		real	0m3.141s -user	0m8.707s -sys	0m0.391s
+
+So that's like half a second for free on my machine.
+
+
+### Capturing current version
 
 If you would like to capture the build environment at compile time (e.g. the exact GIT revision, or when/where 
 the program was built, or the version of your project as defined in `project.clj`) so you can print
