@@ -218,7 +218,7 @@
   generate-help-possible-mistypes
   :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
   :ret (s/coll-of (s/or :str string?
-                        :cs (s/coll-of string?))
+                        :cs (s/coll-of string?)))
   )
 
 
