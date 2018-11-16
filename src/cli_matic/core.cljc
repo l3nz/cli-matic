@@ -2,386 +2,29 @@
   "
   ### ATTENTION
 
-  CLI-matic has one main entry-point: [[run!]].
+  CLI-matic has one main entry-point: [[run-cmd]].
 
-  Actually, most of the logic will be run in [[run*]] to make testing easier.
+  As an end-user, you need nothing else,  but the documentation
+  that explains how parameters are to bhe run.
+
+  See `examples/` to get started quickly.
+
+  *Developers*
+
+  Most of the logic will be run in [[run-cmd*]] to make testing easier,
+  as [[run-cmd]] calls `System/exit`.
 
   "
   (:require [clojure.tools.cli :refer [parse-opts]]
             [clojure.spec.alpha :as s]
-            [clojure.string :as str]
             [cli-matic.specs :as S]
-            [cli-matic.presets :as PRESETS]
+            [cli-matic.help-gen :as H]
             [cli-matic.platform :as P]
             [cli-matic.utils :as U]
             [cli-matic.optionals :as OPT]
             [expound.alpha :as expound]
             ))
 
-(defn assoc-new-multivalue
-  "Associates a new multiple value to the
-  current parameter map.
-  If the current value is not a vector, creates
-  a new vector with the new value."
-  [parameter-map option v]
-  (let [curr-val (get parameter-map option [])
-        new-val (if (vector? curr-val)
-                  (conj curr-val v)
-                  [v])]
-    (assoc parameter-map option new-val)))
-
-(defn mk-env-name
-  "Writes a description with the env name by the end."
-  [description env for-parsing?]
-  (if (and (not for-parsing?)
-           (some? env))
-    (str description " [$" env "]")
-    description))
-
-(defn mk-cli-option
-  "Builds a tools.cli option out of our own format.
-
-  If for-parsing is true, the option will be used for parsing;
-  if false, for generating help messages.
-
-  "
-  [{:keys [option short as type default multiple env] :as cm-option}]
-
-  (let [preset (get PRESETS/known-presets type :unknown)
-        placeholder (str (:placeholder preset)
-                         (if (= :present default) "*" ""))
-        positional-opts [(if (string? short)
-                           (str "-" short)
-                           nil)
-                         (str "--" option " " placeholder)
-                         (mk-env-name as env false)]
-
-        ;; step 1 - remove :placeholder
-        opts-1 (dissoc preset :placeholder)
-
-        ;; step 2 - add default if present and is not ":present"
-        opts-2 (if (and (some? default)
-                        (not= :present default))
-                 (assoc opts-1 :default default)
-                 opts-1)
-
-        ;; step 3 - if multivalue, add correct assoc-fns
-        opts-3 (if multiple
-                 (assoc opts-2 :assoc-fn assoc-new-multivalue)
-                 opts-2)]
-    (apply
-     conj positional-opts
-     (flatten (seq opts-3)))))
-
-(s/fdef mk-cli-option
-        :args (s/cat :opts ::S/climatic-option)
-        :ret some?)
-
-(defn get-subcommand
-  "Given args and the canonical name of a subcommand,
-  returns the map describing it.
-  "
-  [climatic-args subcmd]
-  (let [subcommands (:commands climatic-args)]
-    (first (filter #(= (:command %) subcmd) subcommands))))
-
-(s/fdef get-subcommand
-        :args (s/cat :args ::S/climatic-cfg :subcmd string?)
-        :ret ::S/a-command)
-
-(defn all-subcommands-aliases
-  "Maps all subcommands and subcommand aliases
-  to their canonical name.
-  E.g. {'add': 'add', 'a': 'add'}.
-
-  We basically add them all, then remove
-  nil keys.
-
-  "
-
-  [climatic-args]
-  (let [subcommands (:commands climatic-args)]
-
-    (dissoc
-     (merge
-        ;; a map of 'cmd' -> 'cmd'
-      (into {}
-            (map
-             (fn [{:keys [command short]}]
-               [command command])
-             subcommands))
-
-      (into {}
-            (map
-             (fn [{:keys [command short]}]
-               [short command])
-             subcommands)))
-     nil)))
-
-(s/fdef all-subcommands-aliases
-        :args (s/cat :args ::S/climatic-cfg)
-        :ret (s/map-of string? string?))
-
-(defn all-subcommands
-  "Returns all subcommands, as strings.
-   We get all versions of all subcommands.
-  "
-  [climatic-args]
-  (set (keys (all-subcommands-aliases climatic-args))))
-
-(s/fdef all-subcommands
-        :args (s/cat :args ::S/climatic-cfg)
-        :ret set?)
-
-(defn canonicalize-subcommand
-  "Returns the 'canonical' name of a subcommand,
-  i.e. the one that appears in :command, even
-  if we pass an alias or short version."
-  [commands subcmd]
-  (get (all-subcommands-aliases commands) subcmd))
-
-(s/fdef canonicalize-subcommand
-        :args (s/cat :args ::S/climatic-cfg :sub string?)
-        :ret string?)
-
-(defn get-options-for
-  "Gets specific :options for a subcommand or,
-  if nil, for global."
-  [climatic-args subcmd]
-  (if (nil? subcmd)
-    (:global-opts climatic-args)
-    (:opts (get-subcommand climatic-args subcmd))))
-
-;; Out of a cli-matic arg list,
-;; generates a set of commands for tools.cli
-(defn cm-opts->cli-opts
-  "
-  Out of a cli-matic arg list, generates a set of
-  options for tools.cli.
-  It also adds in the -? and --help options
-  to trigger display of helpness.
-  "
-  [climatic-opts]
-  (conj
-   (mapv mk-cli-option climatic-opts)
-   ["-?" "--help" "" :id :_help_trigger]))
-
-(defn rewrite-opts
-  "
-  Out of a cli-matic arg list, generates a set of
-  options for tools.cli.
-  It also adds in the -? and --help options
-  to trigger display of helpness.
-  "
-  [climatic-args subcmd]
-  (cm-opts->cli-opts (get-options-for climatic-args subcmd)))
-
-(s/fdef rewrite-opts
-        :args (s/cat :args some?
-                     :mode (s/or :common nil?
-                                 :a-subcommand string?))
-        :ret some?)
-
-;; -------------------------------------------------------------
-;; POSITIONAL PARAMETERS
-; Positional parameters:
-; 1- are only valid in subcommands
-; 2- appear on help
-; 3- capture from the "leftovers" vector :_arguments
-;; --------------------------------------------------------------
-
-
-(defn list-positional-parms
-  "Extracts all positional parameters from the configuration."
-  [cfg subcmd]
-  ;;(prn "CFG" cfg "Sub" subcmd)
-  (let [opts (get-options-for cfg subcmd)
-        rv (filterv #(integer? (:short %)) opts)]
-    ;;(prn "Subcmd" subcmd "OPTS" opts "RV" rv )
-    rv))
-
-(s/fdef
- list-positional-parms
- :args (s/cat :cfg ::S/climatic-cfg :cmd (s/or :cmd ::S/command :global nil?))
- :ret (s/coll-of ::S/climatic-option))
-
-(defn a-positional-parm
-  "Reads one positional parameter from the arguments.
-  Returns a vector [parm value]
-  The value is NOT solved, so it's always a string."
-  [args option]
-  (let [pos (:short option)
-        lbl (:option option)
-        val (get args pos nil)]
-    [lbl val]))
-
-(s/fdef
- a-positional-parm
- :args (s/cat :args sequential?
-              :opt  ::S/climatic-option)
- :ret vector?)
-
-(defn capture-positional-parms
-  "Captures positional parameters in the remaining-args of
-  a subcommand."
-  [cfg subcmd remaining-args]
-  (let [pp (list-positional-parms cfg subcmd)]
-    (into {}
-          (map (partial a-positional-parm remaining-args) pp))))
-
-(s/fdef
- capture-positional-parms
- :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command :args sequential?)
- :ret ::S/mapOfCliParams)
-
-(defn arg-list-with-positional-entries
-  "Creates the `[arguments...]`"
-  [cfg cmd]
-  (let [pos-args (sort-by :short (list-positional-parms cfg cmd))]
-    (if (empty? pos-args)
-      "[arguments...]"
-      (str
-       (apply str (map :option pos-args))
-       " ..."))))
-
-;; ------------------------------------------------
-;; Stuff to generate help pages
-;; ------------------------------------------------
-
-
-(defn generate-section
-  "Generates a section (as a collection of strings,
-  possibly nested, but we'll flatten it out).
-  If a section has no content, we return [].
-  "
-  [title lines]
-  (if (empty? lines)
-    []
-
-    [(str title ":")
-     (U/indent lines)
-     ""]))
-
-(defn generate-sections
-  "Generates all sections.
-  All those positional parameters are not that nice.
-  "
-  [name version usage commands opts-title opts]
-
-  (vec
-   (flatten
-    [(generate-section "NAME" name)
-     (generate-section "USAGE" usage)
-     (generate-section "VERSION" version)
-     (generate-section "COMMANDS" commands)
-     (generate-section opts-title opts)])))
-
-(defn get-options-summary
-  "To get the summary of options, we pass options to
-  tools.cli parse-opts and an empty set of arguments.
-  Parsing will fail but we get the :summary.
-  We then split it into a collection of lines."
-  [cfg subcmd]
-  (let [cli-cfg (rewrite-opts cfg subcmd)
-        options-str (:summary
-                     (parse-opts [] cli-cfg))]
-    (str/split-lines options-str)))
-
-(defn get-first-rest-description-rows
-  "get title and description of description rows"
-  [row-or-rows]
-  (cond
-    (string? row-or-rows)
-    [row-or-rows []]
-
-    (zero? (count row-or-rows))
-    ["?" []]
-
-    :else
-    [(first row-or-rows) (rest row-or-rows)]))
-
-
-(defn generate-a-command
-  "Maybe we should use a way to format commands
-
-   E.g.
-   (pp/cl-format true \"~{ ~vA  ~vA  ~vA ~}\" v)
-
-
-   (clojure.pprint/cl-format true \"~3a ~a\" \"pippo\" \"pluto\")
-   "
-
-  [{:keys [command short description]}]
-
-  (let [[des0 _] (get-first-rest-description-rows description)]
-    (str "  "
-         (U/pad command short 20)
-         " "
-         des0)))
-
-(defn generate-global-command-list
-  "Creates a list of commands and descriptions.
-   Commands are of kind ::S/commands
-  "
-  [commands]
-  (map generate-a-command commands))
-
-(s/fdef
- generate-global-command-list
- :args (s/cat :commands ::S/commands)
- :ret  (s/coll-of string?))
-
-(defn generate-global-help
-  "This is where we generate global help, so
-  global attributes and subcommands."
-
-  [cfg]
-
-  (let [name (get-in cfg [:app :command])
-        version (get-in cfg [:app :version])
-        descr (get-in cfg [:app :description])
-        [desc0 descr-extra] (get-first-rest-description-rows descr)]
-
-    (generate-sections
-     [(str name " - " desc0) descr-extra]
-     version
-     (str name " [global-options] command [command options] [arguments...]")
-     (generate-global-command-list (:commands cfg))
-     "GLOBAL OPTIONS"
-     (get-options-summary cfg nil))))
-
-(s/fdef
- generate-global-help
- :args (s/cat :cfg ::S/climatic-cfg)
- :ret (s/coll-of string?))
-
-(defn generate-subcmd-help
-  "This is where we generate help for a specific subcommand."
-  [cfg cmd]
-
-  (let [glname (get-in cfg [:app :command])
-        cmd-cfg (get-subcommand cfg cmd)
-        name (:command cmd-cfg)
-        shortname (:short cmd-cfg)
-        name-short (if shortname
-                     (str "[" name "|" shortname "]")
-                     name)
-        descr (:description cmd-cfg)
-        [desc0 descr-extra] (get-first-rest-description-rows descr)
-        arglist (arg-list-with-positional-entries cfg cmd)]
-
-    (generate-sections
-     [(str glname " " name " - " desc0) descr-extra]
-     nil
-     (str glname " " name-short " [command options] " arglist)
-     nil
-     "OPTIONS"
-     (get-options-summary cfg cmd))))
-
-(s/fdef
- generate-subcmd-help
- :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
- :ret (s/coll-of string?))
 
 ;; -----------------------------------------------------
 ;; Here we parse our command line.
@@ -396,7 +39,7 @@
                            (= error :ERR-PARMS-GLOBAL)
                            (= error :HELP-GLOBAL))
                      nil
-                     (get-subcommand config subcommand))
+                     (U/get-subcommand config subcommand))
    :commandline    {}
    :parse-errors   error
    :error-text     (U/asString text)})
@@ -510,7 +153,7 @@
   "
 
   [cmt-options argv in-order? fn-env]
-  (let [cli-cmd-options (cm-opts->cli-opts cmt-options)
+  (let [cli-cmd-options (U/cm-opts->cli-opts cmt-options)
         env-options (filter :env cmt-options)
         argv+ (if (not (empty? env-options))
                 ;; I have env variables
@@ -554,14 +197,14 @@
   not allowed, so they never come in.
   "
   [config canonical-subcommand subcommand-parms]
-  (let [cmt-options (get-options-for config canonical-subcommand)
+  (let [cmt-options (U/get-options-for config canonical-subcommand)
         parsed-cmd-opts (parse-cmds-with-defaults cmt-options subcommand-parms false P/read-env)
         cmd-args (:arguments parsed-cmd-opts)
 
         ;; capture positional parms
         ;; if they exist, we inject them at the end of the command line
         ;; and parse again
-        positional-parms (capture-positional-parms config canonical-subcommand cmd-args)]
+        positional-parms (U/capture-positional-parms config canonical-subcommand cmd-args)]
 
     (cond
       (pos? (count positional-parms))
@@ -634,9 +277,9 @@
 
   [parsed-args canonical-subcommand config]
 
-  (let [globals-opts (get-options-for config nil)
-        subcmd-def  (get-subcommand config canonical-subcommand)
-        subcmd-opts  (get-options-for config canonical-subcommand)
+  (let [globals-opts (U/get-options-for config nil)
+        subcmd-def  (U/get-subcommand config canonical-subcommand)
+        subcmd-opts  (U/get-options-for config canonical-subcommand)
 
         ; if we have no subcmd spec, we just call (true) instead
         subcmd-spec  (get subcmd-def :spec (constantly true))
@@ -693,11 +336,11 @@
   "
   [argv config]
 
-  (let [gl-options (get-options-for config nil)
+  (let [gl-options (U/get-options-for config nil)
         ;_ (prn "Cmdline" cmdline)
         parsed-gl-opts (parse-cmds-with-defaults gl-options argv true P/read-env) ;(parse-opts cmdline cli-gl-options :in-order true)
         missing-gl-opts (errors-for-missing-mandatory-args
-                         (get-options-for config nil)
+                         (U/get-options-for config nil)
                          parsed-gl-opts {})
         ;_ (prn "Common cmdline" parsed-common-cmdline)
         {gl-errs :errors gl-opts :options gl-args :arguments} parsed-gl-opts]
@@ -719,17 +362,17 @@
           (nil? subcommand)
           (mkError config nil :ERR-NO-SUBCMD "")
 
-          (nil? ((all-subcommands config) subcommand))
+          (nil? ((U/all-subcommands config) subcommand))
           (mkError config subcommand :ERR-UNKNOWN-SUBCMD "")
 
           :else
-          (let [canonical-subcommand (canonicalize-subcommand config subcommand)
+          (let [canonical-subcommand (U/canonicalize-subcommand config subcommand)
                 parsed-cmd-opts (parse-cmds-with-positions config canonical-subcommand subcommand-argv);_ (prn "Subcmd cmdline" parsed-cmd-opts)
                 ;_ (prn "G" missing-gl-opts)
                 ;_ (prn "C" missing-cmd-opts)
                 {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts;; run checks on parameters
                 missing-cmd-opts (errors-for-missing-mandatory-args
-                                  (get-options-for config canonical-subcommand)
+                                  (U/get-options-for config canonical-subcommand)
                                   parsed-cmd-opts {})]
 
             (cond
@@ -806,18 +449,18 @@
   (do
     ;; checks positional parameters
 
-    (let [global-positional-parms (list-positional-parms currentCfg nil)]
+    (let [global-positional-parms (U/list-positional-parms currentCfg nil)]
 
       (if (pos? (count global-positional-parms))
         (throw (IllegalAccessException.
                 (str "Positional parameters not allowed in global options. " global-positional-parms)))));; checks subcommands
     (let [all-subcommands (into [nil]
-                                (all-subcommands currentCfg))]
+                                (U/all-subcommands currentCfg))]
       (doall (map #(assert-unique-values %
-                                         (get-options-for currentCfg %)
+                                         (U/get-options-for currentCfg %)
                                          :option) all-subcommands))
       (doall (map #(assert-unique-values %
-                                         (get-options-for currentCfg %)
+                                         (U/get-options-for currentCfg %)
                                          :short) all-subcommands))))
   ;; just say nil
   nil)
@@ -893,8 +536,8 @@
 
 
 (def setup-defaults
-  {:app {:global-help generate-global-help
-         :subcmd-help generate-subcmd-help}})
+  {:app {:global-help H/generate-global-help
+         :subcmd-help H/generate-subcmd-help}})
 
 (defn run-cmd*
   "

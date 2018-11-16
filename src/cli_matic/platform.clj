@@ -32,7 +32,6 @@
      (Runtime/getRuntime)
      (Thread. fnToCallOnShutdown))))
 
-
 ;
 ; Conversions
 ;
@@ -54,6 +53,6 @@
   [s]
   (try
     (.parse
-      (java.text.SimpleDateFormat. "yyyy-MM-dd") s)
+     (java.text.SimpleDateFormat. "yyyy-MM-dd") s)
     (catch Throwable t
       nil)))
