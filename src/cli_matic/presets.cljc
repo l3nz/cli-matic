@@ -5,7 +5,6 @@
 
   "
   (:require [clojure.string :as str]
-            [clojure.edn :as edn]
             [cli-matic.optionals :as OPT]
             [cli-matic.platform :as P]
             ))
@@ -33,12 +32,12 @@
   "Decodes the value as an EDN structure."
   [s]
   ;;(edn/read-string (if (string? s) s (str/join s)))
-  (edn/read-string s))
+  (P/parseEdn s))
 
 (defn asDecodedEdnFile
   "Decodes the contents of a file as a JSON object."
   [filename]
-  (edn/read-string (asSingleString filename)))
+  (P/parseEdn (asSingleString filename)))
 
 (defn asDecodedJsonValue
   "Decodes the value as a JSON object."
@@ -68,7 +67,7 @@
 
 (defn asKeyword
   [s]
-  (-> s replace-double-colon edn/read-string keyword))
+  (-> s replace-double-colon P/parseEdn keyword))
 
 ;; Remember to add these to
 ;; ::S/type

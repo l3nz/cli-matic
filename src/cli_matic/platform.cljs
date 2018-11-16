@@ -49,3 +49,9 @@
   [s]
   nil)
 
+(defn parseEdn
+      "
+      See https://stackoverflow.com/questions/44661385/how-do-i-read-an-edn-file-from-clojurescript-running-on-nodejs
+      "
+      [edn-in]
+      nil)

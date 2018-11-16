@@ -6,7 +6,8 @@
 
   BTW, in this NS, we avoid using Spec / Orchestra.
 
-  ")
+  "
+  (:require [clojure.edn :as edn]))
 
 (defn read-env
   "Reads an environment variable.
@@ -56,3 +57,11 @@
      (java.text.SimpleDateFormat. "yyyy-MM-dd") s)
     (catch Throwable t
       nil)))
+
+  (defn parseEdn
+        "
+        Decodes EDN through clojure.edn.
+        "
+        [edn-in]
+        (edn/read-string edn-in))
+
