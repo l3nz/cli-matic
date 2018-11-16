@@ -19,7 +19,7 @@ Do not forget to edit the Changelog.
 
 ## Pushing to Clojars
 
-First advance the version in project.clj.
+First advance the version in project.clj. Make sure that CHANGELOG.md is up to date.
 
 Then create a lightweight tag and push it
 
