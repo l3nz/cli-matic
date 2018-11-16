@@ -1,5 +1,5 @@
 (ns cli-matic.optionals
-  "### This namespace contains optional dependencies.
+  "### This namespace contains optional dependencies for CLJ.
 
   CLI-matic is supposed to work whether they are present or not.
 
