@@ -2,11 +2,10 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 
-## 0.2.2 - 2018-11-16
+## 0.2.4 - 2018-11-16
 ### Changed
 * Internal refactoring - using new namespaces
-* Created a dummy platform.cljs file so analysis does not break in CLJS.
-
+* Created a dummy `platform.cljs` and `optionals.cljs` file so analysis does not break in CLJS.
 
 
 ## 0.2.0 - 2018-11-15
