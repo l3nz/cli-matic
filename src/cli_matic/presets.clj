@@ -6,28 +6,11 @@
   "
   (:require [clojure.string :as str]
             [clojure.edn :as edn]
-            [cli-matic.optionals :as opt]))
+            [cli-matic.optionals :as OPT]
+            [cli-matic.platform :as P]
+            ))
 
 ;; Known presets
-(defn parseInt
-  "Converts a string to an integer. "
-  [s]
-  (Integer/parseInt s))
-
-(defn parseFloat
-  "Converts a string to a float."
-  [s]
-  (Float/parseFloat s))
-
-(defn asDate
-  "Converts a string to a Date object; if conversion
-  fails, returns nil."
-  [s]
-  (try
-    (.parse
-     (java.text.SimpleDateFormat. "yyyy-MM-dd") s)
-    (catch Throwable t
-      nil)))
 
 (defn asSingleString
   "Turns a filename into a single string.
@@ -60,22 +43,22 @@
 (defn asDecodedJsonValue
   "Decodes the value as a JSON object."
   [s]
-  (opt/json-decode-cheshire s))
+  (OPT/json-decode-cheshire s))
 
 (defn asDecodedJsonFile
   "Decodes the contents of a file as a JSON object."
   [filename]
-  (opt/json-decode-cheshire (asSingleString filename)))
+  (OPT/json-decode-cheshire (asSingleString filename)))
 
 (defn asDecodedYamlValue
   "Decodes the value as a YAML object."
   [s]
-  (opt/yaml-decode s))
+  (OPT/yaml-decode s))
 
 (defn asDecodedYamlFile
   "Decodes the contents of a file as a JSON object."
   [filename]
-  (opt/yaml-decode (asSingleString filename)))
+  (OPT/yaml-decode (asSingleString filename)))
 
 (defn- replace-double-colon
   [s]
@@ -90,16 +73,16 @@
 ;; Remember to add these to
 ;; ::S/type
 (def known-presets
-  {:int    {:parse-fn    parseInt
+  {:int    {:parse-fn    P/parseInt
             :placeholder "N"}
-   :int-0  {:parse-fn    parseInt
+   :int-0  {:parse-fn    P/parseInt
             :placeholder "N"
             :default     0}
 
-   :float  {:parse-fn    parseFloat
+   :float  {:parse-fn    P/parseFloat
             :placeholder "N.N"}
 
-   :float-0  {:parse-fn    parseFloat
+   :float-0  {:parse-fn    P/parseFloat
               :placeholder "N.N"
               :default     0.0}
 
@@ -126,9 +109,9 @@
                 :placeholder "f"}
 
    ; dates
-   :yyyy-mm-dd {:placeholder "YYYY-MM-DD"     :parse-fn    asDate}
+   :yyyy-mm-dd {:placeholder "YYYY-MM-DD"     :parse-fn    P/asDate}
     ;;:validate    [#(true)
     ;;              "Must be a date in format YYYY-MM-DD"]
 })
 
-(opt/orchestra-instrument)
+(OPT/orchestra-instrument)

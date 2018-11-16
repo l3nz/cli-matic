@@ -31,3 +31,29 @@
     (.addShutdownHook
      (Runtime/getRuntime)
      (Thread. fnToCallOnShutdown))))
+
+
+;
+; Conversions
+;
+
+(defn parseInt
+  "Converts a string to an integer. "
+  [s]
+  (Integer/parseInt s))
+
+(defn parseFloat
+  "Converts a string to a float."
+  [s]
+  (Float/parseFloat s))
+
+(defn asDate
+  "Converts a string in format yyyy-mm-dd to a
+  Date object; if conversion
+  fails, returns nil."
+  [s]
+  (try
+    (.parse
+      (java.text.SimpleDateFormat. "yyyy-MM-dd") s)
+    (catch Throwable t
+      nil)))

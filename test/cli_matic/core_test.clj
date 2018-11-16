@@ -1,7 +1,7 @@
 (ns cli-matic.core-test
   (:require [clojure.test :refer :all]
             [cli-matic.core :refer :all]
-            [cli-matic.presets :as PRESETS :refer [parseInt]]
+            [cli-matic.platform :as P]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]))
 
@@ -21,14 +21,14 @@
    ;; and positional.
    ["-p" "--port PORT" "Port number"
     :default 80
-    :parse-fn #(Integer/parseInt %)
+    :parse-fn #(P/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
    ["-H" "--hostname HOST" "Remote host"
     :default 0
     ;; Specify a string to output in the default column in the options summary
     ;; if the default value's string representation is very ugly
     :default-desc "localhost"
-    :parse-fn #(Integer/parseInt %)]
+    :parse-fn #(P/parseInt %)]
    ;; If no required argument description is given, the option is assumed to
    ;; be a boolean option defaulting to nil
    [nil "--detach" "Detach from controlling process"]
@@ -152,22 +152,22 @@
       ; simplest example
       {:option "extra" :short "x" :as "Port number" :type :int}
       ["-x" "--extra N" "Port number"
-       :parse-fn parseInt]
+       :parse-fn P/parseInt]
 
       ; no shorthand
       {:option "extra"  :as "Port number" :type :int}
       [nil "--extra N" "Port number"
-       :parse-fn parseInt]
+       :parse-fn P/parseInt]
 
       ;  with a default
       {:option "extra"  :as "Port number" :type :int :default 13}
       [nil "--extra N" "Port number"
-       :parse-fn parseInt :default 13]
+       :parse-fn P/parseInt :default 13]
 
      ;  :present means there is no default
       {:option "extra"  :as "Port number" :type :int :default :present}
       [nil "--extra N*" "Port number"
-       :parse-fn parseInt])))
+       :parse-fn P/parseInt])))
 
 (deftest run-examples
   (testing "Some real-life behavior for our SIMPLE case"

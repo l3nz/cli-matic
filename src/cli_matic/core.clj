@@ -7,14 +7,16 @@
   Actually, most of the logic will be run in [[run*]] to make testing easier.
 
   "
-  (:require [cli-matic.specs :as S]
-            [clojure.tools.cli :refer [parse-opts]]
+  (:require [clojure.tools.cli :refer [parse-opts]]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
+            [cli-matic.specs :as S]
             [cli-matic.presets :as PRESETS]
             [cli-matic.platform :as P]
+            [cli-matic.utils :as U]
+            [cli-matic.optionals :as OPT]
             [expound.alpha :as expound]
-            [cli-matic.optionals :as opt]))
+            ))
 
 (defn assoc-new-multivalue
   "Associates a new multiple value to the
@@ -246,26 +248,6 @@
 ;; Stuff to generate help pages
 ;; ------------------------------------------------
 
-(defn asString
-  "Turns a collection of strings into one string,
-  or the string itself."
-  [s]
-  (if (string? s)
-    s
-    (str/join "\n" s)))
-
-(defn indent-string
-  "Indents a single string."
-  [s]
-  (str " " s))
-
-(defn indent
-  "Indents a single string, or each string
-  in a collection of strings."
-  [s]
-  (if (string? s)
-    (indent-string s)
-    (map indent-string (flatten s))))
 
 (defn generate-section
   "Generates a section (as a collection of strings,
@@ -277,7 +259,7 @@
     []
 
     [(str title ":")
-     (indent lines)
+     (U/indent lines)
      ""]))
 
 (defn generate-sections
@@ -318,14 +300,6 @@
     :else
     [(first row-or-rows) (rest row-or-rows)]))
 
-(defn pad
-  "Pads s[, s1] to so many characters"
-  [s s1 len]
-  (subs (str s
-             (when s1
-               (str ", " s1))
-             "                   ")
-        0 len))
 
 (defn generate-a-command
   "Maybe we should use a way to format commands
@@ -341,7 +315,7 @@
 
   (let [[des0 _] (get-first-rest-description-rows description)]
     (str "  "
-         (pad command short 20)
+         (U/pad command short 20)
          " "
          des0)))
 
@@ -425,7 +399,7 @@
                      (get-subcommand config subcommand))
    :commandline    {}
    :parse-errors   error
-   :error-text     (asString text)})
+   :error-text     (U/asString text)})
 
 ;; TODO s/fdef
 (s/fdef
@@ -916,13 +890,7 @@
             (str "JVM Exception: "
                  (with-out-str (println t)))))))
 
-(defn deep-merge [& maps]
-  ; See https://gist.github.com/danielpcox/c70a8aa2c36766200a95#gistcomment-2308595
-  (apply merge-with (fn [& args]
-                      (if (every? map? args)
-                        (apply deep-merge args)
-                        (last args)))
-         maps))
+
 
 (def setup-defaults
   {:app {:global-help generate-global-help
@@ -963,19 +931,19 @@
   As it invokes `System.exit` you cannot use it from a REPL.
   "
   [args supplied-setup]
-  (let [setup (deep-merge setup-defaults supplied-setup)
+  (let [setup (U/deep-merge setup-defaults supplied-setup)
         {:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
     (if (not (empty? stderr))
       (println
-       (asString
+       (U/asString
         (flatten
          ["** ERROR: **" stderr "" ""]))))
     (cond
       (= :HELP-GLOBAL help)
-      (println (asString ((get-in setup [:app :global-help]) setup)))
+      (println (U/asString ((get-in setup [:app :global-help]) setup)))
       (= :HELP-SUBCMD help)
-      (println (asString ((get-in setup [:app :subcmd-help]) setup subcmd))))
+      (println (U/asString ((get-in setup [:app :subcmd-help]) setup subcmd))))
     (P/exit-script retval)))
 
-(opt/orchestra-instrument)
+(OPT/orchestra-instrument)
