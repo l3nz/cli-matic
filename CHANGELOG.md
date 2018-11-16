@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.2.7 - 2018-11-16
+### Changed
+* Fixes #53 - Regression with 0.2.5
+
 ## 0.2.5 - 2018-11-16
 ### Changed
 * Fixes #26 - CLI-matic will now suggest subcommands if you mistype them (tks jwhitlark)
