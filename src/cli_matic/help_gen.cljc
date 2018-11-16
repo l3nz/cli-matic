@@ -11,7 +11,8 @@
             [clojure.string :as str]
             [cli-matic.specs :as S]
             [cli-matic.platform :as P]
-            [cli-matic.utils :as U])
+            [cli-matic.utils :as U]
+            [cli-matic.optionals :as OPT])
   )
 
 
@@ -216,6 +217,10 @@
 (s/fdef
   generate-help-possible-mistypes
   :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
-  :ret (s/coll-of string?)
+  :ret (s/coll-of (s/or :str string?
+                        :cs (s/coll-of string?))
   )
 
+
+
+(OPT/orchestra-instrument)
