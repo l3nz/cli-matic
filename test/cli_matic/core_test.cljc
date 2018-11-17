@@ -1,9 +1,13 @@
 (ns cli-matic.core-test
-  (:require [clojure.test :refer :all]
-            [cli-matic.core :refer :all]
+  (:require [clojure.test :refer [is are deftest testing]]
             [cli-matic.platform :as P]
             [clojure.spec.alpha :as s]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cli-matic.core :refer [parse-cmds
+                                    run-cmd* ->RV
+                                    assert-unique-values
+                                    assert-cfg-sanity
+                                    parse-cmds-with-defaults]]))
 
 (defn cmd_foo [& opts])
 (defn cmd_bar [& opts])

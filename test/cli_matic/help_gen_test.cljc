@@ -1,6 +1,6 @@
 (ns cli-matic.help-gen-test
-  (:require [clojure.test :refer :all])
-  (:require [cli-matic.help-gen :refer :all]))
+  (:require [clojure.test :refer [is are deftest testing]]
+            [cli-matic.help-gen :refer [generate-possible-mistypes]]))
 
 (deftest generate-possible-mistypes-test
 

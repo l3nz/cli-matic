@@ -1,6 +1,7 @@
 (ns cli-matic.presets-test
-  (:require [clojure.test :refer :all]
-            [cli-matic.core :refer :all]))
+  (:require [clojure.test :refer [is are deftest testing]]
+            [cli-matic.core :refer [parse-cmds
+                                    ]]))
 
 (defn cmd_foo [v]
   (prn "Foo:" v)

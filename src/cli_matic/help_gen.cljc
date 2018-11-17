@@ -163,7 +163,7 @@
   :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
   :ret (s/coll-of string?))
 
-(def MISTYPE-ERR-RATIO 1/3)
+(def MISTYPE-ERR-RATIO 0.35)
 
 (defn generate-possible-mistypes
   "We go searching if we have any candidates

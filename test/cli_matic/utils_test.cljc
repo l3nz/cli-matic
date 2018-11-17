@@ -1,8 +1,15 @@
 (ns cli-matic.utils-test
-  (:require [clojure.test :refer :all])
-  (:require [cli-matic.utils :refer :all])
-  (:require [cli-matic.platform :as P])
-  )
+  (:require [clojure.test :refer [is are deftest testing] ]
+            [cli-matic.utils :refer [asString asStrVec
+                                     indent-string indent
+                                     pad deep-merge
+                                     all-subcommands-aliases
+                                     all-subcommands
+                                     canonicalize-subcommand
+                                     mk-cli-option
+                                     str-distance
+                                     candidate-suggestions]]
+            [cli-matic.platform :as P]))
 
 (deftest asString-test
 
@@ -27,7 +34,8 @@
 
 (deftest asStrVec-test
 
-  (are [i o]  (= (asStrVec i) o)
+  (are [i o]
+    (= (asStrVec i) o)
 
               ; a string
               "x" ["x"]
@@ -191,10 +199,10 @@
     "pippo" "pippo" 0
 
     ; one change
-    "pippo" "Pippo" 1/5
+    "pippo" "Pippo" 0.20
 
     ; compute as prc of longest
-    "pippox" "Pippo" 2/6
+    "pippox" "Pippo" 0.334
 
     ; nils?
     "xxx" nil 1
@@ -210,7 +218,7 @@
 (deftest candidate-suggestions-test
 
   (are [c t r]
-    (= r (vec (candidate-suggestions c t 1/2)))
+    (= r (vec (candidate-suggestions c t 0.5)))
 
     ; only one
     ["foo" "bar" "baz" "buzz"] "baar" ["bar" "baz"]

@@ -38,4 +38,12 @@ Then check your Clojars credentials and push:
 Change the documentation linkin `README.md`. Then click on it.
 
 
+# ClojureScript
+
+Unit tests:
+
+	lein cljsbuild test unit-tests
+
+
+
 
