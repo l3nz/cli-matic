@@ -1,6 +1,6 @@
 (ns cli-matic.core-test
   (:require [clojure.test :refer [is are deftest testing]]
-            [cli-matic.platform :as P]
+            [cli-matic.platform :as P :refer [try-catch-all]]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [cli-matic.core :refer [parse-cmds
@@ -227,10 +227,9 @@
 (deftest check-unique-options
   (testing "Unique options"
     (are [i o]
-         (= (try
+         (= (try-catch-all
               (apply assert-unique-values i)
-              (catch Throwable e
-                :ERR))
+              (fn [e] :ERR))
             o)
 
       ; empty
@@ -254,9 +253,9 @@
 (deftest check-cfg-format
   (testing "Cfg format"
     (are [i o]
-         (= (try
+         (= (try-catch-all
               (assert-cfg-sanity i)
-              (catch Throwable e
+              (fn [e]
                 ;(prn e)
                 :ERR))
             o)

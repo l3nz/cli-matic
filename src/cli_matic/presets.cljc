@@ -21,7 +21,7 @@
   (cond
     (nil? filename)   ""
     (empty? filename) ""
-    :else (slurp filename)))
+    :else (P/slurp-file filename)))
 
 (defn asLinesString
   "Reads a text file and returns it as a collection of lines."

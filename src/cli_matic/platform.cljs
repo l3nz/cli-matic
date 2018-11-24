@@ -28,6 +28,18 @@
 
   nil)
 
+(defn slurp-file
+  "
+  No slurping in Node-land.
+
+  See https://github.com/pkpkpk/cljs-node-io
+
+  "
+  [f]
+  nil
+  )
+
+
 ;
 ; Conversions
 ;
@@ -55,3 +67,17 @@
       "
   [edn-in]
   nil)
+
+
+;
+; Exceptions
+;
+
+(defmacro try-catch-all
+  "
+  See the .clj docs.
+  "
+  [f onErr]
+  `(try (~@f)
+        (catch :default t#
+          ((~@onErr) t#))))

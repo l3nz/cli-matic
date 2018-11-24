@@ -19,7 +19,7 @@
             [clojure.spec.alpha :as s]
             [cli-matic.specs :as S]
             [cli-matic.help-gen :as H]
-            [cli-matic.platform :as P]
+            [cli-matic.platform :as P :refer [try-catch-all]]
             [cli-matic.utils :as U]
             [cli-matic.optionals :as OPT]
             [expound.alpha :as expound]
@@ -67,11 +67,11 @@
         valdationSpec (get optionDef :xx identity)
         validationFn (get optionDef :validate-fn (constantly true))]
 
-    (try
+    (try-catch-all
       (let [v-parsed (parseFn stringValue)]
         [label nil v-parsed])
 
-      (catch Throwable t
+      (fn [ t]
         [label (str "Cannot parse " label) nil]))))
 
 (s/fdef
@@ -222,7 +222,7 @@
 
   "
   [name type spec value]
-  (try
+  (try-catch-all
     (let [ed (expound/expound-str spec value)]
       (if (not= ed "Success!\n")
         ;(str "Spec failure for '" name "': value '" value "' is invalid.")
@@ -230,7 +230,7 @@
 
         nil))
 
-    (catch Throwable t
+    (fn [t]
       (str "Spec failure for " type " '" name "': with value '" value "' got " t))))
 
 (s/fdef
@@ -419,8 +419,9 @@
         dupes (filterv (fn [[k v]]  (> v 1)) (frequencies allOptions))]
     (cond
       (not (empty? dupes))
-      (throw (IllegalAccessException.
-              (str "In option area: " optName " for options of type " option " some option names are not unique: " dupes))))))
+      (throw (ex-info
+              (str "In option area: " optName " for options of type " option " some option names are not unique: " dupes)
+              {})))))
 
 (s/fdef
  assert-unique-values
@@ -451,8 +452,10 @@
     (let [global-positional-parms (U/list-positional-parms currentCfg nil)]
 
       (if (pos? (count global-positional-parms))
-        (throw (IllegalAccessException.
-                (str "Positional parameters not allowed in global options. " global-positional-parms)))));; checks subcommands
+        (throw (ex-info
+                (str "Positional parameters not allowed in global options. " global-positional-parms)
+                {}
+                ))));; checks subcommands
     (let [all-subcommands (into [nil]
                                 (U/all-subcommands currentCfg))]
       (doall (map #(assert-unique-values %
@@ -510,7 +513,7 @@
   "
   [subcommand-def options]
 
-  (try
+  (try-catch-all
     (let [_  (P/add-shutdown-hook (:on-shutdown subcommand-def))
           rv ((:runs subcommand-def)  options)]
       (cond
@@ -521,7 +524,7 @@
 
         :else        (->RV 0 :OK nil nil nil)))
 
-    (catch Throwable t
+    (fn [t]
       (->RV -1 :EXCEPTION nil nil
             (str "JVM Exception: "
                  (with-out-str (println t)))))))

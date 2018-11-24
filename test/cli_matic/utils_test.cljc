@@ -11,6 +11,22 @@
                                      candidate-suggestions]]
             [cli-matic.platform :as P]))
 
+(defn abs [n] (max n (- n)))
+
+(defn float=
+  "Approximate float equality.
+
+  Jeez, in each and every language I used in my life I
+  had to write this. Sometimes I wonder which way thing are
+  going.
+   "
+  [a b]
+  (let [fa (float a)
+        fb (float b)
+        err 0.001]
+    (> err (abs (- fa fb)))))
+
+
 (deftest asString-test
 
   (are [i o]  (= (asString i) o)
@@ -193,7 +209,7 @@
 
 (deftest str-distance-test
   (are [s1 s2 d]
-    (= d (str-distance s1 s2))
+    (float= d (str-distance s1 s2))
 
     ; same string = 0
     "pippo" "pippo" 0
