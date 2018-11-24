@@ -62,6 +62,14 @@
 
   Expound is a mandatory dependency,  so
   we take for granted it's there.
+
+
+  The `*explain-out*` binding will NOT be there in a compiled
+  uberjar, unless we call `with-bindings`,
+  so we just go check. It will succeed from the REPL.
+
+  Ref: https://github.com/clojure/clojure/blob/clojure-1.9.0/src/clj/clojure/main.clj#L85
+
   "
   []
   (if with-orchestra?
@@ -71,9 +79,6 @@
                    (symbol "instrument")))
 
       ;; as we have expound, we'd better use it.
-      (try
-        ;(set! s/*explain-out* expound/printer)
-        (alter-var-root s/*explain-out* expound/printer)
-        (catch Exception e
-          (prn "Cannot redef *explain-out*"))))))
+      (if (bound? s/*explain-out*)
+        (set! s/*explain-out* expound/printer)))))
 
