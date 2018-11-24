@@ -35,12 +35,12 @@
 (defn parseInt
   "Converts a string to an integer. "
   [s]
-  nil)
+  (js/parseInt s))
 
 (defn parseFloat
   "Converts a string to a float."
   [s]
-  nil)
+  (js/parseFloat s))
 
 (defn asDate
   "Converts a string in format yyyy-mm-dd to a
