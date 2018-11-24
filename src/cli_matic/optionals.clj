@@ -79,6 +79,7 @@
                    (symbol "instrument")))
 
       ;; as we have expound, we'd better use it.
-      (if (bound? s/*explain-out*)
-        (set! s/*explain-out* expound/printer)))))
+      (try
+        (set! s/*explain-out* expound/printer)
+        (catch Exception e nil)))))
 
