@@ -84,4 +84,6 @@
   [f onErr]
   `(try (~@f)
         (catch :default t#
-          ((~@onErr) t#))))
+          (do
+            (prn "E:\n" t# "\n--\n")
+            ((~@onErr) t#)))))

@@ -1,4 +1,4 @@
-(defproject cli-matic "0.2.10"
+(defproject cli-matic "0.2.14"
   :description "Compact [sub]command line parsing library, for Clojure"
   :url "https://github.com/l3nz/cli-matic"
   :license {:name "Eclipse Public License, v2"
@@ -18,7 +18,8 @@
             [jonase/eastwood "0.2.5"]
             [lein-kibit "0.1.6"]
             [lein-cljfmt "0.5.7"]
-            [lein-cljsbuild "1.1.7"]]
+            [lein-cljsbuild "1.1.7"]
+            [lein-doo "0.1.11"]]
   :cljsbuild
   {:test-commands {"unit-tests" ["node" "target/unit-tests.js"]}
    :builds

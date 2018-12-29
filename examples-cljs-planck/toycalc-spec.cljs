@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-"exec" "plk" "-Sdeps" "{:deps {cli-matic {:mvn/version \"0.2.10\"}}}" "-Ksf" "$0" "$@"
+"exec" "plk" "-Sdeps" "{:deps {cli-matic {:mvn/version \"0.2.11\"}}}" "-Ksf" "$0" "$@"
 
-(ns toycalc
+(ns toycalc-spec
   (:require [cli-matic.core :refer [run-cmd]]
             [clojure.spec.alpha :as spec]
             [expound.alpha :as expound]
@@ -9,7 +9,7 @@
     ))
 
 ;; To run this, try from the project root:
-;; clj -i examples/toycalc-spec.clj -m toycalc add -a 1 -b 80
+;; ./toycalc-spec.cljs add -a 1 -b 80
 
 (defn to_base
   "Converts a number to a given base" 
@@ -25,8 +25,8 @@
 
 
 ;(expound/def ::SMALL #(< % 100) "should be a small number (<100)")
-(spec/def ::ODD-SMALL (spec/and odd? ::SMALL))
-(spec/def ::EVEN-SMALL (spec/and even? ::SMALL))
+(spec/def ::ODD-SMALL (spec/and odd? ))
+(spec/def ::EVEN-SMALL (spec/and even? ))
 
 ;(expound/def ::GLOBAL-ADD-VALIDATION
 ;  (fn [{:keys [addendum-1 addendum-2]}]

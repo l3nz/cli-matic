@@ -19,7 +19,7 @@
             [clojure.spec.alpha :as s]
             [cli-matic.specs :as S]
             [cli-matic.help-gen :as H]
-            [cli-matic.platform :as P :refer [try-catch-all]]
+            [cli-matic.platform :as P :refer [try-catch-all] :include-macros true]
             [cli-matic.utils :as U]
             [cli-matic.optionals :as OPT]
             [expound.alpha :as expound]
