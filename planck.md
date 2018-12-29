@@ -43,6 +43,7 @@ In spite of this, the library is currently usable!
 * No slurping of files
 * No JSON / EDN / YAML (at the moment)
 * No environment variables
+* Dates - what to do with dates?
 
 
 
