@@ -1,18 +1,22 @@
 (ns cli-matic.platform
   "
-  ## Platform-specific functions for Node.
+  ## Platform-specific functions for ClojureScript.
 
-  At the moment it's all empty.
+  At the moment, we only support Planck.
 
   BTW, in this NS, we avoid using Spec / Orchestra.
 
-  ")
+  "
+  (:require [planck.core :as plk]
+            [planck.environ :as plkenv]
+            [clojure.string :as str]))
 
 (defn read-env
   "Reads an environment variable.
   If undefined, returns nil."
   [var]
-  nil)
+  (let [kw (keyword (str/lower-case var))]
+    (get plkenv/env kw nil)))
 
 (defn exit-script
   "Terminates execution with a return value."
@@ -36,7 +40,7 @@
 
   "
   [f]
-  nil
+  (plk/slurp f)
   )
 
 
