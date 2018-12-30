@@ -1,6 +1,7 @@
 (ns cli-matic.core-test
   (:require [clojure.test :refer [is are deftest testing]]
-            [cli-matic.platform :as P :refer [try-catch-all]]
+            [cli-matic.platform :as P ]
+            [cli-matic.platform-macros :refer [try-catch-all]]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [cli-matic.core :refer [parse-cmds

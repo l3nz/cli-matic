@@ -19,7 +19,10 @@
             [clojure.spec.alpha :as s]
             [cli-matic.specs :as S]
             [cli-matic.help-gen :as H]
-            [cli-matic.platform :as P :refer [try-catch-all] :include-macros true]
+            [cli-matic.platform :as P]
+            #?(:clj [cli-matic.platform-macros :refer [try-catch-all]]
+               :cljs [cli-matic.platform-macros :refer-macros [try-catch-all]]
+               )
             [cli-matic.utils :as U]
             [cli-matic.optionals :as OPT]
             [expound.alpha :as expound]
@@ -71,7 +74,7 @@
       (let [v-parsed (parseFn stringValue)]
         [label nil v-parsed])
 
-      (fn [ t]
+      (fn [t]
         [label (str "Cannot parse " label) nil]))))
 
 (s/fdef

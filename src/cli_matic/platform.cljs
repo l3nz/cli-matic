@@ -40,9 +40,7 @@
 
   "
   [f]
-  (plk/slurp f)
-  )
-
+  (plk/slurp f))
 
 ;
 ; Conversions
@@ -72,18 +70,3 @@
   [edn-in]
   nil)
 
-
-;
-; Exceptions
-;
-
-(defmacro try-catch-all
-  "
-  See the .clj docs.
-  "
-  [f onErr]
-  `(try (~@f)
-        (catch :default t#
-          (do
-            (prn "E:\n" t# "\n--\n")
-            ((~@onErr) t#)))))

@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.3.0 - 2018-12-30
+### Changed
+* Initial support for Planck - now you can use CLI-matic with ClojureScript!
+
 ## 0.2.9 - 2018-11-24
 ### Changed
 * Fixes #54 - Issue with root binding if Orchestra is present

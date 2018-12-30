@@ -6,6 +6,8 @@
 
   BTW, in this NS, we avoid using Spec / Orchestra.
 
+  **DO NOT** define macros in this namespace - see [[cli-matic.platform-macros]]
+
   "
   (:require [clojure.edn :as edn]))
 
@@ -32,7 +34,6 @@
     (.addShutdownHook
      (Runtime/getRuntime)
      (Thread. fnToCallOnShutdown))))
-
 
 (defn slurp-file
   "No slurping in JavaScript. So we have to move this to
@@ -72,29 +73,3 @@
   [edn-in]
   (edn/read-string edn-in))
 
-
-;
-; Exceptions. This sucks big time.
-;
-
-
-(defmacro try-catch-all
-  "
-  This creates a try-catch block that either traps
-  Throwable on the JVM or :default on Node.
-
-  Use:
-
-  `(try-catch-all (/ 1 0) (fn [x] 0))`
-
-  So both expressions must be surronded by round parentheses.
-
-
-
-  "
-
-
-  [f onErr]
-  `(try (~@f)
-        (catch Throwable t#
-            ((~@onErr) t#))))
