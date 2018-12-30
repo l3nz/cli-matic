@@ -18,7 +18,9 @@ Some commands you may want to try:
 	./toycalc-spec.cljs add -a 1 -b 2
 	./toycalc-spec.cljs add -a 1 -b 1
 
+Note how they are self-contained; just one file for each scripts. Also note how you waste no time on boilerplate functions, and you get help and parameter validation for free.
 
+## Scripting
 
 Scripting with Planck is very similar to Clojure; there are a few things that you should remember:
 
@@ -35,7 +37,7 @@ we plan to fix them, and some  are caused by dependencies.
 	WARNING: Use of undeclared Var clojure.tools.cli/Exception at line 126 clojure/tools/cli.cljc
 	WARNING: Use of undeclared Var clojure.tools.cli/*err* at line 228 clojure/tools/cli.cljc
 
-In spite of this, the library is currently usable!
+In spite of this, *the library is currently usable*!
 
 
 When debugging, it is sometimes useful to:
@@ -44,17 +46,17 @@ When debugging, it is sometimes useful to:
 * Remove the `.planck-cache/` folder before each run
 * Add `"-v"` for verbose compilation
 
-## What works
+## What currently works
 
 * Help generation
 * Simple parameters
-* Specs
+* clojure.spec parameter validation
 * Slurping of files and HTTP resources
 * Environment variables
 
 ## What does not work
 
-* Expound does not work with ClojureScript 1.10.439
-* No JSON / EDN / YAML (at the moment)
+* Expound does not work with ClojureScript 1.10.439 in defining custom specs.
+* No JSON / EDN / YAML parameters (at the moment, but it's easily doable)
 * Dates - what to do with dates?
 
