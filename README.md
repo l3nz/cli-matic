@@ -7,6 +7,9 @@ Clojure is not good for scripting?).
 
 CLI-matic works with GraalVM, giving unbeatable performance for stand-alone command-line apps that do not even need a Java installation - see [Command-line apps with Clojure and GraalVM: 300x better start-up times](https://www.astrecipes.net/blog/2018/07/20/cmd-line-apps-with-clojure-and-graalvm/).
 
+CLI-matic also works with Planck REPL for very quick CLJS scripting - see [Using with Planck](https://github.com/l3nz/cli-matic/blob/master/planck.md).
+
+
 ## Using
 
 The library is available on Clojars:

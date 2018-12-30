@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## 0.3.0 - 2018-12-30
+## 0.3.1 - 2018-12-30
 ### Changed
 * Initial support for Planck - now you can use CLI-matic with ClojureScript!
 
