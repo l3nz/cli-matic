@@ -57,7 +57,7 @@ When debugging, it is sometimes useful to:
 ## What does not work
 
 * Expound does not work with ClojureScript 1.10.439 in defining custom specs.
-* No automatic reading of JSON #60 / EDN / YAML parameters (at the moment, but it's easily doable)
+* No automatic reading of JSON [#60] / EDN / YAML parameters (at the moment, but it's easily doable)
 * Scripot return value is not set #63
 * Dates - what to do with dates?
 
