@@ -159,6 +159,9 @@ The following pre-sets (`:type`) are available:
 * `:jsonfile` - a file (or URL) containing JSON, that will be decoded and returned as a Clojure structure.
 * `:yamlfile` - a file (or URL) containing YAML, that will be decoded and returned as a Clojure structure.
 
+You may also specify a set of allowed values in `:type`, like `:type #{:one :two}`. It must be a set made of keywords or strings, and the
+parameter will be matched to allowed values in a case-insensitive way. Keywords do not need (but are allowed) a 
+trailing colon.  Sets print their allowed values on help and, on mismatches, suggest possible correct values.
 
 For all options, you can then add:
 

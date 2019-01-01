@@ -26,7 +26,7 @@
 (defn  yaml-decode
   ""
   [& args]
-  (throw (ex-info "No YAML decoding in CLJS." args)))
+  (throw (ex-info "No YAML decoding in CLJS." {})))
 
 ;; ORCHESTRA
 

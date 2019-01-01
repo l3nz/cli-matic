@@ -1,10 +1,13 @@
 (ns cli-matic.specs
   (:require [clojure.spec.alpha :as s]))
 
+(defn has-elements? [s]
+  (pos? (count s)))
+
 (s/def ::anything (s/or :nil nil?
                         :some some?))
 
-(s/def ::existing-string string?)
+(s/def ::existing-string (s/and string? has-elements?))
 
 (s/def ::climatic-errors #{:ERR-CFG
                            :ERR-NO-SUBCMD
@@ -42,14 +45,28 @@
 
 (s/def ::as ::existing-string)
 
-(s/def ::type #{:int :int-0
-                :string :keyword
-                :float :float-0
-                :yyyy-mm-dd
-                :slurp :slurplines
-                :edn :ednfile
-                :json :jsonfile
-                :yaml :yamlfile})
+(s/def ::set-of-strings
+  (s/and set?
+         (s/coll-of ::existing-string :min-count 1)))
+
+(s/def ::set-of-kws
+  (s/and set?
+         (s/coll-of keyword? :min-count 1)))
+
+(s/def ::set-of-vals
+  (s/or :set-str ::set-of-strings
+        :set-kw  ::set-of-kws))
+
+(s/def ::type
+  (s/or :plain-kw #{:int :int-0
+                    :string :keyword
+                    :float :float-0
+                    :yyyy-mm-dd
+                    :slurp :slurplines
+                    :edn :ednfile
+                    :json :jsonfile
+                    :yaml :yamlfile}
+        :set-vals ::set-of-vals))
 
 (s/def ::default some?)
 
@@ -63,7 +80,7 @@
 
 ;; CLI-matic configuration
 (s/def ::description (s/or :a-string ::existing-string
-                           :coll-str (s/coll-of ::existing-string)))
+                           :coll-str (s/coll-of string?)))
 
 (s/def ::version ::existing-string)
 

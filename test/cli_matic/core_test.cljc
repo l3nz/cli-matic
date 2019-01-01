@@ -460,3 +460,43 @@
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "5" "--ee" "97"]
     (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" ["Option error: Spec failure for subcommand 'foo'"])))
 
+
+; =================================================================
+;
+; =================================================================
+
+(def SETS-CFG
+  {:app         {:command     "dummy"
+                 :description "I am some command"
+                 :version     "0.1.2"}
+   :global-opts []
+   :commands    [{:command     "foo" :short       "f"
+                  :description "I am function foo"
+                  :opts        [{:option "kw" :as "blabla" :type #{:a :b :zebrafuffa} }
+                                ]
+                  :runs        cmd_save_opts}]})
+
+
+(deftest check-sets
+  (are [i o]
+    (= (run-cmd* SETS-CFG i) o)
+
+    ; all of the should pass
+    ["foo" "--kw" "a"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--kw" "B"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--kw" "zebrafufa"]
+    {:help   :HELP-SUBCMD
+     :retval -1
+     :status :ERR-PARMS-SUBCMD
+     :stderr ["Option error: Error while parsing option \"--kw zebrafufa\": clojure.lang.ExceptionInfo: Value 'zebrafufa' not allowed. Did you mean ':zebrafuffa'? {}"]
+     :subcmd "foo"}
+
+
+
+
+
+    ))

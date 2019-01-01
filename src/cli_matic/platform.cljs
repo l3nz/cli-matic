@@ -39,7 +39,7 @@
   [fnToCallOnShutdown]
 
   (if (ifn? fnToCallOnShutdown)
-    (throw (ex-info "Shutdown hooks not supported outside the JVM" nil))))
+    (throw (ex-info "Shutdown hooks not supported outside the JVM" {}))))
 
 (defn slurp-file
   "
@@ -72,7 +72,7 @@
   Date object; if conversion
   fails, returns nil."
   [s]
-  (throw (ex-info "Dates not supported in CLJS." s)))
+  (throw (ex-info "Dates not supported in CLJS." {:date s})))
 
 (defn parseEdn
   "

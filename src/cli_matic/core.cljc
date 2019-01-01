@@ -138,14 +138,16 @@
  :ret (s/coll-of string?))
 
 (defn parse-cmds-with-defaults
-  "Parses a command line with environemt defaults.
+  "Parses a command line with environment defaults.
+
    We want environment defaults to be PARSED, so they will go through
    the same validation/check cycle as other elements.
    So - if any of them - we first run parsing disabling defaults,
    then go check if they are available in parsed elements;
    if they are not, we inject them as options to the left of argv
    and parse again.
-   (as a side effect, if you have a wrong value for your option, and a
+
+   (As a side effect, if you have a wrong value for your option, and a
    default, the default will be used - YMMV).
 
   "
@@ -383,11 +385,13 @@
               (mkError config canonical-subcommand :HELP-SUBCMD nil)
 
               ; any missing required global parm?
-              (pos? (count missing-gl-opts))
+              ; we raise only if there are no rrors in global parms
+              (and (empty? gl-errs) (pos? (count missing-gl-opts)))
               (mkError config nil :ERR-PARMS-GLOBAL missing-gl-opts)
 
               ; missing required parms?
-              (pos? (count missing-cmd-opts))
+              ; we raise this only if there are no errors in cmd parms
+              (and (empty? cmd-errs) (pos? (count missing-cmd-opts)))
               (mkError config canonical-subcommand :ERR-PARMS-SUBCMD missing-cmd-opts)
 
               ; no errors?

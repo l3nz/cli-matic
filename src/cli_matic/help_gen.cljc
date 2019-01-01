@@ -10,8 +10,9 @@
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [cli-matic.specs :as S]
-            [cli-matic.platform :as P]
+          ;  [cli-matic.platform :as P]
             [cli-matic.utils :as U]
+            [cli-matic.utils-candidates :as UB]
             [cli-matic.optionals :as OPT])
   )
 
@@ -177,7 +178,7 @@
   (let [all-subcmds (-> []
                         (into commands)
                         (into aliases))]
-    (U/candidate-suggestions all-subcmds wrong-subcmd MISTYPE-ERR-RATIO)))
+    (UB/candidate-suggestions all-subcmds wrong-subcmd MISTYPE-ERR-RATIO)))
 
 (s/fdef
   generate-possible-mistypes
