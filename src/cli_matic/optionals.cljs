@@ -1,6 +1,8 @@
 (ns cli-matic.optionals
   "### This namespace contains optional dependencies for CLJS.
 
+  JSON is always available in CLJS.
+
   "
   (:require [clojure.string :as str]
             [expound.alpha :as expound]
@@ -8,11 +10,15 @@
 
 ;; CHESHIRE
 
+(defn json-decode
+  "
+  We should use Transit if present, but this should be enough to get us started.
 
-(defn json-decode-cheshire
-  ""
-  [& args]
-  nil)
+  https://cljs.github.io/api/cljs.core/js-GTclj
+  "
+  [json]
+  (let [a (.parse js/JSON json)]
+    (js->clj a)))
 
 ;; YAML
 
@@ -20,7 +26,7 @@
 (defn  yaml-decode
   ""
   [& args]
-  nil)
+  (throw (ex-info "No YAML decoding in CLJS." args)))
 
 ;; ORCHESTRA
 

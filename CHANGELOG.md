@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.3.2 - 2019-01-01
+### Changed
+* Fixes #63 - Script return value is set in Planck, though it is currently unsigned 8-bit 
+* Fixes #61 - Reading EDN works in Planck, also as HTTP/S 
+* Fixes #60 - Reading JSON works in Planck, also as HTTP/S
+* Added some example scripts for Planck 
+
 ## 0.3.1 - 2018-12-30
 ### Changed
 * Initial support for Planck - now you can use CLI-matic with ClojureScript!

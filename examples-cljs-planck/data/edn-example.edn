@@ -1,0 +1,4 @@
+{:server-type [:cloud :or :not]
+ :region "<your AWS Region>" ;; e.g. us-east-1
+;; :creds-profile "<AWS Profile Name>" ;; Optional
+ :proxy-port "<local-port>"}

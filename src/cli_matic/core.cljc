@@ -5,7 +5,7 @@
   CLI-matic has one main entry-point: [[run-cmd]].
 
   As an end-user, you need nothing else,  but the documentation
-  that explains how parameters are to bhe run.
+  that explains how parameters are to be run.
 
   See `examples/` to get started quickly.
 

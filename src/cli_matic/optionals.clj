@@ -28,6 +28,11 @@
   {:pre [with-cheshire?]}
   (apply (ns-resolve (symbol "cheshire.core") (symbol "decode")) args))
 
+(defn json-decode
+  "Decodes a JSON string, without keywordizing."
+  [json]
+  (json-decode-cheshire json))
+
 ;; YAML
 
 (def with-yaml?

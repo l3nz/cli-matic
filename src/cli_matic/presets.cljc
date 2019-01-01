@@ -42,12 +42,12 @@
 (defn asDecodedJsonValue
   "Decodes the value as a JSON object."
   [s]
-  (OPT/json-decode-cheshire s))
+  (OPT/json-decode s))
 
 (defn asDecodedJsonFile
   "Decodes the contents of a file as a JSON object."
   [filename]
-  (OPT/json-decode-cheshire (asSingleString filename)))
+  (OPT/json-decode (asSingleString filename)))
 
 (defn asDecodedYamlValue
   "Decodes the value as a YAML object."

@@ -9,6 +9,7 @@
   "
   (:require [planck.core :as plk]
             [planck.environ :as plkenv]
+            [cljs.reader :as csrdr]
             [clojure.string :as str]))
 
 (defn read-env
@@ -19,21 +20,31 @@
     (get plkenv/env kw nil)))
 
 (defn exit-script
-  "Terminates execution with a return value."
+  "Terminates execution with a return value.
+
+  Please note that in Planck, return codes seem to be 8-bit unsigned ints.
+  "
   [retval]
-  nil)
+  (plk/exit retval))
 
 (defn add-shutdown-hook
   "Add a shutdown hook.
 
-  Does not work (?) on CLJS.
+  Does not work (?) on CLJS and we will throw an exception.
+
+  It might be conceivable that in JS-land, we save this locally in this namespace
+  and then call it on `exit-script`.
+
   "
   [fnToCallOnShutdown]
 
-  nil)
+  (if (ifn? fnToCallOnShutdown)
+    (throw (ex-info "Shutdown hooks not supported outside the JVM" nil))))
 
 (defn slurp-file
   "
+  Luckily, Planck implements slurp for us.
+
   No slurping in Node-land.
 
   See https://github.com/pkpkpk/cljs-node-io
@@ -61,12 +72,14 @@
   Date object; if conversion
   fails, returns nil."
   [s]
-  nil)
+  (throw (ex-info "Dates not supported in CLJS." s)))
 
 (defn parseEdn
   "
-      See https://stackoverflow.com/questions/44661385/how-do-i-read-an-edn-file-from-clojurescript-running-on-nodejs
-      "
+    This is actually a piece of ClojureScript, though it lives in a different NS.
+
+    See https://cljs.github.io/api/cljs.reader/read-string
+  "
   [edn-in]
-  nil)
+  (csrdr/read-string edn-in))
 

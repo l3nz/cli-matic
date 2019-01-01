@@ -50,15 +50,18 @@ When debugging, it is sometimes useful to:
 
 * Help generation
 * Simple parameters
-* clojure.spec parameter validation
-* Slurping of files and HTTP resources
+* `clojure.spec` parameter validation
+* Slurping of files and HTTP resources (see `read-file.cljs`)
 * Environment variables
+* Script return value is set, though it is currently unsigned 8-bit [#63] (see `exit-status.cljs`)
+* Reading EDN works, also as HTTP/S [#61] (see `read-file.cljs`)
+* Reading JSON works, also as HTTP/S [#60] (see `read-file.cljs`)
 
 ## What does not work
 
 * Expound does not work with ClojureScript 1.10.439 in defining custom specs.
-* No automatic reading of JSON [#60] / EDN / YAML parameters (at the moment, but it's easily doable)
-* Scripot return value is not set #63
-* Dates - what to do with dates?
+* No automatic reading of  YAML [#62] parameters 
+* Dates - what to do with dates? [#59] - at the moment we throw an exception.
+
 
 
