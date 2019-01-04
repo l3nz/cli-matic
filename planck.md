@@ -26,7 +26,7 @@ Scripting with Planck is very similar to Clojure; there are a few things that yo
 
 * If you want single-file scripts, remember to start with the preamble: 
 		`#!/usr/bin/env bash`
-		`"exec" "plk" "-Sdeps" "{:deps {cli-matic {:mvn/version \"0.3.1\"}}}" "-Ksf" "$0" "$@"`
+		`"exec" "plk" "-Sdeps" "{:deps {cli-matic {:mvn/version \"0.3.3\"}}}" "-Ksf" "$0" "$@"`
 * After declaring main, add: `(set! *main-cli-fn* -main)` so Planck knows where to start the script.
 
 On first run, with compilation, you will get a number of warnings; some are caused by CLI-matic and
