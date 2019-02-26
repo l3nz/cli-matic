@@ -167,6 +167,30 @@
       {:commandline  {:_arguments []
                       :val        :user/abcd}
        :error-text   ""
+       :parse-errors :NONE}))
+  (testing "true"
+    (are [i o]
+        (= (parse-cmds-simpler
+            i
+            (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+
+                                        ;
+      ["foo" "--val" "true"]
+      {:commandline  {:_arguments []
+                      :val        :true}
+       :error-text   ""
+       :parse-errors :NONE}))
+  (testing "false"
+    (are [i o]
+        (= (parse-cmds-simpler
+            i
+            (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+
+                                        ;
+      ["foo" "--val" "false"]
+      {:commandline  {:_arguments []
+                      :val        :false}
+       :error-text   ""
        :parse-errors :NONE})))
 
 ; :string

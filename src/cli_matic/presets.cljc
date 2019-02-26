@@ -71,7 +71,11 @@
 
 (defn asKeyword
   [s]
-  (-> s replace-double-colon P/parseEdn keyword))
+  (-> s
+      replace-double-colon
+      P/parseEdn
+      (as-> s (if (boolean? s) (str s) s))
+      keyword))
 
 
 ; =================================================================
