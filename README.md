@@ -313,7 +313,7 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" "$@"
 
 ```
 
-And so you have a nice place not to forget set call `skip-macros`!
+And so you have a nice place not to forget to set `skip-macros`!
 
 
 
