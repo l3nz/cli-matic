@@ -24,7 +24,8 @@ To make sure we are on the same page, please take the following steps:
   - If relevant (new feature), a patch for README or relevant docs
   - An usage example under `examples` and `examples-cljs-planck`
   - a CHANGELOG entry
-* Code should be formatted as in Deploy.md
+* Code must be formatted and tests must pass as in [Deploy.md](Deploy.md).
+
 
 ## Bugs
 
