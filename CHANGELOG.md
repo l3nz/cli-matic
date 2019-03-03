@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## 0.3.5 - 2019-03-03
+## 0.3.6 - 2019-03-03
 ### Changed
 * Fixes #71 - Articles for Cljdoc
 * Fixes #70 - Examples (clj/cljs) now run with current sources
