@@ -12,7 +12,7 @@ time $1
 
 
 
-CMD="clj -i examples/toycalc.clj -m toycalc"
+CMD="./examples/toycalc.clj"
 
 runcmd "$CMD -?"
 runcmd "$CMD add -?"

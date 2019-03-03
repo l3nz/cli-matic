@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-"exec" "plk" "-Sdeps" "{:deps {cli-matic {:mvn/version \"0.3.2\"}}}" "-Ksf" "$0" "$@"
+"exec" "plk"  "$0" "$@"
 
 (ns toycalc-spec
   (:require [cli-matic.core :refer [run-cmd]]

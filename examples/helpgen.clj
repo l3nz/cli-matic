@@ -1,3 +1,10 @@
+#!/bin/sh
+#_(
+#_This runs clj so we use the deps.edn but specify which module 
+#_we want to run. 
+exec clj -J-Xms256m -J-Xmx256m -J-client  -J-Dclojure.spec.skip-macros=true -i "$0" -m helpgen "$@"
+)
+
 ; Execute the following from the project root directory to:
 ;
 ; Print customized global help:
