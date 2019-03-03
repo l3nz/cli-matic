@@ -1,4 +1,4 @@
 {:cljdoc.doc/tree [["Introduction" {:file "README.md"}]
                    ["Scripting with Planck" {:file "planck.md"}]
-                   ["Change log" {:file "CHANGELOG.md"}
+                   ["Change log" {:file "CHANGELOG.md"}]
                     ["Contribuiting" {:file "CONTRIBUTING.md"}]]}
