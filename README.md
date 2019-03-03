@@ -18,12 +18,12 @@ The library is available on Clojars:
 [![](https://cljdoc.xyz/badge/cli-matic)](https://cljdoc.xyz/jump/release/cli-matic)
 
 
-Or the library can be easily referenced through Github:
+Or the library can be easily referenced through Github (make sure you change the commit-id):
 
 	{:deps
 	 {cli-matic
 	  {:git/url "https://github.com/l3nz/cli-matic.git"
-	   :sha "b27bc676a879542b4e83f1bef3b9776e600018e3"}}}
+	   :sha "374b2ad71843c07b9d2ddfc1d4439bd7f8ebafab"}}}
 
 
 ## Features
@@ -294,7 +294,6 @@ Eric Normand has a [nice tip](https://gist.github.com/ericnormand/6bb4562c4bc578
 ```
 #!/bin/sh
 #_(
-
    #_DEPS is same format as deps.edn. Multiline is okay.
    DEPS='
    {:deps 
@@ -305,16 +304,16 @@ Eric Normand has a [nice tip](https://gist.github.com/ericnormand/6bb4562c4bc578
    OPTS='
    -J-Xms256m -J-Xmx256m 
    -J-client
+   -J-Dclojure.spec.skip-macros=true
    '
-
 exec clojure $OPTS -Sdeps "$DEPS" "$0" "$@"
-
 )
 
 (println "It works!")
 
 ```
 
+And so you have a nice place not to forget set call `skip-macros`!
 
 
 
