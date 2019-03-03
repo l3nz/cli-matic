@@ -7,10 +7,10 @@ Thanks for taking your time to help CLI-matic grow!
 To make sure we are on the same page, please take the following steps:
 
 * Write a description that contains:
- - What the new feature will do
- - Why it is useful (at least to you) and what are the use cases
- - If there are added dependencies
- - If it works in CLJ or CLJS or both.
+  - What the new feature will do
+  - Why it is useful (at least to you) and what are the use cases
+  - If there are added dependencies
+  - If it works in CLJ or CLJS or both.
 * As we are talking about CLI handling, it would be nice to have examples
   of how the new feature will behave when invoked from the command line.
 
@@ -19,11 +19,11 @@ To make sure we are on the same page, please take the following steps:
 
 * Before you submit a patch, make sure that you have a feature request (so we know what we are talking about)
 * The patch should contain:
- - Code changed
- - Tests
- - If relevant (new feature), a patch for README or relevant docs
- - An usage example under `examples` and `examples-`
- - a CHANGELOG entry
+  - Code changed, propery formatted
+  - Tests, properly formatted
+  - If relevant (new feature), a patch for README or relevant docs
+  - An usage example under `examples` and `examples-cljs-planck`
+  - a CHANGELOG entry
 * Code should be formatted as in Deploy.md
 
 ## Bugs
