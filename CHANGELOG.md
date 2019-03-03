@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.3.5 - 2019-03-03
+### Changed
+* Fixes #71 - Articles for Cljdoc
+* Fixes #70 - Examples (clj/cljs) now run with current sources
+* Fixes #67 - Check that :unknown is never found as a parameter 
+* Docs on Clojars are now building thanks to the dummy dependency on 'l3nz/planck-0.0.0'
+
+
 ## 0.3.3 - 2019-01-01
 ### Changed
 * Fixes #51 - Set types are now allowed. See examples under `sets.clj`. 
