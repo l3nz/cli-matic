@@ -121,12 +121,22 @@
      :placeholder (PRESETS/set-help-values type)}
 
     ; normal preset
+    ; we check that we know what to do with it
     :else
-    (get PRESETS/known-presets type :unknown)
+    (let [preset (get PRESETS/known-presets type :unknown)]
+      (if (= preset :unknown)
+        ; throw exception
+        (throw (ex-info
+                 (str "Unknown  preset: " type " - Aborting")
+                 {}))
+
+        ; return  preset found
+        preset
+        )
     )
 
 
-  )
+  ))
 
 
 
