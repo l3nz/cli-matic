@@ -286,6 +286,38 @@ the program was built, or the version of your project as defined in `project.clj
 meaningful version numbers without manual intervention, you may want to include https://github.com/l3nz/say-cheez and 
 use it to provide everything to you.
 
+
+### Writing a stand-alone script with no external deps.edn
+
+Eric Normand has a [nice tip](https://gist.github.com/ericnormand/6bb4562c4bc578ef223182e3bb1e72c5) for writing stand-alone scripts that all live in one file:
+
+```
+#!/bin/sh
+#_(
+
+   #_DEPS is same format as deps.edn. Multiline is okay.
+   DEPS='
+   {:deps 
+   	{cli-matic {:mvn/version "0.3.3"}}}
+   '
+
+   #_You can put other options here
+   OPTS='
+   -J-Xms256m -J-Xmx256m 
+   -J-client
+   '
+
+exec clojure $OPTS -Sdeps "$DEPS" "$0" "$@"
+
+)
+
+(println "It works!")
+
+```
+
+
+
+
 ## License
 
 The use and distribution terms for this software are covered by the
