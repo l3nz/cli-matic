@@ -12,15 +12,12 @@
   (:require [clojure.string :as str]
             [cli-matic.presets :as PRESETS]
             [cli-matic.specs :as S]
-            [clojure.spec.alpha :as s]
-            )
-  )
+            [clojure.spec.alpha :as s]))
 
 
 ; ================================================
 ;  GENERAL TOOLS
 ; ================================================
-
 
 
 (defn asString
@@ -35,20 +32,22 @@
     s
     (str/join "\n" (flatten s))))
 
-
 (defn asStrVec
   "Whatever we get in, we want a vector of strings out."
   [s]
-           (cond
-             (nil? s) []
-             (string? s) [s]
-             :else  s))
-
+  (cond
+    (nil? s) []
+    (string? s) [s]
+    :else  s))
 
 (defn indent-string
   "Indents a single string by one space."
   [s]
   (str " " s))
+
+(s/fdef indent-string
+  :args (s/cat :s string?)
+  :ret string?)
 
 (defn indent
   "Indents a single string, or each string
@@ -66,7 +65,6 @@
                (str ", " s1))
              "                   ")
         0 len))
-
 
 (defn deep-merge
   "
@@ -127,19 +125,11 @@
       (if (= preset :unknown)
         ; throw exception
         (throw (ex-info
-                 (str "Unknown  preset: " type " - Aborting")
-                 {}))
+                (str "Unknown  preset: " type " - Aborting")
+                {}))
 
         ; return  preset found
-        preset
-        )
-    )
-
-
-  ))
-
-
-
+        preset))))
 
 (defn mk-cli-option
   "Builds a tools.cli option out of our own format.
@@ -173,12 +163,12 @@
                  (assoc opts-2 :assoc-fn assoc-new-multivalue)
                  opts-2)]
     (apply
-      conj positional-opts
-      (flatten (seq opts-3)))))
+     conj positional-opts
+     (flatten (seq opts-3)))))
 
 (s/fdef mk-cli-option
-        :args (s/cat :opts ::S/climatic-option)
-        :ret some?)
+  :args (s/cat :opts ::S/climatic-option)
+  :ret some?)
 
 (defn get-subcommand
   "Given args and the canonical name of a subcommand,
@@ -189,8 +179,8 @@
     (first (filter #(= (:command %) subcmd) subcommands))))
 
 (s/fdef get-subcommand
-        :args (s/cat :args ::S/climatic-cfg :subcmd string?)
-        :ret ::S/a-command)
+  :args (s/cat :args ::S/climatic-cfg :subcmd string?)
+  :ret ::S/a-command)
 
 (defn all-subcommands-aliases
   "Maps all subcommands and subcommand aliases
@@ -206,24 +196,24 @@
   (let [subcommands (:commands climatic-args)]
 
     (dissoc
-      (merge
+     (merge
         ;; a map of 'cmd' -> 'cmd'
-        (into {}
-              (map
-                (fn [{:keys [command short]}]
-                  [command command])
-                subcommands))
+      (into {}
+            (map
+             (fn [{:keys [command short]}]
+               [command command])
+             subcommands))
 
-        (into {}
-              (map
-                (fn [{:keys [command short]}]
-                  [short command])
-                subcommands)))
-      nil)))
+      (into {}
+            (map
+             (fn [{:keys [command short]}]
+               [short command])
+             subcommands)))
+     nil)))
 
 (s/fdef all-subcommands-aliases
-        :args (s/cat :args ::S/climatic-cfg)
-        :ret (s/map-of string? string?))
+  :args (s/cat :args ::S/climatic-cfg)
+  :ret (s/map-of string? string?))
 
 (defn all-subcommands
   "Returns all subcommands, as strings.
@@ -233,8 +223,8 @@
   (set (keys (all-subcommands-aliases climatic-args))))
 
 (s/fdef all-subcommands
-        :args (s/cat :args ::S/climatic-cfg)
-        :ret set?)
+  :args (s/cat :args ::S/climatic-cfg)
+  :ret set?)
 
 (defn canonicalize-subcommand
   "Returns the 'canonical' name of a subcommand,
@@ -244,8 +234,8 @@
   (get (all-subcommands-aliases commands) subcmd))
 
 (s/fdef canonicalize-subcommand
-        :args (s/cat :args ::S/climatic-cfg :sub string?)
-        :ret string?)
+  :args (s/cat :args ::S/climatic-cfg :sub string?)
+  :ret string?)
 
 (defn get-options-for
   "Gets specific :options for a subcommand or,
@@ -266,8 +256,8 @@
   "
   [climatic-opts]
   (conj
-    (mapv mk-cli-option climatic-opts)
-    ["-?" "--help" "" :id :_help_trigger]))
+   (mapv mk-cli-option climatic-opts)
+   ["-?" "--help" "" :id :_help_trigger]))
 
 (defn rewrite-opts
   "
@@ -280,10 +270,10 @@
   (cm-opts->cli-opts (get-options-for climatic-args subcmd)))
 
 (s/fdef rewrite-opts
-        :args (s/cat :args some?
-                     :mode (s/or :common nil?
-                                 :a-subcommand string?))
-        :ret some?)
+  :args (s/cat :args some?
+               :mode (s/or :common nil?
+                           :a-subcommand string?))
+  :ret some?)
 
 
 

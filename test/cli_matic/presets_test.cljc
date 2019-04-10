@@ -1,8 +1,7 @@
 (ns cli-matic.presets-test
   (:require [clojure.test :refer [is are deftest testing]]
             [cli-matic.core :refer [parse-cmds]]
-            [cli-matic.presets :refer [set-help-values set-find-value set-find-didyoumean]]
-            ))
+            [cli-matic.presets :refer [set-help-values set-find-value set-find-didyoumean]]))
 
 (defn cmd_foo [v]
   (prn "Foo:" v)
@@ -398,19 +397,19 @@
 
 ; =============== SETS ==========
 
+
 (deftest set-help-values-test
   (are [s o]
-    (= o (set-help-values s))
+       (= o (set-help-values s))
 
     #{:a :b} "a|b"
     #{:a}    "a"
 
     #{"A" "b" "CD"} "A|CD|b"))
 
-
 (deftest set-find-value-test
   (are [st v o]
-    (= o (set-find-value st v))
+       (= o (set-find-value st v))
 
     #{:a :b} "a" :a
     #{:a :b} "A" :a
@@ -421,19 +420,12 @@
     #{"A" "B"} "a" "A"
     #{"A" "B"} ":A" "A"
     #{"A" "B"} "Q" nil
-    #{":A" ":B"} "a" ":A"
-    ))
-
-
-
-
+    #{":A" ":B"} "a" ":A"))
 
 (deftest set-find-didyoumean-test
   (are [st v cds]
-    (= cds (set-find-didyoumean st v))
+       (= cds (set-find-didyoumean st v))
 
     #{:anna :babbo} "aNni" [:anna]
     #{:anna :babbo :anno} ":anni" [:anna :anno]
-    #{:anna :babbo :anno} "ZebrA" []
-
-    ))
+    #{:anna :babbo :anno} "ZebrA" []))

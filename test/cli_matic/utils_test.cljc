@@ -1,16 +1,13 @@
 (ns cli-matic.utils-test
-  (:require [clojure.test :refer [is are deftest testing] ]
+  (:require [clojure.test :refer [is are deftest testing]]
             [cli-matic.utils :refer [asString asStrVec
                                      indent-string indent
                                      pad deep-merge
                                      all-subcommands-aliases
                                      all-subcommands
                                      canonicalize-subcommand
-                                     mk-cli-option
-                                     ]]
+                                     mk-cli-option]]
             [cli-matic.platform :as P]))
-
-
 
 (deftest asString-test
 
@@ -20,95 +17,76 @@
     "x" "x"
 
     ; a vector of strings
-    [ "a" "b"] "a\nb"
+    ["a" "b"] "a\nb"
 
     ; a vector of vectors
-    [ "a" ["b" "c"] "d"]  "a\nb\nc\nd"
+    ["a" ["b" "c"] "d"]  "a\nb\nc\nd"
 
 
 
     ; add more cases.....
-  ))
-
-
-
+    ))
 
 (deftest asStrVec-test
 
   (are [i o]
-    (= (asStrVec i) o)
+       (= (asStrVec i) o)
 
               ; a string
-              "x" ["x"]
+    "x" ["x"]
 
               ; a vector of strings
-              nil []
+    nil []
 
               ; a vector of vectors
-              [ "a" ["b" "c"] "d"]  [ "a" ["b" "c"] "d"]
+    ["a" ["b" "c"] "d"]  ["a" ["b" "c"] "d"]
 
 
 
               ; add more cases.....
-              ))
-
-
-
+    ))
 
 (deftest indent-string-test
   (are [i o]  (= (indent-string i) o)
-      "a" " a"
-
-              ))
-
-
-
+    "a" " a"))
 
 (deftest indent-test
   (are [i o]  (= (indent i) o)
 
               ; a string
 
-              "a"  " a"
+    "a"  " a"
 
               ; a vector
-              [ "a" "b" ] [ " a" " b"]
-
-
-  ))
+    ["a" "b"] [" a" " b"]))
 
 (deftest pad-test
   (are [s s1 t o]  (= (pad s s1 t) o)
 
       ; shorter
-      "pippo" nil 3   "pip"
+    "pippo" nil 3   "pip"
 
       ; longer
-      "pippo" nil 7   "pippo  "
+    "pippo" nil 7   "pippo  "
 
       ; with merged string
-      "pippo" "pluto" 10 "pippo, plu"
-
-
-                  ))
+    "pippo" "pluto" 10 "pippo, plu"))
 
 (deftest deep-merge-test
 
   (is (=
-        {:one 4 :two {:three 6}}
+       {:one 4 :two {:three 6}}
 
-        (deep-merge {:one 1 :two {:three 3}}
-                    {:one 2 :two {:three 4}}
-                    {:one 3 :two {:three 5}}
-                    {:one 4 :two {:three 6}})
-      ))
-
-  )
+       (deep-merge {:one 1 :two {:three 3}}
+                   {:one 2 :two {:three 4}}
+                   {:one 3 :two {:three 5}}
+                   {:one 4 :two {:three 6}}))))
 
 
 ;
 ; cli-mattic specific
 ;
+
 
 (defn cmd_foo [& opts])
 (defn cmd_bar [& opts])
@@ -141,8 +119,6 @@
                   :opts        []
                   :runs        cmd_returnstructure}]})
 
-
-
 (deftest subcommands-and-aliases
   (testing "Subcommands and aliases"
     (is (= (all-subcommands-aliases SIMPLE-SUBCOMMAND-CFG)
@@ -166,11 +142,10 @@
     (is (= (canonicalize-subcommand SIMPLE-SUBCOMMAND-CFG "bar")
            "bar"))))
 
-
 (deftest make-option
   (testing "Build a tools.cli option"
     (are [i o]
-      (= o (mk-cli-option i))
+         (= o (mk-cli-option i))
 
       ; simplest example
       {:option "extra" :short "x" :as "Port number" :type :int}

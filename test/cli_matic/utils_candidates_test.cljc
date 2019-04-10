@@ -1,8 +1,7 @@
 (ns cli-matic.utils-candidates-test
   (:require [clojure.test :refer :all])
   (:require [cli-matic.utils-candidates :refer [str-distance
-                                           candidate-suggestions]]))
-
+                                                candidate-suggestions]]))
 
 (defn abs [n] (max n (- n)))
 
@@ -19,11 +18,9 @@
         err 0.001]
     (> err (abs (- fa fb)))))
 
-
-
 (deftest str-distance-test
   (are [s1 s2 d]
-    (float= d (str-distance s1 s2))
+       (float= d (str-distance s1 s2))
 
     ; same string = 0
     "pippo" "pippo" 0
@@ -41,14 +38,12 @@
     "" "" 0
 
     ; both nil
-    nil nil 0
-
-    ))
+    nil nil 0))
 
 (deftest candidate-suggestions-test
 
   (are [c t r]
-    (= r (vec (candidate-suggestions c t 0.5)))
+       (= r (vec (candidate-suggestions c t 0.5)))
 
     ; only one
     ["foo" "bar" "baz" "buzz"] "baar" ["bar" "baz"]
@@ -60,6 +55,4 @@
     ["foo" "bara" "barrr" "buzz" "o"] "bar" ["bara" "barrr"]
 
     ;none found
-    ["foo" "bara" "barrr" "buzz" "o"] "qaqaqa" []
-
-    ))
+    ["foo" "bara" "barrr" "buzz" "o"] "qaqaqa" []))

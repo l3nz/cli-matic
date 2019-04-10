@@ -35,13 +35,10 @@ So both expressions must be surrounded by round parentheses.
 
 "
 
-
      [f onErr]
      `(try (~@f)
            (catch Throwable t#
-             ((~@onErr) t#))))
-   )
-
+             ((~@onErr) t#)))))
 
 #?(:cljs
    (defmacro try-catch-all
@@ -52,6 +49,5 @@ See the .clj docs.
      `(try (~@f)
            (catch :default t#
              (do
-               ((~@onErr) t#)))))
-   )
+               ((~@onErr) t#))))))
 

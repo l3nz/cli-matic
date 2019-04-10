@@ -79,7 +79,6 @@
 ; =================================================================
 
 
-
 (defn set-help-values
   "Given a set, return allowed options as string"
   [st]
@@ -90,7 +89,6 @@
   set-help-values
   :args (s/cat :set ::S/set-of-vals))
 
-
 (defn set-normalized-entry
   "A normalized set entry is a lowercase string
   without trailing `:`."
@@ -99,7 +97,6 @@
     (cond
       (str/starts-with? ne ":")  (subs ne 1)
       :else ne)))
-
 
 (defn set-normalize-map
   "Builds a normalized map that
@@ -110,7 +107,6 @@
                     [(set-normalized-entry k) k])
                   st)]
     (into {} vals)))
-
 
 (defn set-find-value
   "Finds a string value in a set of options.
@@ -127,7 +123,6 @@
   set-find-value
   :args (s/cat :set ::S/set-of-vals :v ::S/existing-string))
 
-
 (defn set-find-didyoumean
   "Finds candidates after normalization.
   Return original candidates."
@@ -142,26 +137,20 @@
   set-find-value
   :args (s/cat :set ::S/set-of-vals :v ::S/existing-string))
 
-
 (defn set-find-didyoumean-str
   "Returns ' Did you mean A or B?' or '' if no candidates. "
   [st v]
   (let [cs  (set-find-didyoumean st v)]
     (if
-      (pos? (count cs))
+     (pos? (count cs))
       (str " Did you mean '"
            (str/join "' or '" cs)
            "'?")
       "")))
 
-
 (s/fdef
   set-find-value
   :args (s/cat :set ::S/set-of-vals :v ::S/existing-string))
-
-
-
-
 
 (defn asSet
   "Sets of options are dark black magic.
@@ -198,6 +187,8 @@
 
 ;; Remember to add these to
 ;; ::S/type
+
+
 (def known-presets
   {:int    {:parse-fn    P/parseInt
             :placeholder "N"}
@@ -238,7 +229,6 @@
    :yyyy-mm-dd {:placeholder "YYYY-MM-DD"     :parse-fn    P/asDate}
     ;;:validate    [#(true)
     ;;              "Must be a date in format YYYY-MM-DD"]
-
    })
 
 (OPT/orchestra-instrument)

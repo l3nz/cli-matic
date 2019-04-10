@@ -21,12 +21,10 @@
             [cli-matic.help-gen :as H]
             [cli-matic.platform :as P]
             #?(:clj [cli-matic.platform-macros :refer [try-catch-all]]
-               :cljs [cli-matic.platform-macros :refer-macros [try-catch-all]]
-               )
+               :cljs [cli-matic.platform-macros :refer-macros [try-catch-all]])
             [cli-matic.utils :as U]
             [cli-matic.optionals :as OPT]
-            [expound.alpha :as expound]
-            ))
+            [expound.alpha :as expound]))
 
 (defn mkError
   "Builds an error condition."
@@ -44,13 +42,13 @@
 
 ;; TODO s/fdef
 (s/fdef
- mkError
- :args (s/cat :config ::S/climatic-cfg
-              :subcmd ::S/subcommand
-              :err    (s/or :err ::S/climatic-errors
-                            :help ::S/help)
-              :text   any?)
- :ret ::S/lineParseResult)
+  mkError
+  :args (s/cat :config ::S/climatic-cfg
+               :subcmd ::S/subcommand
+               :err    (s/or :err ::S/climatic-errors
+                             :help ::S/help)
+               :text   any?)
+  :ret ::S/lineParseResult)
 
 (defn parse-single-arg
   "Parses and validates a single command.
@@ -71,18 +69,18 @@
         validationFn (get optionDef :validate-fn (constantly true))]
 
     (try-catch-all
-      (let [v-parsed (parseFn stringValue)]
-        [label nil v-parsed])
+     (let [v-parsed (parseFn stringValue)]
+       [label nil v-parsed])
 
-      (fn [t]
-        [label (str "Cannot parse " label) nil]))))
+     (fn [t]
+       [label (str "Cannot parse " label) nil]))))
 
 (s/fdef
- parse-single-arg
- :args (s/cat :opt ::S/climatic-option :val string?)
- :ret (s/cat :lbl keyword?
-             :err (s/or :s string? :n nil?)
-             :val any?))
+  parse-single-arg
+  :args (s/cat :opt ::S/climatic-option :val string?)
+  :ret (s/cat :lbl keyword?
+              :err (s/or :s string? :n nil?)
+              :val any?))
 
 (defn errors-for-missing-mandatory-args
   "Gets us a sequence of errors if mandatory options are missing.
@@ -108,10 +106,10 @@
      mandatory-options)))
 
 (s/fdef errors-for-missing-mandatory-args
-        :args (s/cat :options ::S/opts
-                     :parsed-opts map?
-                     :other-options map?)
-        :ret (s/coll-of string?))
+  :args (s/cat :options ::S/opts
+               :parsed-opts map?
+               :other-options map?)
+  :ret (s/coll-of string?))
 
 ;; RUN ANALYSIS
 
@@ -133,9 +131,9 @@
          parms))))
 
 (s/fdef
- mk-fake-args
- :args (s/cat :parms ::S/mapOfCliParams)
- :ret (s/coll-of string?))
+  mk-fake-args
+  :args (s/cat :parms ::S/mapOfCliParams)
+  :ret (s/coll-of string?))
 
 (defn parse-cmds-with-defaults
   "Parses a command line with environment defaults.
@@ -176,12 +174,12 @@
     (parse-opts argv+ cli-cmd-options :in-order in-order?)))
 
 (s/fdef
- parse-cmds-with-defaults
- :args (s/cat :opts ::S/opts
-              :argv (s/coll-of string?)
-              :in-order boolean?
-              :fn-env any?)
- :ret  ::S/parsedCliOpts)
+  parse-cmds-with-defaults
+  :args (s/cat :opts ::S/opts
+               :argv (s/coll-of string?)
+               :in-order boolean?
+               :fn-env any?)
+  :ret  ::S/parsedCliOpts)
 
 (defn parse-cmds-with-positions
   "To process positional parameters, first we run some parsing; if
@@ -228,24 +226,24 @@
   "
   [name type spec value]
   (try-catch-all
-    (let [ed (expound/expound-str spec value)]
-      (if (not= ed "Success!\n")
+   (let [ed (expound/expound-str spec value)]
+     (if (not= ed "Success!\n")
         ;(str "Spec failure for '" name "': value '" value "' is invalid.")
-        (str "Spec failure for " type " '" name "'\n" ed)
+       (str "Spec failure for " type " '" name "'\n" ed)
 
-        nil))
+       nil))
 
-    (fn [t]
-      (str "Spec failure for " type " '" name "': with value '" value "' got " t))))
+   (fn [t]
+     (str "Spec failure for " type " '" name "': with value '" value "' got " t))))
 
 (s/fdef
- check-one-spec
- :args (s/cat :name string?
-              :type string?
-              :spec ::S/spec
-              :value ::S/anything)
- :ret  (s/or :nil nil?
-             :str string?))
+  check-one-spec
+  :args (s/cat :name string?
+               :type string?
+               :spec ::S/spec
+               :value ::S/anything)
+  :ret  (s/or :nil nil?
+              :str string?))
 
 (defn check-specs-on-parameters
   "Given a set of option (so, global options, or a subcommand's options)
@@ -262,10 +260,10 @@
     (filter some? specs-applied)))
 
 (s/fdef
- check-specs-on-parameters
- :args (s/cat :options ::S/opts
-              :parsed-results map?
-              :type string?))
+  check-specs-on-parameters
+  :args (s/cat :options ::S/opts
+               :parsed-results map?
+               :type string?))
 
 (defn check-specs-on-parsed-args
   "As a last step, before we call the subcommand itself, we assert
@@ -297,7 +295,7 @@
         ;_ (prn "Failing global" failing-global-spec)
         ;_ (prn "Failing local" failing-subcmd-spec)
         ;_ (prn "Failing total" failing-subcmd-general))
-]
+        ]
 
     (cond
       (some? failing-global-spec)
@@ -318,13 +316,11 @@
        :error-text     ""})))
 
 (s/fdef
- check-specs-on-parsed-args
- :args (s/cat :parsed-args map?
-              :canonical-subcommand string?
-              :config ::S/climatic-cfg)
- :ret ::S/lineParseResult)
-
-
+  check-specs-on-parsed-args
+  :args (s/cat :parsed-args map?
+               :canonical-subcommand string?
+               :config ::S/climatic-cfg)
+  :ret ::S/lineParseResult)
 
 (defn parse-cmds
   "This is where magic happens.
@@ -368,7 +364,6 @@
           (mkError config subcommand :ERR-UNKNOWN-SUBCMD
                    (H/generate-help-possible-mistypes config subcommand))
 
-
           :else
           (let [canonical-subcommand (U/canonicalize-subcommand config subcommand)
                 parsed-cmd-opts (parse-cmds-with-positions config canonical-subcommand subcommand-argv);_ (prn "Subcmd cmdline" parsed-cmd-opts)
@@ -408,10 +403,10 @@
               (mkError config canonical-subcommand :ERR-PARMS-SUBCMD cmd-errs))))))))
 
 (s/fdef
- parse-cmds
- :args (s/cat :args (s/coll-of string?)
-              :opts ::S/climatic-cfg)
- :ret ::S/lineParseResult)
+  parse-cmds
+  :args (s/cat :args (s/coll-of string?)
+               :opts ::S/climatic-cfg)
+  :ret ::S/lineParseResult)
 
 (defn assert-unique-values
   "Check that all values are unique.
@@ -431,11 +426,11 @@
               {})))))
 
 (s/fdef
- assert-unique-values
- :args (s/cat :name (s/or :some-subcmd ::S/existing-string
-                          :global  nil?)
-              :vec-opts any? ; ::S/commands
-              :option keyword?))
+  assert-unique-values
+  :args (s/cat :name (s/or :some-subcmd ::S/existing-string
+                           :global  nil?)
+               :vec-opts any? ; ::S/commands
+               :option keyword?))
 
 ;;
 ;; Asserts sanity of initial configuration.
@@ -461,8 +456,7 @@
       (if (pos? (count global-positional-parms))
         (throw (ex-info
                 (str "Positional parameters not allowed in global options. " global-positional-parms)
-                {}
-                ))));; checks subcommands
+                {}))));; checks subcommands
     (let [all-subcommands (into [nil]
                                 (U/all-subcommands currentCfg))]
       (doall (map #(assert-unique-values %
@@ -475,7 +469,7 @@
   nil)
 
 (s/fdef assert-cfg-sanity
-        :args (s/cat :opts ::S/climatic-cfg))
+  :args (s/cat :opts ::S/climatic-cfg))
 
 ;
 ; builds a return value
@@ -485,16 +479,16 @@
   "This is a Return Value, i.e. what happens after the
   parsing is done and possibly the subcommand was invoked."
   [return-code type stdout subcmd stderr]
-    {:retval return-code
-     :status type
-     :help   stdout
-     :subcmd subcmd
-     :stderr (U/asStrVec stderr)})
+  {:retval return-code
+   :status type
+   :help   stdout
+   :subcmd subcmd
+   :stderr (U/asStrVec stderr)})
 
 (s/fdef
- ->RV
- :args (s/cat :rv int? :status some? :help any? :subcmd any? :stderr any?)
- :rets ::S/RV)
+  ->RV
+  :args (s/cat :rv int? :status some? :help any? :subcmd any? :stderr any?)
+  :rets ::S/RV)
 
 ;
 ;
@@ -521,22 +515,20 @@
   [subcommand-def options]
 
   (try-catch-all
-    (let [_  (P/add-shutdown-hook (:on-shutdown subcommand-def))
-          rv ((:runs subcommand-def)  options)]
-      (cond
-        (nil? rv)    (->RV 0 :OK nil nil nil)
-        (int? rv)   (if (zero? rv)
-                      (->RV 0 :OK nil nil nil)
-                      (->RV rv :ERR nil nil nil))
+   (let [_  (P/add-shutdown-hook (:on-shutdown subcommand-def))
+         rv ((:runs subcommand-def)  options)]
+     (cond
+       (nil? rv)    (->RV 0 :OK nil nil nil)
+       (int? rv)   (if (zero? rv)
+                     (->RV 0 :OK nil nil nil)
+                     (->RV rv :ERR nil nil nil))
 
-        :else        (->RV 0 :OK nil nil nil)))
+       :else        (->RV 0 :OK nil nil nil)))
 
-    (fn [t]
-      (->RV -1 :EXCEPTION nil nil
-            (str "JVM Exception: "
-                 (with-out-str (println t)))))))
-
-
+   (fn [t]
+     (->RV -1 :EXCEPTION nil nil
+           (str "JVM Exception: "
+                (with-out-str (println t)))))))
 
 (def setup-defaults
   {:app {:global-help H/generate-global-help

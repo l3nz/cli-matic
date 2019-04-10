@@ -11,6 +11,7 @@
                  [cheshire "5.8.0" :scope "provided"]
                  [io.forward/yaml "1.0.9" :scope "provided"]
                  [l3nz/planck "0.0.0" :scope "provided"]
+                 ;[spectrum "0.2.4"  :scope "provided"]
                  [expound "0.7.1"]]
   :scm {:name "git"
         ;; :tag "..."
@@ -18,7 +19,7 @@
   :plugins [[lein-eftest "0.5.1"]
             [jonase/eastwood "0.2.5"]
             [lein-kibit "0.1.6"]
-            [lein-cljfmt "0.5.7"]
+            [lein-cljfmt "0.6.4"]
             [lein-cljsbuild "1.1.7"]
             [lein-doo "0.1.11"]]
   :cljsbuild

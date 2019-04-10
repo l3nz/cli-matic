@@ -13,10 +13,7 @@
           ;  [cli-matic.platform :as P]
             [cli-matic.utils :as U]
             [cli-matic.utils-candidates :as UB]
-            [cli-matic.optionals :as OPT])
-  )
-
-
+            [cli-matic.optionals :as OPT]))
 
 (defn generate-section
   "Generates a section (as a collection of strings,
@@ -38,12 +35,12 @@
   [name version usage commands opts-title opts]
 
   (vec
-    (flatten
-      [(generate-section "NAME" name)
-       (generate-section "USAGE" usage)
-       (generate-section "VERSION" version)
-       (generate-section "COMMANDS" commands)
-       (generate-section opts-title opts)])))
+   (flatten
+    [(generate-section "NAME" name)
+     (generate-section "USAGE" usage)
+     (generate-section "VERSION" version)
+     (generate-section "COMMANDS" commands)
+     (generate-section opts-title opts)])))
 
 (defn get-options-summary
   "To get the summary of options, we pass options to
@@ -53,7 +50,7 @@
   [cfg subcmd]
   (let [cli-cfg (U/rewrite-opts cfg subcmd)
         options-str (:summary
-                      (cli/parse-opts [] cli-cfg))]
+                     (cli/parse-opts [] cli-cfg))]
     (str/split-lines options-str)))
 
 (defn get-first-rest-description-rows
@@ -68,7 +65,6 @@
 
     :else
     [(first row-or-rows) (rest row-or-rows)]))
-
 
 (defn generate-a-command
   "Maybe we should use a way to format commands
@@ -112,18 +108,17 @@
         [desc0 descr-extra] (get-first-rest-description-rows descr)]
 
     (generate-sections
-      [(str name " - " desc0) descr-extra]
-      version
-      (str name " [global-options] command [command options] [arguments...]")
-      (generate-global-command-list (:commands cfg))
-      "GLOBAL OPTIONS"
-      (get-options-summary cfg nil))))
+     [(str name " - " desc0) descr-extra]
+     version
+     (str name " [global-options] command [command options] [arguments...]")
+     (generate-global-command-list (:commands cfg))
+     "GLOBAL OPTIONS"
+     (get-options-summary cfg nil))))
 
 (s/fdef
   generate-global-help
   :args (s/cat :cfg ::S/climatic-cfg)
   :ret (s/coll-of string?))
-
 
 (defn arg-list-with-positional-entries
   "Creates the `[arguments...]`"
@@ -132,9 +127,8 @@
     (if (empty? pos-args)
       "[arguments...]"
       (str
-        (apply str (map :option pos-args))
-        " ..."))))
-
+       (apply str (map :option pos-args))
+       " ..."))))
 
 (defn generate-subcmd-help
   "This is where we generate help for a specific subcommand."
@@ -152,12 +146,12 @@
         arglist (arg-list-with-positional-entries cfg cmd)]
 
     (generate-sections
-      [(str glname " " name " - " desc0) descr-extra]
-      nil
-      (str glname " " name-short " [command options] " arglist)
-      nil
-      "OPTIONS"
-      (get-options-summary cfg cmd))))
+     [(str glname " " name " - " desc0) descr-extra]
+     nil
+     (str glname " " name-short " [command options] " arglist)
+     nil
+     "OPTIONS"
+     (get-options-summary cfg cmd))))
 
 (s/fdef
   generate-subcmd-help
@@ -185,8 +179,7 @@
   :args (s/cat :wrong-cmd string?
                :subcmd (s/coll-of (s/or :s string? :nil nil?))
                :aliases (s/coll-of (s/or :s string? :nil nil?)))
-  :ret (s/coll-of string?)
-  )
+  :ret (s/coll-of string?))
 
 (defn generate-help-possible-mistypes
   "If we have a wrong subcommand, can we guess what the correct
@@ -201,9 +194,7 @@
 
         candidates (generate-possible-mistypes wrong-subcmd commands aliases)
 
-        error (str appName ": unknown sub-command '" wrong-subcmd "'.")
-
-        ]
+        error (str appName ": unknown sub-command '" wrong-subcmd "'.")]
 
     (if (empty? candidates)
       ; No candidates, just the error
@@ -219,9 +210,6 @@
   generate-help-possible-mistypes
   :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
   :ret (s/coll-of (s/or :str string?
-                        :cs (s/coll-of string?)))
-  )
-
-
+                        :cs (s/coll-of string?))))
 
 (OPT/orchestra-instrument)

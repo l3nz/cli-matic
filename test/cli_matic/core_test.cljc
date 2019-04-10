@@ -1,6 +1,6 @@
 (ns cli-matic.core-test
   (:require [clojure.test :refer [is are deftest testing]]
-            [cli-matic.platform :as P ]
+            [cli-matic.platform :as P]
             [cli-matic.platform-macros :refer [try-catch-all]]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
@@ -126,8 +126,6 @@
             :subcommand     "unknown"
             :subcommand-def nil}))))
 
-
-
 (deftest run-examples
   (testing "Some real-life behavior for our SIMPLE case"
     (are [i o]
@@ -229,8 +227,8 @@
   (testing "Unique options"
     (are [i o]
          (= (try-catch-all
-              (apply assert-unique-values i)
-              (fn [e] :ERR))
+             (apply assert-unique-values i)
+             (fn [e] :ERR))
             o)
 
       ; empty
@@ -255,10 +253,10 @@
   (testing "Cfg format"
     (are [i o]
          (= (try-catch-all
-              (assert-cfg-sanity i)
-              (fn [e]
+             (assert-cfg-sanity i)
+             (fn [e]
                 ;(prn e)
-                :ERR))
+               :ERR))
             o)
 
       ;; OK
@@ -465,6 +463,7 @@
 ;
 ; =================================================================
 
+
 (def SETS-CFG
   {:app         {:command     "dummy"
                  :description "I am some command"
@@ -472,14 +471,12 @@
    :global-opts []
    :commands    [{:command     "foo" :short       "f"
                   :description "I am function foo"
-                  :opts        [{:option "kw" :as "blabla" :type #{:a :b :zebrafuffa} }
-                                ]
+                  :opts        [{:option "kw" :as "blabla" :type #{:a :b :zebrafuffa}}]
                   :runs        cmd_save_opts}]})
-
 
 (deftest check-sets
   (are [i o]
-    (= (run-cmd* SETS-CFG i) o)
+       (= (run-cmd* SETS-CFG i) o)
 
     ; all of the should pass
     ["foo" "--kw" "a"]
@@ -493,10 +490,4 @@
      :retval -1
      :status :ERR-PARMS-SUBCMD
      :stderr ["Option error: Error while parsing option \"--kw zebrafufa\": clojure.lang.ExceptionInfo: Value 'zebrafufa' not allowed. Did you mean ':zebrafuffa'? {}"]
-     :subcmd "foo"}
-
-
-
-
-
-    ))
+     :subcmd "foo"}))
