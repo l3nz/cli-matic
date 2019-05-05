@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.3.7 - 2019-05-05
+### Changed
+* Fixes #71 - Depending on tools.cli 0.4.2
+
+
 ## 0.3.6 - 2019-03-03
 ### Changed
 * Fixes #71 - Articles for Cljdoc

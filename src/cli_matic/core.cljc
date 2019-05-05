@@ -155,7 +155,6 @@
         env-options (filter :env cmt-options)
         argv+ (if (not (empty? env-options))
                 ;; I have env variables
-
                 (let [parse1 (parse-opts argv cli-cmd-options
                                          :in-order in-order?
                                          ::no-defaults true)

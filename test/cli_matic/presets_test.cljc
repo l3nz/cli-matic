@@ -362,37 +362,41 @@
                         :val        {"a" 1
                                      "b" 2}}
        :error-text     ""
-       :parse-errors   :NONE})) (testing "Slurping multiline YAML"
-                                  (are [i o]
-                                       (= (parse-cmds-simpler
-                                           i
-                                           (mkDummyCfg {:option "val" :as "x" :type :yamlfile})) o)
+       :parse-errors   :NONE}))
+
+  (testing "Slurping multiline YAML"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :yamlfile})) o)
 
       ; one file
-                                    ["foo" "--val" "resources/yaml_simple.yaml"]
-                                    {:commandline    {:_arguments []
-                                                      :val        {"list"   [1 2 "hi"]
-                                                                   "intval" 100
-                                                                   "strval" "good"}}
-                                     :error-text     ""
-                                     :parse-errors   :NONE})) (testing "Complex multiline YAML"
-                                                                (are [i o]
-                                                                     (= (-> (parse-cmds-simpler
-                                                                             i
-                                                                             (mkDummyCfg {:option "val" :as "x" :type :yamlfile}))
-                                                                            (get-in [:commandline :val])
-                                                                            (select-keys ["invoice" "date"])) o)
+      ["foo" "--val" "resources/yaml_simple.yaml"]
+      {:commandline    {:_arguments []
+                        :val        {"list"   [1 2 "hi"]
+                                     "intval" 100
+                                     "strval" "good"}}
+       :error-text     ""
+       :parse-errors   :NONE}))
+
+  (testing "Complex multiline YAML"
+    (are [i o]
+         (= (-> (parse-cmds-simpler
+                 i
+                 (mkDummyCfg {:option "val" :as "x" :type :yamlfile}))
+                (get-in [:commandline :val])
+                (select-keys ["invoice" "date"])) o)
 
       ; one file
-                                                                  ["foo" "--val" "resources/yaml_full.yaml"]
-                                                                  {"invoice" 34843
-                                                                   "date" #inst "2001-01-23"}
-                                                                  #_{:commandline    {:_arguments []
-                                                                                      :val        {"list"   [1 2 "hi"]
-                                                                                                   "intval" 100
-                                                                                                   "strval" "good"}}
-                                                                     :error-text     ""
-                                                                     :parse-errors   :NONE})))
+      ["foo" "--val" "resources/yaml_full.yaml"]
+      {"invoice" 34843
+       "date" #inst "2001-01-23"}
+      #_{:commandline    {:_arguments []
+                          :val        {"list"   [1 2 "hi"]
+                                       "intval" 100
+                                       "strval" "good"}}
+         :error-text     ""
+         :parse-errors   :NONE})))
 
 
 ; =============== SETS ==========
