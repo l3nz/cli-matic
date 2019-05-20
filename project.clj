@@ -4,6 +4,9 @@
   :license {:name "Eclipse Public License, v2"
             :url  "http://www.eclipse.org/legal/epl-v20.html"}
 
+  :aliases {"fix" ["cljfmt" "fix"]
+            "clj-kondo" ["trampoline" "run" "-m" "clj-kondo.main" "--" "--lint" "src/" "--cache" ".cli-kondo-cache"]}
+
   :dependencies
   [[org.clojure/clojure "1.9.0" :scope "provided"]
    [org.clojure/clojurescript "1.10.439" :scope "provided"]
@@ -13,6 +16,7 @@
    [cheshire "5.8.1" :scope "provided"]
    [io.forward/yaml "1.0.9" :scope "provided"]
    [planck "2.22.0" :scope "provided"]
+   [clj-kondo "2019.05.19-alpha" :scope "provided"]
    [expound "0.7.2"]]
 
   ;:scm {:name "git"

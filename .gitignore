@@ -13,3 +13,4 @@ pom.xml.asc
 *.iml
 .cpcache/
 .planck_cache/
+.cli-kondo-cache/
