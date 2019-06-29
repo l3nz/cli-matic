@@ -5,7 +5,13 @@
             :url  "http://www.eclipse.org/legal/epl-v20.html"}
 
   :aliases {"fix" ["cljfmt" "fix"]
-            "clj-kondo" ["trampoline" "run" "-m" "clj-kondo.main" "--" "--lint" "src/" "--cache" ".cli-kondo-cache"]}
+            ; Kondo
+            "clj-kondo" ["with-profile" "kondo"
+                         "trampoline" "run" "-m"
+                         "clj-kondo.main" "--" "--lint" "src/" "--cache" ".cli-kondo-cache"]
+            "clj-kondo-test" ["with-profile" "kondo"
+                              "trampoline" "run" "-m"
+                              "clj-kondo.main" "--" "--lint" "test/" "--cache" ".cli-kondo-cache"]}
 
   :dependencies
   [[org.clojure/clojure "1.9.0" :scope "provided"]
@@ -16,7 +22,6 @@
    [cheshire "5.8.1" :scope "provided"]
    [io.forward/yaml "1.0.9" :scope "provided"]
    [planck "2.22.0" :scope "provided"]
-   [clj-kondo "2019.05.19-alpha" :scope "provided"]
    [expound "0.7.2"]]
 
   ;:scm {:name "git"
@@ -28,7 +33,11 @@
             [lein-kibit "0.1.6"]
             [lein-cljfmt "0.6.4"]
             [lein-cljsbuild "1.1.7"]
-            [lein-doo "0.1.11"]]
+            [lein-doo "0.1.11"]
+            [lein-ancient "0.6.15"]]
+
+  :profiles {:kondo
+             {:dependencies [[clj-kondo "2019.05.19-alpha"]]}}
 
   :cljsbuild
   {:test-commands {"unit-tests" ["node" "target/unit-tests.js"]}
