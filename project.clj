@@ -37,7 +37,8 @@
             [lein-ancient "0.6.15"]]
 
   :profiles {:kondo
-             {:dependencies [[clj-kondo "2019.05.19-alpha"]]}}
+             {:dependencies [[org.clojure/clojure "1.10.1"]
+                             [clj-kondo "2019.06.23-alpha"]]}}
 
   :cljsbuild
   {:test-commands {"unit-tests" ["node" "target/unit-tests.js"]}
