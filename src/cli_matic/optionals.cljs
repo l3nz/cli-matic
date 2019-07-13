@@ -3,12 +3,10 @@
 
   JSON is always available in CLJS.
 
-  "
-  (:require [clojure.string :as str]
-            [expound.alpha :as expound]
-            [clojure.spec.alpha :as s]))
+  ")
 
 ;; CHESHIRE
+
 
 (defn json-decode
   "
@@ -25,7 +23,7 @@
 
 (defn  yaml-decode
   ""
-  [& args]
+  [& _]
   (throw (ex-info "No YAML decoding in CLJS." {})))
 
 ;; ORCHESTRA

@@ -28,7 +28,7 @@ This namespace contains utilities to compute string candidates.
   [a b]
   (let [m (count a)
         n (count b)
-        init (apply deep-merge-with (fn [a b] b)
+        init (apply deep-merge-with (fn [_ b] b)
                     (concat
                      (for [i (range 0 (+ 1 m))]
                        {i {0 i}})
@@ -37,7 +37,7 @@ This namespace contains utilities to compute string candidates.
         table (reduce
                (fn [d [i j]]
                  (deep-merge-with
-                  (fn [a b] b)
+                  (fn [_ b] b)
                   d
                   {i {j (if (= (nth a (- i 1))
                                (nth b (- j 1)))

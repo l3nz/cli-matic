@@ -63,7 +63,7 @@
   (try
     (.parse
      (java.text.SimpleDateFormat. "yyyy-MM-dd") s)
-    (catch Throwable t
+    (catch Throwable _
       nil)))
 
 (defn parseEdn

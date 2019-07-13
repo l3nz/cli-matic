@@ -138,7 +138,7 @@
   if false, for generating help messages.
 
   "
-  [{:keys [option short as type default multiple env] :as cm-option}]
+  [{:keys [option short as type default multiple env]}]
 
   (let [preset (get-cli-option type)
         placeholder (str (:placeholder preset)
@@ -200,7 +200,7 @@
         ;; a map of 'cmd' -> 'cmd'
       (into {}
             (map
-             (fn [{:keys [command short]}]
+             (fn [{:keys [command]}]
                [command command])
              subcommands))
 

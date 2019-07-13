@@ -86,5 +86,5 @@
       ;; as we have expound, we'd better use it.
       (try
         (set! s/*explain-out* expound/printer)
-        (catch Exception e nil)))))
+        (catch Exception _ nil)))))
 

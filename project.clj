@@ -1,4 +1,4 @@
-(defproject cli-matic "0.3.7"
+(defproject cli-matic "0.3.8"
   :description "Compact [sub]command line parsing library, for Clojure"
   :url "https://github.com/l3nz/cli-matic"
   :license {:name "Eclipse Public License, v2"
@@ -38,7 +38,7 @@
 
   :profiles {:kondo
              {:dependencies [[org.clojure/clojure "1.10.1"]
-                             [clj-kondo "2019.06.23-alpha"]]}}
+                             [clj-kondo "2019.07.05-alpha"]]}}
 
   :cljsbuild
   {:test-commands {"unit-tests" ["node" "target/unit-tests.js"]}

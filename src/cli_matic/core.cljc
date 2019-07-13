@@ -65,14 +65,15 @@
   [optionDef stringValue]
   (let [label (get optionDef :option)
         parseFn (get optionDef :parse-fn identity)
-        valdationSpec (get optionDef :xx identity)
-        validationFn (get optionDef :validate-fn (constantly true))]
+        ;valdationSpec (get optionDef :xx identity)
+        ;validationFn (get optionDef :validate-fn (constantly true))
+        ]
 
     (try-catch-all
      (let [v-parsed (parseFn stringValue)]
        [label nil v-parsed])
 
-     (fn [t]
+     (fn [_]
        [label (str "Cannot parse " label) nil]))))
 
 (s/fdef
@@ -417,7 +418,7 @@
 
   (let [optName (if (nil? name) "global" name)
         allOptions (filter some? (map option vec-opts))
-        dupes (filterv (fn [[k v]]  (> v 1)) (frequencies allOptions))]
+        dupes (filterv (fn [[_ v]]  (> v 1)) (frequencies allOptions))]
     (cond
       (not (empty? dupes))
       (throw (ex-info
@@ -447,23 +448,22 @@
   "
   [currentCfg]
 
-  (do
     ;; checks positional parameters
 
-    (let [global-positional-parms (U/list-positional-parms currentCfg nil)]
+  (let [global-positional-parms (U/list-positional-parms currentCfg nil)]
 
-      (if (pos? (count global-positional-parms))
-        (throw (ex-info
-                (str "Positional parameters not allowed in global options. " global-positional-parms)
-                {}))));; checks subcommands
-    (let [all-subcommands (into [nil]
-                                (U/all-subcommands currentCfg))]
-      (doall (map #(assert-unique-values %
-                                         (U/get-options-for currentCfg %)
-                                         :option) all-subcommands))
-      (doall (map #(assert-unique-values %
-                                         (U/get-options-for currentCfg %)
-                                         :short) all-subcommands))))
+    (if (pos? (count global-positional-parms))
+      (throw (ex-info
+              (str "Positional parameters not allowed in global options. " global-positional-parms)
+              {}))));; checks subcommands
+  (let [all-subcommands (into [nil]
+                              (U/all-subcommands currentCfg))]
+    (doall (map #(assert-unique-values %
+                                       (U/get-options-for currentCfg %)
+                                       :option) all-subcommands))
+    (doall (map #(assert-unique-values %
+                                       (U/get-options-for currentCfg %)
+                                       :short) all-subcommands)))
   ;; just say nil
   nil)
 
@@ -487,7 +487,7 @@
 (s/fdef
   ->RV
   :args (s/cat :rv int? :status some? :help any? :subcmd any? :stderr any?)
-  :rets ::S/RV)
+  :ret ::S/RV)
 
 ;
 ;
