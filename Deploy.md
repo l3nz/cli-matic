@@ -6,7 +6,7 @@ Before commit:
 
 Then let's see if the linter notices something.
 
-	lein eastwood
+	lein clj-kondo
 
 Then, let's format sources:
 
@@ -16,6 +16,11 @@ Then, let's format sources:
 And commit with a message "Fixing #XX - Description"
 
 Do not forget to edit the Changelog.
+
+Also, make sure you check test coverage - can it be improved?
+
+	lein cloverage
+
 
 ## Pushing to Clojars
 

@@ -34,11 +34,12 @@
             [lein-cljfmt "0.6.4"]
             [lein-cljsbuild "1.1.7"]
             [lein-doo "0.1.11"]
-            [lein-ancient "0.6.15"]]
+            [lein-ancient "0.6.15"]
+            [lein-cloverage "1.1.2"]]
 
   :profiles {:kondo
              {:dependencies [[org.clojure/clojure "1.10.1"]
-                             [clj-kondo "2019.07.05-alpha"]]}}
+                             [clj-kondo "2019.10.11-alpha"]]}}
 
   :cljsbuild
   {:test-commands {"unit-tests" ["node" "target/unit-tests.js"]}
