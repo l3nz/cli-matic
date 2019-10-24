@@ -154,7 +154,7 @@
   [cmt-options argv in-order? fn-env]
   (let [cli-cmd-options (U/cm-opts->cli-opts cmt-options)
         env-options (filter :env cmt-options)
-        argv+ (if (not (empty? env-options))
+        argv+ (if (seq env-options)
                 ;; I have env variables
                 (let [parse1 (parse-opts argv cli-cmd-options
                                          :in-order in-order?
@@ -420,7 +420,7 @@
         allOptions (filter some? (map option vec-opts))
         dupes (filterv (fn [[_ v]]  (> v 1)) (frequencies allOptions))]
     (cond
-      (not (empty? dupes))
+      (seq dupes)
       (throw (ex-info
               (str "In option area: " optName " for options of type " option " some option names are not unique: " dupes)
               {})))))
@@ -452,7 +452,7 @@
 
   (let [global-positional-parms (U/list-positional-parms currentCfg nil)]
 
-    (if (pos? (count global-positional-parms))
+    (when (pos? (count global-positional-parms))
       (throw (ex-info
               (str "Positional parameters not allowed in global options. " global-positional-parms)
               {}))));; checks subcommands
@@ -572,7 +572,7 @@
   (let [setup (U/deep-merge setup-defaults supplied-setup)
         {:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
-    (if (not (empty? stderr))
+    (when (seq stderr)
       (println
        (U/asString ["** ERROR: **" stderr "" ""])))
     (cond

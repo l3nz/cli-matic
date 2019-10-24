@@ -38,7 +38,7 @@
   "
   [fnToCallOnShutdown]
 
-  (if (ifn? fnToCallOnShutdown)
+  (when (ifn? fnToCallOnShutdown)
     (throw (ex-info "Shutdown hooks not supported outside the JVM" {}))))
 
 (defn slurp-file

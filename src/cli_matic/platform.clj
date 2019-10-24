@@ -30,7 +30,7 @@
   "
   [fnToCallOnShutdown]
 
-  (if (ifn? fnToCallOnShutdown)
+  (when (ifn? fnToCallOnShutdown)
     (.addShutdownHook
      (Runtime/getRuntime)
      (Thread. fnToCallOnShutdown))))
