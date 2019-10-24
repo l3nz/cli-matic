@@ -77,14 +77,13 @@
 
   "
   []
-  (if with-orchestra?
-    (do
-      ;; orchestra.spec.test/instrument
-      ((ns-resolve (symbol "orchestra.spec.test")
-                   (symbol "instrument")))
+  (when with-orchestra?
+    ;; orchestra.spec.test/instrument
+    ((ns-resolve (symbol "orchestra.spec.test")
+                 (symbol "instrument")))
 
-      ;; as we have expound, we'd better use it.
-      (try
-        (set! s/*explain-out* expound/printer)
-        (catch Exception _ nil)))))
+    ;; as we have expound, we'd better use it.
+    (try
+      (set! s/*explain-out* expound/printer)
+      (catch Exception _ nil))))
 
