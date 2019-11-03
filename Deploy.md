@@ -8,6 +8,12 @@ Then let's see if the linter notices something.
 
 	lein clj-kondo
 
+Then, run the  new vrsion with all script examples:
+
+	./scriptTester.sh
+
+and make sure it's all green.
+
 Then, let's format sources:
 
 	lein cljfmt check
@@ -37,6 +43,8 @@ Then check your Clojars credentials and push:
 	lein deploy clojars
 	Username: l3nz
 	
+
+To see my account, `creds.sh clojars`.
 
 ## Pushing documentation
 

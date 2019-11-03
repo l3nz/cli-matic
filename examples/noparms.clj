@@ -20,7 +20,6 @@ exec clj -J-Xms256m -J-Xmx256m -J-client  -J-Dclojure.spec.skip-macros=true -i "
   {:app         {:command     "sayhi"
                  :description "Greeter"
                  :version     "0.0.1"}
-   :global-opts []
    :commands    [{:command     "hi" 
                   :description "Greets you"
                   :opts        []
