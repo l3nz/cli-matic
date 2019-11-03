@@ -50,39 +50,6 @@
                :text   any?)
   :ret ::S/lineParseResult)
 
-(defn parse-single-arg
-  "Parses and validates a single command.
-  Returns its value, and an error message,
-  in a vector [:keyword err val].
-  Parsing is OK if error message is nil.
-
-  Sequence is:
-  - parsing (eg `2` -> 2), on exception parse error
-  - validation via spec
-  - validation via function, on exception validation error
-
-  "
-  [optionDef stringValue]
-  (let [label (get optionDef :option)
-        parseFn (get optionDef :parse-fn identity)
-        ;valdationSpec (get optionDef :xx identity)
-        ;validationFn (get optionDef :validate-fn (constantly true))
-        ]
-
-    (try-catch-all
-     (let [v-parsed (parseFn stringValue)]
-       [label nil v-parsed])
-
-     (fn [_]
-       [label (str "Cannot parse " label) nil]))))
-
-(s/fdef
-  parse-single-arg
-  :args (s/cat :opt ::S/climatic-option :val string?)
-  :ret (s/cat :lbl keyword?
-              :err (s/or :s string? :n nil?)
-              :val any?))
-
 (defn errors-for-missing-mandatory-args
   "Gets us a sequence of errors if mandatory options are missing.
   Options read by cli module are merged with other options, e.g.

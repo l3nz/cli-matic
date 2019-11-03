@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. This change
 ### Changed
 * Fixes #35 - `:global-opts` can be left out entirely if empty
 * Fixes #37 - clj-kondo warnings
+* Fixes #78 - Improve code coverage
 
 ## 0.3.8 - 2019-07-13
 ### Changed
