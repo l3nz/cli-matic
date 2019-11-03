@@ -529,10 +529,6 @@
            (str "JVM Exception: "
                 (with-out-str (println t)))))))
 
-(def setup-defaults
-  {:app {:global-help H/generate-global-help
-         :subcmd-help H/generate-subcmd-help}})
-
 (defn run-cmd*
   "
   Executes our code.
@@ -561,6 +557,17 @@
                               (str "Option error: " error-text))
       :NONE (invoke-subcmd subcommand-def commandline))))
 
+(def SETUP-DEFAULTS
+  {:app {:global-help H/generate-global-help
+         :subcmd-help H/generate-subcmd-help}
+   :global-opts []})
+
+(defn add-setup-defaults
+  "Adds all elements that need to be in the setup spec
+  but we allow the caller not specify explicitly."
+  [supplied-setup]
+  (U/deep-merge SETUP-DEFAULTS supplied-setup))
+
 (defn run-cmd
   "This is the actual function that is executed.
   It wraps [[run-cmd*]] and then does the printing
@@ -569,7 +576,7 @@
   As it invokes `System.exit` you cannot use it from a REPL.
   "
   [args supplied-setup]
-  (let [setup (U/deep-merge setup-defaults supplied-setup)
+  (let [setup (add-setup-defaults supplied-setup)
         {:keys [help stderr subcmd retval]}
         (run-cmd* setup (if (nil? args) [] args))]
     (when (seq stderr)

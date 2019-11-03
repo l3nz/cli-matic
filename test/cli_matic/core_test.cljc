@@ -5,10 +5,12 @@
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [cli-matic.core :refer [parse-cmds
-                                    run-cmd* ->RV
+                                    run-cmd*
+                                    ->RV
                                     assert-unique-values
                                     assert-cfg-sanity
-                                    parse-cmds-with-defaults]]))
+                                    parse-cmds-with-defaults
+                                    add-setup-defaults]]))
 
 (defn cmd_foo [& opts])
 (defn cmd_bar [& opts])
@@ -228,7 +230,7 @@
     (are [i o]
          (= (try-catch-all
              (apply assert-unique-values i)
-             (fn [e] :ERR))
+             (fn [_] :ERR))
             o)
 
       ; empty
@@ -252,12 +254,14 @@
 (deftest check-cfg-format
   (testing "Cfg format"
     (are [i o]
-         (= (try-catch-all
-             (assert-cfg-sanity i)
-             (fn [e]
-                ;(prn e)
-               :ERR))
-            o)
+         (=  o
+             (try-catch-all
+              (-> i
+                  add-setup-defaults
+                  assert-cfg-sanity)
+              (fn [_]
+               ;(prn e)
+                :ERR)))
 
       ;; OK
       {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
@@ -269,7 +273,14 @@
                                     {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
       nil
 
-           ;; double in global
+      ;; No global options - still OK (bug #35)
+      {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
+       :commands    [{:command     "add"                      :description "Adds" :runs identity
+                      :opts        [{:option "a" :as "Addendum 1" :type :int}
+                                    {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
+      nil
+
+      ;; double in global
       {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
        :global-opts [{:option "base" :as "T" :type :int :default 10}
@@ -280,7 +291,7 @@
                                 {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
       :ERR
 
-           ;; double in specific
+      ;; double in specific
       {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
        :global-opts [{:option "base" :as "T" :type :int :default 10}]
@@ -290,7 +301,7 @@
                                 {:option "b" :short "q" :as "Addendum 2" :type :int :default 0}]}]}
       :ERR
 
-           ;; positional subcmds in global opts
+      ;; positional subcmds in global opts
       {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
        :global-opts [{:option "base" :short 0 :as "T" :type :int :default 10}]

@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 
+## 0.3.9 - 2019-11-03
+### Changed
+* Fixes #35 - `:global-opts` can be left out entirely if empty
+* Fixes #37 - clj-kondo warnings
+
 ## 0.3.8 - 2019-07-13
 ### Changed
 * Fixes #75 - Misc linter errors
