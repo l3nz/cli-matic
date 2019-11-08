@@ -16,8 +16,7 @@ The library is available on Clojars:
 
 [![Clojars Project](https://img.shields.io/clojars/v/cli-matic.svg)](https://clojars.org/cli-matic)
 [![](https://cljdoc.xyz/badge/cli-matic)](https://cljdoc.xyz/jump/release/cli-matic)
-![ClojarsDownloads](https://img.shields.io/clojars/dt/cli-matic?style=flat-square)
-
+![ClojarsDownloads](https://img.shields.io/clojars/dt/cli-matic?style=plastic)
 
 Or the library can be easily referenced through Github (make sure you change the commit-id):
 
