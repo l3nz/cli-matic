@@ -491,3 +491,61 @@
      :status :ERR-PARMS-SUBCMD
      :stderr ["Option error: Error while parsing option \"--kw zebrafufa\": clojure.lang.ExceptionInfo: Value 'zebrafufa' not allowed. Did you mean ':zebrafuffa'? {}"]
      :subcmd "foo"}))
+
+
+; =================================================================
+;
+; =================================================================
+
+
+(def BOOL-CFG
+  {:app         {:command     "dummy"
+                 :description "I am some command"
+                 :version     "0.1.2"}
+   :global-opts []
+   :commands    [{:command     "foo" :short       "f"
+                  :description "I am function foo"
+                  :opts        [{:option "bar" :as "bar" :type :with-flag :default false}]
+                  :runs        cmd_save_opts}]})
+
+(deftest check-bool
+  (are [i o]
+       (= (run-cmd* BOOL-CFG i) o)
+
+    ["foo" "--bar"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--no-bar"]
+    (->RV 0 :OK nil nil []))
+
+  (is (= (parse-cmds
+          ["foo" "--bar"]
+          BOOL-CFG)
+         {:commandline {:_arguments [], :bar true}
+          :error-text ""
+          :parse-errors :NONE
+          :subcommand "foo"
+          :subcommand-def {:command "foo"
+                           :description "I am function foo"
+                           :opts [{:as "bar"
+                                   :default false
+                                   :option "bar"
+                                   :type :with-flag}]
+                           :runs cmd_save_opts
+                           :short "f"}}))
+
+  (is (= (parse-cmds
+          ["foo" "--no-bar"]
+          BOOL-CFG)
+         {:commandline {:_arguments [], :bar false}
+          :error-text ""
+          :parse-errors :NONE
+          :subcommand "foo"
+          :subcommand-def {:command "foo"
+                           :description "I am function foo"
+                           :opts [{:as "bar"
+                                   :default false
+                                   :option "bar"
+                                   :type :with-flag}]
+                           :runs cmd_save_opts
+                           :short "f"}})))

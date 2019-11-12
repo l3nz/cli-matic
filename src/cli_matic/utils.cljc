@@ -101,6 +101,22 @@
                   [v])]
     (assoc parameter-map option new-val)))
 
+(defn mk-short-opt
+  "Converts short climatic option to short tools.cli option"
+  [short]
+  (if (string? short)
+    (str "-" short)
+    nil))
+
+(defn mk-long-opt
+  "Converts long climatic option to long tools.cli option"
+  [option placeholder type]
+  (str "--"
+       (when (= :with-flag type) "[no-]")
+       option
+       (when (not= "" placeholder) " ")
+       placeholder))
+
 (defn mk-env-name
   "Writes a description with the env name by the end."
   [description env for-parsing?]
@@ -143,10 +159,8 @@
   (let [preset (get-cli-option type)
         placeholder (str (:placeholder preset)
                          (if (= :present default) "*" ""))
-        positional-opts [(if (string? short)
-                           (str "-" short)
-                           nil)
-                         (str "--" option " " placeholder)
+        positional-opts [(mk-short-opt short)
+                         (mk-long-opt option placeholder type)
                          (mk-env-name as env false)]
 
         ;; step 1 - remove :placeholder
