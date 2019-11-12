@@ -11,6 +11,9 @@
   "
   (:require [clojure.edn :as edn]))
 
+(def true-flags #{"Y" "Yes" "On" "T" "True" "1"})
+(def false-flags #{"N" "No" "Off" "F" "False" "0"})
+
 (defn read-env
   "Reads an environment variable.
   If undefined, returns nil."
@@ -54,6 +57,15 @@
   "Converts a string to a float."
   [s]
   (Float/parseFloat s))
+
+(defn parseFlag
+  "Converts a flag string to a boolean"
+  [s]
+  (cond
+    (true-flags s) true
+    (false-flags s) false
+    :else
+    (throw (ex-info "Unsupported flag value" {:flag s}))))
 
 (defn asDate
   "Converts a string in format yyyy-mm-dd to a

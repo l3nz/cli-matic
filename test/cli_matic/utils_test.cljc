@@ -170,4 +170,10 @@
       ; with-flag option
       {:option "true" :short "t" :as "A with-flag option" :type :with-flag :default false}
       ["-t" "--[no-]true" "A with-flag option"
+       :default false]
+
+      ; flag option
+      {:option "flag" :short "f" :as "A flag option" :type :flag :default false}
+      ["-f" "--flag F" "A flag option"
+       :parse-fn P/parseFlag
        :default false])))

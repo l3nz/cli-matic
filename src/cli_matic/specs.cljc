@@ -65,7 +65,7 @@
                     :slurp :slurplines
                     :edn :ednfile
                     :json :jsonfile
-                    :with-flag
+                    :with-flag :flag
                     :yaml :yamlfile}
         :set-vals ::set-of-vals))
 
