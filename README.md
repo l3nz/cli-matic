@@ -149,6 +149,8 @@ The following pre-sets (`:type`) are available:
 * `:float-0` - a float number, with defaults to zero
 * `:string` - a string
 * `:keyword` - a string representation of a keyword, leading colon is optional, if no namespace is specified. ::foo will be converted to :user/foo, otherwise it will work as expected.
+* `:with-flag` - a boolean flag that generates a pair of --foo/--no-foo flags. --foo sets 'foo' to true and --no-foo sets 'foo' to false.
+* `:flag` - a boolean flag that recognizes "Y", "Yes", "On", "T", "True", and "1" as true values and "N", "No", "Off", "F", "False", and "0" as false values.
 * `:json` - a JSON literal value, that will be decoded and returned as a Clojure structure.
 * `:yaml` - a YAML literal value, that will be decoded and returned as a Clojure structure.
 * `:edn` - an EDN literal value, that will be decoded and returned.
