@@ -502,3 +502,155 @@
      :status :ERR-PARMS-SUBCMD
      :stderr ["Option error: Error while parsing option \"--kw zebrafufa\": clojure.lang.ExceptionInfo: Value 'zebrafufa' not allowed. Did you mean ':zebrafuffa'? {}"]
      :subcmd "foo"}))
+
+
+; =================================================================
+;
+; =================================================================
+
+
+(def FLAGS-CFG
+  {:app         {:command     "dummy"
+                 :description "I am some command"
+                 :version     "0.1.2"}
+   :global-opts []
+   :commands    [{:command     "foo" :short       "f"
+                  :description "I am function foo"
+                  :opts        [{:option "bar" :as "bar" :type :with-flag :default false}
+                                {:option "flag" :as "flag" :type :flag :default false}]
+                  :runs        cmd_save_opts}]})
+
+(deftest check-flags
+  (are [input expected]
+       (= expected (run-cmd* FLAGS-CFG input))
+
+    ["foo" "--bar"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--no-bar"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "Y"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "Yes"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "On"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "T"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "True"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "1"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "N"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "No"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "Off"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "F"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "False"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "0"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--flag" "2"]
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" "Option error: Error while parsing option \"--flag 2\": clojure.lang.ExceptionInfo: Unsupported flag value {:flag \"2\"}"))
+
+    ["foo" "--bar" "--flag" "Y"]
+    (->RV 0 :OK nil nil [])
+
+    ["foo" "--no-bar" "--flag" "0"]
+    (->RV 0 :OK nil nil [])
+
+  (is (= (parse-cmds
+          ["foo" "--bar"]
+          FLAGS-CFG)
+         {:commandline {:_arguments [] :bar true :flag false}
+          :error-text ""
+          :parse-errors :NONE
+          :subcommand "foo"
+          :subcommand-def {:command "foo"
+                           :description "I am function foo"
+                           :opts [{:as "bar"
+                                   :default false
+                                   :option "bar"
+                                   :type :with-flag}
+                                  {:as "flag"
+                                   :default false
+                                   :option "flag"
+                                   :type :flag}]
+                           :runs cmd_save_opts
+                           :short "f"}}))
+
+  (is (= (parse-cmds
+          ["foo" "--no-bar"]
+          FLAGS-CFG)
+         {:commandline {:_arguments [] :bar false :flag false}
+          :error-text ""
+          :parse-errors :NONE
+          :subcommand "foo"
+          :subcommand-def {:command "foo"
+                           :description "I am function foo"
+                           :opts [{:as "bar"
+                                   :default false
+                                   :option "bar"
+                                   :type :with-flag}
+                                  {:as "flag"
+                                   :default false
+                                   :option "flag"
+                                   :type :flag}]
+                           :runs cmd_save_opts
+                           :short "f"}}))
+
+  (is (= (parse-cmds
+          ["foo" "--no-bar" "--flag" "Y"]
+          FLAGS-CFG)
+         {:commandline {:_arguments [] :bar false :flag true}
+          :error-text ""
+          :parse-errors :NONE
+          :subcommand "foo"
+          :subcommand-def {:command "foo"
+                           :description "I am function foo"
+                           :opts [{:as "bar"
+                                   :default false
+                                   :option "bar"
+                                   :type :with-flag}
+                                  {:as "flag"
+                                   :default false
+                                   :option "flag"
+                                   :type :flag}]
+                           :runs cmd_save_opts
+                           :short "f"}}))
+
+  (is (= (parse-cmds
+          ["foo" "--no-bar" "--flag" "Off"]
+          FLAGS-CFG)
+         {:commandline {:_arguments [] :bar false :flag false}
+          :error-text ""
+          :parse-errors :NONE
+          :subcommand "foo"
+          :subcommand-def {:command "foo"
+                           :description "I am function foo"
+                           :opts [{:as "bar"
+                                   :default false
+                                   :option "bar"
+                                   :type :with-flag}
+                                  {:as "flag"
+                                   :default false
+                                   :option "flag"
+                                   :type :flag}]
+                           :runs cmd_save_opts
+                           :short "f"}})))

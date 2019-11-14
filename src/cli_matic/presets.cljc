@@ -208,6 +208,11 @@
    :keyword {:placeholder "S"
              :parse-fn asKeyword}
 
+   :with-flag {}
+
+   :flag {:parse-fn P/parseFlag
+          :placeholder "F"}
+
    :slurp  {:parse-fn    asSingleString
             :placeholder "f"}
    :slurplines {:parse-fn    asLinesString

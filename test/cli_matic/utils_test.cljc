@@ -165,4 +165,15 @@
       ;  :present means there is no default
       {:option "extra"  :as "Port number" :type :int :default :present}
       [nil "--extra N*" "Port number"
-       :parse-fn P/parseInt])))
+       :parse-fn P/parseInt]
+
+      ; with-flag option
+      {:option "true" :short "t" :as "A with-flag option" :type :with-flag :default false}
+      ["-t" "--[no-]true" "A with-flag option"
+       :default false]
+
+      ; flag option
+      {:option "flag" :short "f" :as "A flag option" :type :flag :default false}
+      ["-f" "--flag F" "A flag option"
+       :parse-fn P/parseFlag
+       :default false])))
