@@ -7,7 +7,8 @@
                                      all-subcommands
                                      canonicalize-subcommand
                                      mk-cli-option]]
-            [cli-matic.platform :as P]))
+            [cli-matic.platform :as P]
+            [cli-matic.presets :as PR]))
 
 (deftest asString-test
 
@@ -175,5 +176,5 @@
       ; flag option
       {:option "flag" :short "f" :as "A flag option" :type :flag :default false}
       ["-f" "--flag F" "A flag option"
-       :parse-fn P/parseFlag
+       :parse-fn PR/parseFlag
        :default false])))

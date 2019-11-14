@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 
+## 0.3.10 - 2019-11-14
+### Changes
+* Fixes #13 - Boolean flags (thanks Jeiwan)
+* Foxing #82 - Broken cljdoc
+
 ## 0.3.9 - 2019-11-03
 ### Changed
 * Fixes #35 - `:global-opts` can be left out entirely if empty

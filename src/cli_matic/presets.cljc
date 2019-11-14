@@ -184,6 +184,29 @@
       :else
       found)))
 
+(defn- ->lowercaseSet
+  "Create a set of lowercase entries"
+  [seqOfStrings]
+  (->> seqOfStrings
+       (map str/lower-case)
+       set))
+
+(def SET-OF-TRUE-FLAGS (->lowercaseSet ["Y" "Yes" "On" "T" "True" "1"]))
+(def SET-OF-FALSE-FLAGS (->lowercaseSet ["N" "No" "Off" "F" "False" "0"]))
+
+(defn parseFlag
+  "Converts a flag string to a boolean.
+      Comparison is case-insensitive.
+      "
+  [flagStr]
+  (let [s (str/lower-case flagStr)]
+    (cond
+      (SET-OF-TRUE-FLAGS s) true
+      (SET-OF-FALSE-FLAGS s) false
+      :else
+      (throw (ex-info "Unsupported flag value" {:flag s})))))
+
+
 
 ;; Remember to add these to
 ;; ::S/type
@@ -210,7 +233,7 @@
 
    :with-flag {}
 
-   :flag {:parse-fn P/parseFlag
+   :flag {:parse-fn parseFlag
           :placeholder "F"}
 
    :slurp  {:parse-fn    asSingleString

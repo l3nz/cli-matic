@@ -563,17 +563,20 @@
     ["foo" "--flag" "False"]
     (->RV 0 :OK nil nil [])
 
+    ["foo" "--flag" "false"]
+    (->RV 0 :OK nil nil [])
+
     ["foo" "--flag" "0"]
     (->RV 0 :OK nil nil [])
 
     ["foo" "--flag" "2"]
     (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" "Option error: Error while parsing option \"--flag 2\": clojure.lang.ExceptionInfo: Unsupported flag value {:flag \"2\"}"))
 
-    ["foo" "--bar" "--flag" "Y"]
-    (->RV 0 :OK nil nil [])
+  ["foo" "--bar" "--flag" "Y"]
+  (->RV 0 :OK nil nil [])
 
-    ["foo" "--no-bar" "--flag" "0"]
-    (->RV 0 :OK nil nil [])
+  ["foo" "--no-bar" "--flag" "0"]
+  (->RV 0 :OK nil nil [])
 
   (is (= (parse-cmds
           ["foo" "--bar"]
