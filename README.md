@@ -175,11 +175,6 @@ For all options, you can then add:
 * `:env` if set, the default is read from the current value of an env variable you specify. For capture to happen, either the option must be missing, or its value must be invalid. If an option has an `:env` value specified to FOO, its description in the help shows `[$FOO]`.
 * `:spec`: a Spec that will be used to validate the the parameter, after any coercion/transformation.
 
-[to be done]
-
-* boolean types
-* having a library of ready-made types that cover most cases
-
 
 ### Return values
 
