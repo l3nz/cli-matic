@@ -554,6 +554,7 @@
       (println (U/asString ((get-in setup [:app :global-help]) setup)))
       (= :HELP-SUBCMD help)
       (println (U/asString ((get-in setup [:app :subcmd-help]) setup subcmd))))
-    (P/exit-script retval)))
+    (when help
+      (P/exit-script retval))))
 
 (OPT/orchestra-instrument)

@@ -7,17 +7,17 @@
   BTW, in this NS, we avoid using Spec / Orchestra.
 
   "
-  (:require [planck.core :as plk]
-            [planck.environ :as plkenv]
-            [cljs.reader :as csrdr]
+  (:require [cljs.reader :as csrdr]
+            [cljs-node-io.core :as io]
             [clojure.string :as str]))
 
 (defn read-env
   "Reads an environment variable.
   If undefined, returns nil."
   [var]
-  (let [kw (keyword (str/lower-case var))]
-    (get plkenv/env kw nil)))
+  (-> js/process
+      (.-env)
+      (aget var)))
 
 (defn exit-script
   "Terminates execution with a return value.
@@ -25,7 +25,7 @@
   Please note that in Planck, return codes seem to be 8-bit unsigned ints.
   "
   [retval]
-  (plk/exit retval))
+  (.exit js/process retval))
 
 (defn add-shutdown-hook
   "Add a shutdown hook.
@@ -51,7 +51,7 @@
 
   "
   [f]
-  (plk/slurp f))
+  (io/slurp f))
 
 ;
 ; Conversions
