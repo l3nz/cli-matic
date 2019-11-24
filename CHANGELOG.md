@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.3.11 - 2019-11-24
+### Changes
+* Fixes #84 - Wait for deferred value - only works in CLJ and not in CLJS.
 
 ## 0.3.10 - 2019-11-14
 ### Changes

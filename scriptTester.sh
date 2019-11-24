@@ -32,6 +32,10 @@ function testPresence {
 CLJ="./examples"
 CLJS="./examples-cljs-planck"
 
+
+
+
+
 #
 # toycalc  - Clojure
 #
@@ -186,9 +190,22 @@ testPresence "$CMD exit --mode NONE " \
 testPresence "$CMD exit --mode ERROR " \
 	"RETVAL:255" "$SCRIPT exit -1"
 
+#
+# CLJ - Deferreed values
+#
+SCRIPT="jvm-promise-bug84 CLJ:"
+CMD="$CLJ/jvm-promise-bug84.clj"
+testPresence "$CMD promise " \
+	"RETVAL:1" "$SCRIPT exit 1"
+
+testPresence "$CMD future " \
+	"RETVAL:2" "$SCRIPT exit 2"
+
+testPresence "$CMD async " \
+	"RETVAL:3" "$SCRIPT exit 3"
+
 
 
 # bash -c './exit-status.cljs exit --mode ONE ||  echo "xxx $?"'
 # bash -c './exit-status.cljs exit --mode ERROR ||  echo "xxx $?"'
-
 

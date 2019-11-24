@@ -87,3 +87,27 @@
       (set! s/*explain-out* expound/printer)
       (catch Exception _ nil))))
 
+;; CORE-ASYNC
+
+(def with-core-async?
+  (try
+    (require 'clojure.core.async)
+    true
+    (catch Throwable _ false)))
+
+(defn ^:dynamic read-value-from-core-async-channel
+  "Reads a value from a core.async channel, blocking."
+  [& args]
+  {:pre [with-core-async?]}
+  (apply (ns-resolve (symbol "clojure.core.async")
+                     (symbol "<!!"))
+         args))
+
+(defn is-core-async-channel?
+  "Is this entity a core.async channel?"
+  [c]
+  (if with-core-async?
+    (instance? (ns-resolve (symbol "clojure.core.async.impl.channels")
+                           (symbol "ManyToManyChannel"))
+               c)
+    false))

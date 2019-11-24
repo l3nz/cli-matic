@@ -9,7 +9,10 @@
   **DO NOT** define macros in this namespace - see [[cli-matic.platform-macros]]
 
   "
-  (:require [clojure.edn :as edn]))
+  (:require [clojure.edn :as edn]
+            [cli-matic.optionals :as OPT])
+  (:import (clojure.lang IPending)
+           (java.text SimpleDateFormat)))
 
 (defn read-env
   "Reads an environment variable.
@@ -62,14 +65,49 @@
   [s]
   (try
     (.parse
-     (java.text.SimpleDateFormat. "yyyy-MM-dd") s)
+      (SimpleDateFormat. "yyyy-MM-dd") s)
     (catch Throwable _
       nil)))
 
 (defn parseEdn
-  "
-        Decodes EDN through clojure.edn.
-        "
+  " Decodes EDN through clojure.edn.      "
   [edn-in]
   (edn/read-string edn-in))
+
+(defn- isJvmPromise?
+  "Checks whether the value is a JVM promise."
+  [x]
+  (instance? IPending x))
+
+(defn isDeferredValue?
+  "Is this a deferred value for this platform?"
+  [v]
+  (cond
+    (isJvmPromise? v) true
+    (future? v) true
+    (OPT/is-core-async-channel? v) true
+    :else false))
+
+(defn waitForDeferredValue
+  "Given that value is a deferred  value for this platform,
+   block termination until it's realized.
+
+   On the JVM, we support:
+
+   - promises
+   - futures
+   - core.async channels (if they exist)
+
+  "
+
+  [v]
+  (cond
+    (isJvmPromise? v) (deref v)
+    (future? v) (deref  v)
+    (OPT/is-core-async-channel? v) (OPT/read-value-from-core-async-channel v)
+    :else (throw (ex-info
+                  (str "Value is not deferred " v)
+                  {}))))
+
+
 

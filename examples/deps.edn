@@ -7,4 +7,6 @@
         orchestra {:mvn/version "2017.11.12-1"},
         cheshire {:mvn/version "5.8.0"},
         org.clojure/tools.cli {:mvn/version "0.3.7"},
-        expound {:mvn/version "0.7.1"}}}
+        expound {:mvn/version "0.7.1"}
+        org.clojure/core.async {:mvn/version "0.5.527"}}
+ }

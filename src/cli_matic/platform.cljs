@@ -83,3 +83,24 @@
   [edn-in]
   (csrdr/read-string edn-in))
 
+(defn isDeferredValue?
+  "Is this a deferred value for this platform?"
+  [_]
+  (cond
+    :else false))
+
+(defn waitForDeferredValue
+  "Given that value is a deferred  value for this platform,
+   block termination until it's realized.
+
+   On JS, we support:
+
+   - nothing yet...
+
+  "
+
+  [x]
+  (cond
+    :else (throw (ex-info
+                  (str "Value is not deferred " x)
+                  {}))))

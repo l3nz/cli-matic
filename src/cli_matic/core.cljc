@@ -461,6 +461,26 @@
 ;
 ;
 
+
+(defn getReturnValue
+  "Evaluates the result of the CLI-matic subcommand.
+  A result can be nil, or int?, or a  deferred value,
+  in which case we wait in a platform-specific way.
+  "
+  [rv]
+
+  (cond
+    ; it's a number - correct status
+    (int? rv) rv
+    ; no value - say all went well
+    (nil? rv) 0
+    ; is a JVM promise? deref and repeat
+    (P/isDeferredValue? rv) (-> rv
+                               P/waitForDeferredValue
+                               getReturnValue)
+    ; anything else, it's zero for me.
+    :else 0))
+
 (defn invoke-subcmd
   "Invokes a subcommand, and produces a Return Value.
 
@@ -482,12 +502,13 @@
 
   (try-catch-all
    (let [_  (P/add-shutdown-hook (:on-shutdown subcommand-def))
-         rv ((:runs subcommand-def)  options)]
+         rv* ((:runs subcommand-def)  options)
+         rv (getReturnValue rv*)]
+
      (cond
-       (nil? rv)    (->RV 0 :OK nil nil nil)
        (int? rv)   (if (zero? rv)
                      (->RV 0 :OK nil nil nil)
-                     (->RV rv :ERR nil nil nil))
+                     (->RV rv :EXCEPTION nil nil nil))
 
        :else        (->RV 0 :OK nil nil nil)))
 

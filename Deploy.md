@@ -8,7 +8,7 @@ Then let's see if the linter notices something.
 
 	lein clj-kondo
 
-Then, run the  new vrsion with all script examples:
+Then, run the  new version with all script examples:
 
 	./scriptTester.sh
 

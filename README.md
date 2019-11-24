@@ -178,8 +178,9 @@ For all options, you can then add:
 
 ### Return values
 
-The function called can return an integer; if it does, it is used as an exit code
-for the shell process.
+The function called can return an integer; if it does, it is used as an exit code for the shell process.
+
+If you return a future, or a promise, or a core.async channel, then CLI-matic will wait until it is fulfilled, or there is a value on the channel, and will use that as a return code (at the moment, only works on the JVM).
 
 Errors and exceptions return an exit code of -1; while normal executions (including invocations
 of help) return 0.

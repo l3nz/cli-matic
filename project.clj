@@ -21,6 +21,7 @@
    [orchestra "2018.12.06-2" :scope "provided"]
    [cheshire "5.8.1" :scope "provided"]
    [io.forward/yaml "1.0.9" :scope "provided"]
+   [org.clojure/core.async "0.5.527" :scope "provided"]
    ;[planck "2.22.0" :scope "provided"]
    [l3nz/planck "0.0.0" :scope "provided"]
    [expound "0.7.2"]]

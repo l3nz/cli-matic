@@ -12,8 +12,8 @@
                                     parse-cmds-with-defaults
                                     add-setup-defaults]]))
 
-(defn cmd_foo [& opts])
-(defn cmd_bar [& opts])
+(defn cmd_foo [& opts] nil)
+(defn cmd_bar [& opts] nil)
 (defn cmd_save_opts [& opts]
   ;(prn "Called" opts)
   opts)
