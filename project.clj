@@ -1,4 +1,4 @@
-(defproject cli-matic "0.3.10"
+(defproject cli-matic "0.3.11"
   :description "Compact [sub]command line parsing library, for Clojure"
   :url "https://github.com/l3nz/cli-matic"
   :license {:name "Eclipse Public License, v2"
