@@ -136,3 +136,35 @@
        (generate-subcmd-help CONFIGURATION-TOYCALC "undefined-cmd")
        (fn [_] :ERR)))))
 
+(def CONFIGURATION-POSITIONAL-TOYCALC
+  {:app         {:command     "toycalc"
+                 :description "A command-line toy calculator"
+                 :version     "0.0.1"}
+   :global-opts [{:option  "base"
+                  :as      "The number base for output"
+                  :type    :int
+                  :default 10}]
+   :commands    [{:command     "add" :short "a"
+                  :description ["Adds two numbers together"
+                                ""
+                                "Looks great, doesn't it?"]
+                  :opts        [{:option "a1" :short 0 :env "AA" :as "First addendum" :type :int :default 0}
+                                {:option "a2" :short 1 :as "Second addendum" :type :int :default 0}]
+                  :runs        dummy-cmd}]})
+
+(deftest generate-subcmd-positional-test
+  (is
+   (= ["NAME:"
+       " toycalc add - Adds two numbers together"
+       " "
+       " Looks great, doesn't it?"
+       ""
+       "USAGE:"
+       " toycalc [add|a] [command options] a1 a2"
+       ""
+       "OPTIONS:"
+       "       --a1 N  0  First addendum [$AA]"
+       "       --a2 N  0  Second addendum"
+       "   -?, --help"
+       ""]
+      (generate-subcmd-help CONFIGURATION-POSITIONAL-TOYCALC "add"))))

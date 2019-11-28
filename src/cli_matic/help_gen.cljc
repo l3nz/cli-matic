@@ -126,9 +126,7 @@
   (let [pos-args (sort-by :short (U/list-positional-parms cfg cmd))]
     (if (empty? pos-args)
       "[arguments...]"
-      (str
-       (apply str (map :option pos-args))
-       " ..."))))
+      (str/join " " (map :option pos-args)))))
 
 (defn generate-subcmd-help
   "This is where we generate help for a specific subcommand."
