@@ -24,7 +24,7 @@
    [org.clojure/core.async "0.5.527" :scope "provided"]
    ;[planck "2.22.0" :scope "provided"]
    [l3nz/planck "0.0.0" :scope "provided"]
-   [expound "0.7.2"]]
+   [expound "0.8.0"]]
 
   ;:scm {:name "git"
   ;      ;; :tag "..."

@@ -476,8 +476,8 @@
     (nil? rv) 0
     ; is a JVM promise? deref and repeat
     (P/isDeferredValue? rv) (-> rv
-                               P/waitForDeferredValue
-                               getReturnValue)
+                                P/waitForDeferredValue
+                                getReturnValue)
     ; anything else, it's zero for me.
     :else 0))
 

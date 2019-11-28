@@ -65,7 +65,7 @@
   [s]
   (try
     (.parse
-      (SimpleDateFormat. "yyyy-MM-dd") s)
+     (SimpleDateFormat. "yyyy-MM-dd") s)
     (catch Throwable _
       nil)))
 
