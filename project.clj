@@ -39,7 +39,9 @@
             [lein-ancient "0.6.15"]
             [lein-cloverage "1.1.2"]]
 
-  :profiles {:kondo
+  :profiles {:test
+             {:dependencies [[cljc.java-time "0.1.6"]]}
+             :kondo
              {:dependencies [[org.clojure/clojure "1.10.1"]
                              [clj-kondo "2019.10.11-alpha"]]}}
 

@@ -1,5 +1,9 @@
 (ns cli-matic.presets-test
   (:require [clojure.test :refer [is are deftest testing]]
+            [cljc.java-time.zone-id :as zone-id]
+            [cljc.java-time.local-date :as local-date]
+            [cljc.java-time.local-date-time :as local-date-time]
+            [cljc.java-time.zoned-date-time :as zoned-date-time]
             [cli-matic.core :refer [parse-cmds]]
             [cli-matic.presets :refer [set-help-values set-find-value set-find-didyoumean]]))
 
@@ -242,10 +246,14 @@
              i
              (mkDummyCfg {:option "val" :as "x" :type :yyyy-mm-dd})) o)
 
-      ; this works (CEST)
+      ; this works
       ["foo" "--val" "2018-01-01"]
       {:commandline    {:_arguments []
-                        :val        #inst "2017-12-31T23:00:00.000-00:00"}
+                        :val        (-> (local-date/parse "2018-01-01")
+                                        (local-date/at-start-of-day)
+                                        (local-date-time/at-zone (zone-id/system-default))
+                                        (zoned-date-time/to-instant)
+                                        (java.util.Date/from))}
        :error-text     ""
        :parse-errors   :NONE}
 
