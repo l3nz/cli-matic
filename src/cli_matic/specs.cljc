@@ -1,5 +1,7 @@
 (ns cli-matic.specs
-  (:require [clojure.spec.alpha :as s]))
+  (:require [expound.alpha :as expound]
+            [clojure.string :as str]
+            [clojure.spec.alpha :as s]))
 
 (defn has-elements? [s]
   (pos? (count s)))
@@ -7,7 +9,12 @@
 (s/def ::anything (s/or :nil nil?
                         :some some?))
 
-(s/def ::existing-string (s/and string? has-elements?))
+(s/def ::existing-string (s/and string? (complement str/blank?)))
+
+(s/def ::desc (s/or :string ::existing-string
+                    :coll-str (s/and (s/coll-of string?)
+                                     (fn [c] (some #(s/valid? ::existing-string %) c)))))
+(expound/defmsg ::desc "a non-blank string - or - a collection of strings, at least one non-blank")
 
 (s/def ::climatic-errors #{:ERR-CFG
                            :ERR-NO-SUBCMD
@@ -43,7 +50,7 @@
 (s/def ::short (s/or :str ::existing-string
                      :pos ::positional-arg))
 
-(s/def ::as ::existing-string)
+(s/def ::as ::desc)
 
 (s/def ::set-of-strings
   (s/and set?
@@ -80,8 +87,7 @@
           :opt-un [::short ::default ::env ::spec]))
 
 ;; CLI-matic configuration
-(s/def ::description (s/or :a-string ::existing-string
-                           :coll-str (s/coll-of string?)))
+(s/def ::description ::desc)
 
 (s/def ::version ::existing-string)
 

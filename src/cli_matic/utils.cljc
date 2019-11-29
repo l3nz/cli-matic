@@ -9,7 +9,8 @@
 
 
   "
-  (:require [clojure.string :as str]
+  (:require [clojure.tools.cli :as cli]
+            [clojure.string :as str]
             [cli-matic.presets :as PRESETS]
             [cli-matic.specs :as S]
             [clojure.spec.alpha :as s]))
@@ -159,9 +160,10 @@
   (let [preset (get-cli-option type)
         placeholder (str (:placeholder preset)
                          (if (= :present default) "*" ""))
+        description (if (coll? as) (str/join "\n" as) as)
         positional-opts [(mk-short-opt short)
                          (mk-long-opt option placeholder type)
-                         (mk-env-name as env false)]
+                         (mk-env-name description env false)]
 
         ;; step 1 - remove :placeholder
         opts-1 (dissoc preset :placeholder)
@@ -273,23 +275,59 @@
    (mapv mk-cli-option climatic-opts)
    ["-?" "--help" "" :id :_help_trigger]))
 
-(defn rewrite-opts
-  "
-  Out of a cli-matic arg list, generates a set of
-  options for tools.cli.
-  It also adds in the -? and --help options
-  to trigger display of helpness.
-  "
-  [climatic-args subcmd]
-  (cm-opts->cli-opts (get-options-for climatic-args subcmd)))
+(defn- expand-multiline-parts
+  "Expands multilines within parts so that they can be aligned appropriately."
+  [parts]
+  (mapcat (fn [line-part]
+            (let [p1 (map str/split-lines line-part)
+                  max-col-length (apply max (map count p1))]
+              (->> p1
+                   (map #(concat % (repeat (- max-col-length (count %)) "")))
+                   (apply mapv vector))))
+          parts))
 
-(s/fdef rewrite-opts
+(defn- summarize
+  "This customized `summarize` adapts the version from `clojure.tools.cli`
+  to expand multiline parts so that they are aligned properly.
+
+  Original description from clojure.tools.cli:
+  Reduce options specs into a options summary for printing at a terminal.
+  Note that the specs argument should be the compiled version. That effectively
+  means that you shouldn't call summarize directly. When you call parse-opts
+  you get back a :summary key which is the result of calling summarize (or
+  your user-supplied :summary-fn option) on the compiled option specs."
+  [specs]
+  (if (seq specs)
+    (let [show-defaults? (some #(and (:required %)
+                                     (or (contains? % :default)
+                                         (contains? % :default-fn))) specs)
+          parts (-> (map (partial cli/make-summary-part show-defaults?) specs)
+                    expand-multiline-parts)
+          lens (apply map (fn [& cols] (apply max (map count cols))) parts)
+          lines (cli/format-lines lens parts)]
+      (str/join \newline lines))
+    ""))
+
+(defn get-options-summary
+  "To get the summary of options, we pass options to
+  tools.cli parse-opts and an empty set of arguments.
+  Parsing will fail but we get the :summary.
+  We then split it into a collection of lines.
+  To support multiline :as option we do some pre and
+  post fixup."
+  [climatic-cfg subcmd]
+  (letfn [(parse-opts [cli-opts] (cli/parse-opts [] cli-opts :summary-fn summarize))]
+    (->> (get-options-for climatic-cfg subcmd)
+         cm-opts->cli-opts
+         parse-opts
+         :summary
+         str/split-lines)))
+
+(s/fdef get-options-summary
   :args (s/cat :args some?
                :mode (s/or :common nil?
                            :a-subcommand string?))
   :ret some?)
-
-
 
 ;; -------------------------------------------------------------
 ;; POSITIONAL PARAMETERS
@@ -342,8 +380,3 @@
   capture-positional-parms
   :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command :args sequential?)
   :ret ::S/mapOfCliParams)
-
-
-
-
-
