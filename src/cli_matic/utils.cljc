@@ -9,7 +9,8 @@
 
 
   "
-  (:require [clojure.string :as str]
+  (:require [clojure.tools.cli :as cli]
+            [clojure.string :as str]
             [cli-matic.presets :as PRESETS]
             [cli-matic.specs :as S]
             [clojure.spec.alpha :as s]))
@@ -273,23 +274,53 @@
    (mapv mk-cli-option climatic-opts)
    ["-?" "--help" "" :id :_help_trigger]))
 
-(defn rewrite-opts
-  "
-  Out of a cli-matic arg list, generates a set of
-  options for tools.cli.
-  It also adds in the -? and --help options
-  to trigger display of helpness.
-  "
-  [climatic-args subcmd]
-  (cm-opts->cli-opts (get-options-for climatic-args subcmd)))
+(defn- adjust-options-for-fixup
+  "We make use of clojure.tools.cli to parse options, but
+  it cannot handle our multiline option :as, so we convert
+  it to something it can handle marking it so we can later
+  apply a fixup"
+  [climatic-options]
+  (map (fn [{:keys [as] :as option}]
+         (if (coll? as)
+           (assoc option :as (str "@ML_START@" (str/join "@ML_NL@" as)))
+           option))
+       climatic-options))
 
-(s/fdef rewrite-opts
+(defn- fixup-option-lines
+  "Fixup rendered :as option to multiple lines with appropriate indentation."
+  [option-lines]
+  (mapcat (fn [line]
+            (if-let [indent-col (str/index-of line "@ML_START@")]
+              (let [indent-sep (str "\n" (apply str (repeat indent-col " ")))]
+                (-> line
+                    (str/replace #"@ML_START@" "")
+                    (str/replace #"@ML_NL@" indent-sep)
+                    str/split-lines
+                    (as-> lines (map #(if (str/blank? %) "" %) lines))))
+              [line]))
+          option-lines))
+
+(defn get-options-summary
+  "To get the summary of options, we pass options to
+  tools.cli parse-opts and an empty set of arguments.
+  Parsing will fail but we get the :summary.
+  We then split it into a collection of lines.
+  To support multiline :as option we do some pre and
+  post fixup."
+  [climatic-cfg subcmd]
+  (->> (get-options-for climatic-cfg subcmd)
+       adjust-options-for-fixup
+       cm-opts->cli-opts
+       (cli/parse-opts [])
+       :summary
+       str/split-lines
+       fixup-option-lines))
+
+(s/fdef get-options-summary
   :args (s/cat :args some?
                :mode (s/or :common nil?
                            :a-subcommand string?))
   :ret some?)
-
-
 
 ;; -------------------------------------------------------------
 ;; POSITIONAL PARAMETERS
@@ -342,8 +373,3 @@
   capture-positional-parms
   :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command :args sequential?)
   :ret ::S/mapOfCliParams)
-
-
-
-
-

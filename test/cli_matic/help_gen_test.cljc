@@ -168,3 +168,104 @@
        "   -?, --help"
        ""]
       (generate-subcmd-help CONFIGURATION-POSITIONAL-TOYCALC "add"))))
+
+(def CONFIGURATION-MULTILINES
+  {:app         {:command     "multiline"
+                 :description ["An app description can span"
+                               "multiple lines."]
+                 :version     "1.2.3"}
+   :global-opts [{:option  "global-opt"
+                  :as      ["Global opt help"
+                            "with"
+                            "multiple lines."]
+                  :type    :int
+                  :default 10}]
+   :commands    [{:command     "mycmd"
+                  :description ["A command description"
+                                ""
+                                "Can contain multiple lines."
+                                "Only the first line is displayed on global help."]
+                  :opts        [{:option "mycmd-opt1" :short "a" :type :int :default 0
+                                 :as ["not really a multiline but just fine"]}
+                                {:option "long-name-here-should-stretch-things-out" :short "l" :type :keyword
+                                 :as ["testing out how a longer"
+                                      "option affects things."]}
+                                {:option "opt2"                  :type :int :default 0
+                                 :as ["text that is long"
+                                      "can be split"
+                                      "over"
+                                      "many"
+                                      "lines"
+                                      "and"
+                                      " will"
+                                      "  be"
+                                      "   indented"
+                                      "    appropriately"
+                                      "and"
+                                      "can"
+                                      "include empty"
+                                      ""
+                                      "lines."]}
+                                {:option "opt3" :short "c" :env "ENV_VAR" :type :string :multiple true :default :present
+                                 :as ["here's what happens to a multiline with"
+                                      "env also set"]}]
+                  :runs        dummy-cmd}]})
+
+(deftest multilines-global-help-test
+  (is
+   (= ["NAME:"
+       " multiline - An app description can span"
+       " multiple lines."
+       ""
+       "USAGE:"
+       " multiline [global-options] command [command options] [arguments...]"
+       ""
+       "VERSION:"
+       " 1.2.3"
+       ""
+       "COMMANDS:"
+       "   mycmd                A command description"
+       ""
+       "GLOBAL OPTIONS:"
+       "       --global-opt N  10  Global opt help"
+       "                           with"
+       "                           multiple lines."
+       "   -?, --help"
+       ""]
+      (generate-global-help CONFIGURATION-MULTILINES))))
+
+(deftest multilines-cmd-help-test
+  (is
+   (= ["NAME:"
+       " multiline mycmd - A command description"
+       " "
+       " Can contain multiple lines."
+       " Only the first line is displayed on global help."
+       ""
+       "USAGE:"
+       " multiline mycmd [command options] [arguments...]"
+       ""
+       "OPTIONS:"
+       "   -a, --mycmd-opt1 N                                0  not really a multiline but just fine"
+       "   -l, --long-name-here-should-stretch-things-out S     testing out how a longer"
+       "                                                        option affects things."
+       "       --opt2 N                                      0  text that is long"
+       "                                                        can be split"
+       "                                                        over"
+       "                                                        many"
+       "                                                        lines"
+       "                                                        and"
+       "                                                         will"
+       "                                                          be"
+       "                                                           indented"
+       "                                                            appropriately"
+       "                                                        and"
+       "                                                        can"
+       "                                                        include empty"
+       " "
+       "                                                        lines."
+       "   -c, --opt3 S*                                        here's what happens to a multiline with"
+       "                                                        env also set [$ENV_VAR]"
+       "   -?, --help"
+       ""]
+      (generate-subcmd-help CONFIGURATION-MULTILINES "mycmd"))))

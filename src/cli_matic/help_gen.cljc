@@ -6,11 +6,9 @@
 
 
   "
-  (:require [clojure.tools.cli :as cli]
-            [clojure.spec.alpha :as s]
+  (:require [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [cli-matic.specs :as S]
-          ;  [cli-matic.platform :as P]
             [cli-matic.utils :as U]
             [cli-matic.utils-candidates :as UB]
             [cli-matic.optionals :as OPT]))
@@ -43,15 +41,10 @@
      (generate-section opts-title opts)])))
 
 (defn get-options-summary
-  "To get the summary of options, we pass options to
-  tools.cli parse-opts and an empty set of arguments.
-  Parsing will fail but we get the :summary.
-  We then split it into a collection of lines."
+  "Returns a collection of option summary lines
+  for `cfg` and `subcmd`."
   [cfg subcmd]
-  (let [cli-cfg (U/rewrite-opts cfg subcmd)
-        options-str (:summary
-                     (cli/parse-opts [] cli-cfg))]
-    (str/split-lines options-str)))
+  (U/get-options-summary cfg subcmd))
 
 (defn get-first-rest-description-rows
   "get title and description of description rows"
