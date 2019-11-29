@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file. This change
 ### Changes
 * Fixes #88 - Tests now pass in a timezone-independent way (tks lread)
 * Fixes #86 - Upgrade to Expound 0.8.0
-
+* Fixes #90 - Positional arguments USAGE help is not formatted correctly (tks lread)
 
 ## 0.3.11 - 2019-11-24
 ### Changes
