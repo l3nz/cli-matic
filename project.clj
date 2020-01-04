@@ -33,7 +33,7 @@
   :plugins [[lein-eftest "0.5.1"]
             [jonase/eastwood "0.2.5"]
             [lein-kibit "0.1.6"]
-            [lein-cljfmt "0.6.4"]
+            [lein-cljfmt "0.6.6"]
             [lein-cljsbuild "1.1.7"]
             [lein-doo "0.1.11"]
             [lein-ancient "0.6.15"]
