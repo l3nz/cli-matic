@@ -40,14 +40,17 @@ So both expressions must be surrounded by round parentheses.
            (catch Throwable t#
              ((~@onErr) t#)))))
 
-#?(:cljs
-   (defmacro try-catch-all
-     "
+(defn cljs-env?
+  "Take the &env from a macro, and tell whether we are expanding into cljs."
+  [env]
+  (boolean (:ns env)))
+
+(defmacro try-catch-all
+  "
 See the .clj docs.
 "
-     [f onErr]
-     `(try (~@f)
-           (catch :default t#
-             (do
-               ((~@onErr) t#))))))
+  [f onErr]
+  `(try ~f
+        (catch ~(if (cljs-env? &env) 'js/Object 'Throwable) t#
+          (~onErr t#))))
 
