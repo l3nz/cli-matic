@@ -130,6 +130,7 @@ It contains:
 
 * Information on the app itself (name, version)
 * The list of global parameters, i.e. the ones that apply to al subcommands (may be empty, or you may skip it at all)
+* A default sub-command, if any
 * A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`. You can optionally validate the full parameter-map that is received by subcommand at once by passing a Spec into `:spec`.
 * If within the subcommand you add a 0-arity function to `:on-shutdown`, it will be called when the JVM terminates. This is
   mostly useful for long running servers, or to do some clean-up. Note that the hook is always called - whether the shutdown 

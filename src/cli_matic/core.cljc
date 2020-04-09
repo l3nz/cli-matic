@@ -302,7 +302,15 @@
   [argv config]
 
   (let [gl-options (U/get-options-for config nil)
-        ;_ (prn "Cmdline" cmdline)
+        ;;_ (prn "Cmdline" cmdline)
+        ;; Check whether the first argument exists is a subcommand, or starts with "-"
+        first-arg-is-subcommand
+        (and (first argv)
+             (or
+              (= \- (first argv))
+              ((U/all-subcommands config) (first argv))))
+        argv (if first-arg-is-subcommand argv (cons (-> config :app :default) argv))
+
         parsed-gl-opts (parse-cmds-with-defaults gl-options argv true P/read-env) ;(parse-opts cmdline cli-gl-options :in-order true)
         missing-gl-opts (errors-for-missing-mandatory-args
                          (U/get-options-for config nil)
