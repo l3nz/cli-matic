@@ -1,4 +1,4 @@
-# CLI-matic
+# CLI-matic (branch bug 69)
 
 Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
 Clojure is not good for scripting?).
