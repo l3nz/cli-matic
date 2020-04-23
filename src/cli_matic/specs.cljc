@@ -124,3 +124,27 @@
 (s/def ::parsedCliOpts map?)
 
 (s/def ::mapOfCliParams (s/map-of string? (s/or :empty nil? :str string?)))
+
+;
+; b69
+;
+
+
+(s/def ::any-subcommand (s/keys :req-un [::command ::opts]
+                                :opt-un [::short ::description ::spec ::on-shutdown]))
+
+(s/def ::branch-subcommand
+  (s/and
+   ::any-command
+   (s/keys :req-un [::subcommands])))
+
+(s/def ::leaf-subcommand
+  (s/and
+   ::any-command
+   (s/keys :req-un [::runs])))
+
+(s/def ::a-subcommand (s/or :branch ::branch-subcommand
+                            :leaf ::leaf-subcommand))
+
+(s/def ::subcommands (s/coll-of
+                      ::a-subcommand))
