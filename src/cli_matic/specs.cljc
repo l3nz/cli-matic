@@ -135,12 +135,12 @@
 
 (s/def ::branch-subcommand
   (s/and
-   ::any-command
+   ::any-subcommand
    (s/keys :req-un [::subcommands])))
 
 (s/def ::leaf-subcommand
   (s/and
-   ::any-command
+   ::any-subcommand
    (s/keys :req-un [::runs])))
 
 (s/def ::a-subcommand (s/or :branch ::branch-subcommand
@@ -148,3 +148,19 @@
 
 (s/def ::subcommands (s/coll-of
                       ::a-subcommand))
+
+(s/def ::climatic-cfg-v2  ::a-subcommand)
+
+; A subcommand path.
+; If empty, no subcommands and no globals
+; Each member is the canonical name of a subcommand.
+; Each member but the last is of type ::branch-subcommand
+(s/def ::subcommand-path
+  (s/coll-of ::existing-string))
+
+; A path exploded into the actual subcommad definitions
+
+(s/def ::subcommand-executable-path
+  (s/coll-of ::any-subcommand
+             :min-count 1))
+

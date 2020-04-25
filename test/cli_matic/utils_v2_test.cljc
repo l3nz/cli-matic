@@ -1,17 +1,27 @@
 (ns cli-matic.utils-v2-test
   (:require [clojure.test :refer [is are deftest testing]]
-
+            #?(:clj [cli-matic.platform-macros :refer [try-catch-all]]
+               :cljs [cli-matic.platform-macros :refer-macros [try-catch-all]])
             [cli-matic.optionals :as OPT]
-            [cli-matic.utils-v2 :refer [convert]]))
+            [cli-matic.utils-v2 :refer [convert-config-v1->v2
+                                        walk
+                                        as-canonical-path]]))
+
+
+;
+; dummy functions
+;
+
 
 (defn add_numbers [x] x)
 (defn subtract_numbers [x] x)
 
-(deftest convert-test
+(deftest convert-config-v1->v2-test
 
-  (are [i o]  (= (convert i) o)
+  (are [i o]  (= (convert-config-v1->v2 i) o)
 
-    ; a string
+    ; ============== TEST 1 ===============
+    ;  Input
     {:app         {:command     "toycalc"
                    :description "A command-line toy calculator"
                    :version     "0.0.1"}
@@ -33,9 +43,7 @@
                                   {:option "b" :as "Parameter B" :type :int :default 0}]
                     :runs        subtract_numbers}]}
 
-              ; ret
-
-
+    ; Output
     {:command     "toycalc"
      :description "A command-line toy calculator"
      :version     "0.0.1"
@@ -64,5 +72,96 @@
                                    :option  "b"
                                    :type    :int}]
                     :runs        subtract_numbers}]}))
+
+(deftest walk-test
+
+  (let [cfg {:command     "toycalc"
+             :description "A command-line toy calculator"
+             :version     "0.0.1"
+             :opts        [{:as      "The number base for output"
+                            :default 10
+                            :option  "base"
+                            :type    :int}]
+             :subcommands [{:command     "add"
+                            :description "Adds two numbers together"
+                            :opts        [{:as     "Addendum 1"
+                                           :option "a"
+                                           :type   :int}
+                                          {:as      "Addendum 2"
+                                           :default 0
+                                           :option  "b"
+                                           :type    :int}]
+                            :runs        add_numbers}
+                           {:command     "subc"
+                            :description "Subtracts parameter B from A"
+                            :opts        [{:as      "Parameter q"
+                                           :default 0
+                                           :option  "q"
+                                           :type    :int}]
+
+                            :subcommands [{:command     "sub"
+                                           :description "Subtracts"
+                                           :opts        [{:as      "Parameter A"
+                                                          :default 0
+                                                          :option  "a"
+                                                          :type    :int}
+                                                         {:as      "Parameter B"
+                                                          :default 0
+                                                          :option  "b"
+                                                          :type    :int}]
+                                           :runs        subtract_numbers}]}]}]
+
+    (are [p o]  (=
+                 (try-catch-all
+                  (as-canonical-path (walk cfg p))
+                  (fn [_] :ERR))
+
+                 o)
+
+        ; es 1
+      ["toycalc" "add"]
+      ["toycalc" "add"]
+
+              ; es 2
+      ["toycalc" "subc" "sub"]
+      ["toycalc" "subc" "sub"]
+
+              ; not found
+      ["toycalc" "addq"]
+      :ERR
+
+      ["toycalc" "subc" "xx"]
+      :ERR))
+
+  (let [cfg-one {:command     "onlyone"
+                 :description "A single subcommand"
+                 :version     "0.0.1"
+                 :opts        [{:as      "The number base for output"
+                                :default 10
+                                :option  "base"
+                                :type    :int}]
+                 :runs        subtract_numbers}]
+
+    (are [p o]  (=
+                 (try-catch-all
+                  (as-canonical-path (walk cfg-one p))
+                  (fn [_] :ERR))
+
+                 o)
+
+                ; es 1
+      ["onlyone"]
+      ["onlyone"]
+
+
+                ; Nothing
+
+
+      []
+      ["onlyone"]
+
+                ; notfound
+      ["toycalc" "subc" "xx"]
+      :ERR)))
 
 (OPT/orchestra-instrument)
