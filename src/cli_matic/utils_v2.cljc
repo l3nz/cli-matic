@@ -12,7 +12,10 @@
   "
   (:require
    [cli-matic.specs :as S]
-   [clojure.spec.alpha :as s]))
+   [clojure.spec.alpha :as s]
+   #?(:clj  [cli-matic.platform-macros :refer [try-catch-all]]
+      :cljs [cli-matic.platform-macros :refer-macros [try-catch-all]])
+   [clojure.string :as str]))
 
 (defn convert-config-v1->v2
   "Converts a command version 1 to v2.
@@ -37,11 +40,12 @@
   :args (s/cat :cmdv1 ::S/climatic-cfg)
   :ret ::S/climatic-cfg-v2)
 
-(defn isRightCmd
+(defn isRightCmd?
   "Check if this is the right command or not,
   by name or alias."
-  [name cfg]
-  (= (:command cfg) name))
+  [command-or-short-name cfg]
+  (or (= (:command cfg) command-or-short-name)
+      (= (:short cfg) command-or-short-name)))
 
 (defn walk
   [cfg path]
@@ -78,14 +82,14 @@
 
       (let [pe (first p)
             rp (rest p)
-            my-cmd (first (filter (partial isRightCmd pe) c))
+            my-cmd (first (filter (partial isRightCmd? pe) c))
             elems (conj e my-cmd)]
 
         (cond
           ; not found?
           (empty? my-cmd)
           (throw (ex-info
-                  (str "Unknown item: " pe " - in " path)
+                  (str "Unknown subcommand: " pe " - in path " path)
                   {}))
 
           ; no remaining items
@@ -103,6 +107,25 @@
          :cfg ::S/climatic-cfg-v2
          :path ::S/subcommand-path)
   :ret ::S/subcommand-executable-path)
+
+(defn can-walk?
+  "Check that you can walk up to a point.
+  It basically traps the exception."
+  [cfg path]
+
+  (try-catch-all
+   (do
+     (walk cfg path)
+     true)
+
+   (fn [_]
+     false)))
+
+(s/fdef can-walk?
+  :args (s/cat
+         :cfg ::S/climatic-cfg-v2
+         :path ::S/subcommand-path)
+  :ret boolean?)
 
 (defn as-canonical-path
   "
@@ -123,3 +146,15 @@
 (s/fdef is-runnable?
   :args (s/cat :xp ::S/subcommand-executable-path)
   :ret boolean?)
+
+(defn canonical-path-to-string
+  [path]
+  (str/join " " path))
+
+(s/fdef canonical-path-to-string
+  :args (s/cat
+         :path ::S/subcommand-path)
+  :ret string?)
+
+(defn get-subcommand [cfg path]
+  (last (walk cfg path)))

@@ -4,7 +4,7 @@
             [cljc.java-time.local-date :as local-date]
             [cljc.java-time.local-date-time :as local-date-time]
             [cljc.java-time.zoned-date-time :as zoned-date-time]
-            [cli-matic.core :refer [parse-cmds]]
+            [cli-matic.core :refer [OLD__parse-cmds]]
             [cli-matic.presets :refer [set-help-values set-find-value set-find-didyoumean]]))
 
 (defn cmd_foo [v]
@@ -27,7 +27,7 @@
 
 (defn parse-cmds-simpler [args cfg]
   (dissoc
-   (parse-cmds args cfg)
+   (OLD__parse-cmds args cfg)
    :subcommand
    :subcommand-def))
 

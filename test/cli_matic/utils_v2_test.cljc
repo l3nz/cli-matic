@@ -5,6 +5,7 @@
             [cli-matic.optionals :as OPT]
             [cli-matic.utils-v2 :refer [convert-config-v1->v2
                                         walk
+                                        can-walk?
                                         as-canonical-path]]))
 
 
@@ -131,7 +132,24 @@
       :ERR
 
       ["toycalc" "subc" "xx"]
-      :ERR))
+      :ERR)
+
+    (are [p o]  (= (can-walk? cfg p) o)
+
+                ; es 1
+      ["toycalc" "add"]
+      true
+
+                ; es 2
+      ["toycalc" "subc" "sub"]
+      true
+
+                ; not found
+      ["toycalc" "addq"]
+      false
+
+      ["toycalc" "subc" "xx"]
+      false))
 
   (let [cfg-one {:command     "onlyone"
                  :description "A single subcommand"

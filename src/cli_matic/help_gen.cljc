@@ -133,7 +133,7 @@
   [cfg cmd]
 
   (let [glname (get-in cfg [:app :command])
-        cmd-cfg (U/get-subcommand cfg cmd)
+        cmd-cfg (U/OLD__get-subcommand cfg cmd)
         name (:command cmd-cfg)
         shortname (:short cmd-cfg)
         name-short (if shortname

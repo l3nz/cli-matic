@@ -184,7 +184,7 @@
   :args (s/cat :opts ::S/climatic-option)
   :ret some?)
 
-(defn get-subcommand
+(defn OLD__get-subcommand
   "Given args and the canonical name of a subcommand,
   returns the map describing it.
   "
@@ -192,7 +192,7 @@
   (let [subcommands (:commands climatic-args)]
     (first (filter #(= (:command %) subcmd) subcommands))))
 
-(s/fdef get-subcommand
+(s/fdef OLD__get-subcommand
   :args (s/cat :args ::S/climatic-cfg :subcmd string?)
   :ret ::S/a-command)
 
@@ -257,7 +257,7 @@
   [climatic-args subcmd]
   (if (nil? subcmd)
     (:global-opts climatic-args)
-    (:opts (get-subcommand climatic-args subcmd))))
+    (:opts (OLD__get-subcommand climatic-args subcmd))))
 
 ;; Out of a cli-matic arg list,
 ;; generates a set of commands for tools.cli
