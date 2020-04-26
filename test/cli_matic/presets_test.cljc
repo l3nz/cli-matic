@@ -4,7 +4,8 @@
             [cljc.java-time.local-date :as local-date]
             [cljc.java-time.local-date-time :as local-date-time]
             [cljc.java-time.zoned-date-time :as zoned-date-time]
-            [cli-matic.core :refer [OLD__parse-cmds]]
+            [cli-matic.core :refer [parse-command-line]]
+            [cli-matic.utils-v2 :refer [convert-config-v1->v2]]
             [cli-matic.presets :refer [set-help-values set-find-value set-find-didyoumean]]))
 
 (defn cmd_foo [v]
@@ -13,21 +14,24 @@
 
 (defn mkDummyCfg
   [myOption]
-  {:app         {:command   "dummy"
-                 :description "I am some command"
-                 :version     "0.1.2"}
-   :global-opts []
-   :commands [{:command    "foo"
-               :description "I am function foo"
-               :opts  [myOption]
-               :runs  cmd_foo}]})
+
+  (convert-config-v1->v2
+
+   {:app         {:command   "dummy"
+                  :description "I am some command"
+                  :version     "0.1.2"}
+    :global-opts []
+    :commands [{:command    "foo"
+                :description "I am function foo"
+                :opts  [myOption]
+                :runs  cmd_foo}]}))
 
 ; :subcommand     "foo"
 ; :subcommand-def
 
 (defn parse-cmds-simpler [args cfg]
   (dissoc
-   (OLD__parse-cmds args cfg)
+   (parse-command-line args cfg)
    :subcommand
    :subcommand-def))
 

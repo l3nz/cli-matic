@@ -43,7 +43,6 @@
      :parse-errors   error
      :error-text     (U/asString text)}))
 
-;; TODO s/fdef
 (s/fdef
   mkError
   :args (s/cat :config (s/or :cfg_v1 ::S/climatic-cfg
@@ -122,9 +121,9 @@
 
   "
 
-  [cmt-options argv in-order? fn-env]
-  (let [cli-cmd-options (U/cm-opts->cli-opts cmt-options)
-        env-options (filter :env cmt-options)
+  [opts argv in-order? fn-env]
+  (let [cli-cmd-options (U/cm-opts->cli-opts opts)
+        env-options (filter :env opts)
         argv+ (if (seq env-options)
                 ;; I have env variables
                 (let [parse1 (parse-opts argv cli-cmd-options
@@ -165,53 +164,67 @@
   but when doing global parsing, positional parameters are
   not allowed, so they never come in.
   "
-  [config canonical-subcommand subcommand-parms]
-  (let [cmt-options (U/get-options-for config canonical-subcommand)
-        parsed-cmd-opts (parse-cmds-with-defaults cmt-options subcommand-parms false P/read-env)
+  [opts argv fn-env]
+  (let [parsed-cmd-opts (parse-cmds-with-defaults opts argv false fn-env)
         cmd-args (:arguments parsed-cmd-opts)
 
         ;; capture positional parms
         ;; if they exist, we inject them at the end of the command line
         ;; and parse again
-        positional-parms (U/capture-positional-parms config canonical-subcommand cmd-args)]
+        positional-parms (U/capture-positional-parms opts cmd-args)]
 
     (cond
+      ; do we have any positional parms?
+      ; parse a new line where they are not positional anymore
       (pos? (count positional-parms))
       (let [addl-args (mk-fake-args positional-parms)
-            newcmdline (into subcommand-parms addl-args)]
-        (parse-cmds-with-defaults cmt-options newcmdline false P/read-env))
+            newcmdline (into argv addl-args)]
+        (parse-cmds-with-defaults opts newcmdline false P/read-env))
 
       :else
       parsed-cmd-opts)))
 
+(s/fdef
+  parse-cmds-with-positions
+  :args (s/cat :opts ::S/opts
+               :argv (s/coll-of string?)
+               :fn-env any?)
+  :ret  ::S/parsedCliOpts)
+
 (defn check-one-spec
   "Checks one spec.
-  If spec passes, returns nil; if not, returns the failure.
-  If there is an error raised, creates a fake spec result.
 
-  explain-data return nil if everything okay.
+  - If spec passes, returns nil; if not, returns the failure.
+  - If there is an error raised, creates a fake spec result.
+  - If spec is nil, we consider it a pass.
 
-  expound-string returns 'Success!\n' if all goes well.
+  `explain-data` return nil if everything okay.
+
+  `expound-string` returns 'Success!\n' if all goes well.
 
 
   "
   [name type spec value]
-  (try-catch-all
-   (let [ed (expound/expound-str spec value)]
-     (if (not= ed "Success!\n")
-        ;(str "Spec failure for '" name "': value '" value "' is invalid.")
-       (str "Spec failure for " type " '" name "'\n" ed)
 
-       nil))
+  (if (nil? spec)
+    ; no spec - all went well
+    nil
 
-   (fn [t]
-     (str "Spec failure for " type " '" name "': with value '" value "' got " t))))
+    ; let's check this spec
+    (try-catch-all
+     (let [expound-result (expound/expound-str spec value)]
+       (if (not= expound-result "Success!\n")
+         (str "Spec failure for " type " '" name "'\n" expound-result)
+         nil))
+
+     (fn [t]
+       (str "Spec failure for " type " '" name "': with value '" value "' got " t)))))
 
 (s/fdef
   check-one-spec
   :args (s/cat :name string?
                :type string?
-               :spec ::S/spec
+               :spec (s/or :nome nil? :a-spec ::S/spec)
                :value ::S/anything)
   :ret  (s/or :nil nil?
               :str string?))
@@ -295,93 +308,144 @@
 
 (defn parse-command-line
   "
+  This is where the magic happens.
+
+  Whereas in version 1 we had one 'global' level and one
+  sub-command, now we have many. From the point of view of
+  sub-commands, all intermediate levels but actual executable
+  sub-commands are global levels; each of them may capture
+  its own variables and have them validated via specs.
+
+  So we first try walking to the current level through the
+  configuration, capture and verify what is needed at this level
+  and then terminate only if we are on a leaf (executable subcommand)
+  or there is any error.
+
+  Spec checking:
+
+  - If parsing goes well, parameter specs are checked on each parameter
+  - If all of them go well, general spec is checked on the current result
+    of all parsing; that is, including results form all earlier
+    general settings
+
+
+  TODO:
+   - candidates
+   - help
+
   "
   [argv config]
-  (loop [unparsed-argv argv
-         current-path  [(:command config)]
-         current-parsed-options {}]
+
+  (loop [reqd-path  [(:command config)]
+         unparsed-argv argv
+         current-parsed-opts {}]
 
     (cond
       ; Maybe I cannot walk all the way to the required command
-      (not (U2/can-walk? config current-path))
-      (let [failed-path-str (U2/canonical-path-to-string current-path)]
-        (mkError config current-path :ERR-UNKNOWN-SUBCMD
+      (not (U2/can-walk? config reqd-path))
+      (let [failed-path-str (U2/canonical-path-to-string reqd-path)]
+        (mkError config reqd-path :ERR-UNKNOWN-SUBCMD
                  (str "Unknown sub-command: '" failed-path-str "'.")))
 
       :else
-      (let [current-xpath (U2/walk config current-path)
-            canonical-path (U2/as-canonical-path current-xpath)
-            global-node?     (not (U2/is-runnable? current-xpath))
-            options       (:opts (last current-xpath))]
+      (let [curr-xpath (U2/walk config reqd-path)
+            curr-subcmd (last curr-xpath)
+            curr-path (U2/as-canonical-path curr-xpath)
+            curr-path-str (U2/canonical-path-to-string curr-path)
+            global-node?     (not (U2/is-runnable? curr-xpath))
+            options       (:opts curr-subcmd)
+            general-spec  (:spec curr-subcmd)]
 
-        (let [; qui uso queli posizionali
-              parsed-gl-opts (parse-cmds-with-defaults options unparsed-argv true P/read-env)
-              missing-gl-opts (errors-for-missing-mandatory-args options parsed-gl-opts {})
-              {parse-errs :errors parse-opts :options parse-leftover-args :arguments} parsed-gl-opts
-              subcommand (first parse-leftover-args)
-              new-path  (conj canonical-path subcommand)
-              new-parsed-options (merge current-parsed-options parse-opts)
-              subcommand-argv (vec (rest parse-leftover-args))]
+        (let [parsed-opts (if global-node?
+                            ; global: no positions
+                            (parse-cmds-with-defaults options unparsed-argv true P/read-env)
+                            ; leaf: use positions
+                            (parse-cmds-with-positions options unparsed-argv P/read-env))
+
+              ; do we miss any mandatory option?
+              missing-opts (errors-for-missing-mandatory-args options parsed-opts {})
+              ; destructure results
+              {parse-errs :errors parsed-opts :options parse-leftover-args :arguments} parsed-opts
+              ; if global, the subcommand to process next....
+              next-subcommand (first parse-leftover-args)
+              ; ...and its parameters
+              next-subcommand-argv (vec (rest parse-leftover-args))
+              ; the new path that will be run
+              next-path  (conj curr-path next-subcommand)
+              ; the total set of parsed options: the ones we got now plus any previous ones
+              total-parsed-opts (merge current-parsed-opts parsed-opts)
+
+              ; the (first) failing spec for a parameter we just extracted
+              failing-param-spec (when (empty? parse-errs)
+                                   (first
+                                    (check-specs-on-parameters options parsed-opts
+                                                               (if global-node?
+                                                                 "global option"
+                                                                 "option"))))
+
+              ; whether the general spec for this level fails
+              failing-general-spec (when (empty? parse-errs)
+                                     (check-one-spec curr-path-str
+                                                     "subcommand"
+                                                     general-spec
+                                                     total-parsed-opts))]
+
           (cond
             ; any parse errors?
             (some? parse-errs)
-            (mkError config canonical-path
+            (mkError config curr-path
                      (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
                      parse-errs)
 
             ; did we ask for help?
-            (some? (:_help_trigger parse-opts))
-            (mkError config canonical-path
+            (some? (:_help_trigger parsed-opts))
+            (mkError config curr-path
                      (if global-node? :HELP-GLOBAL :HELP-SUBCMD) nil)
 
             ; looks like there is no sub-command specified
-            (and global-node? (nil? subcommand))
-            (mkError config canonical-path :ERR-NO-SUBCMD "")
+            (and global-node? (nil? next-subcommand))
+            (mkError config curr-path :ERR-NO-SUBCMD "")
 
             ; missing required parms?
             ; we raise this only if there are no errors in cmd parms
-            (and (empty? parse-errs) (pos? (count missing-gl-opts)))
-            (mkError config canonical-path
+            (and (empty? parse-errs) (pos? (count missing-opts)))
+            (mkError config curr-path
                      (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
-                     missing-gl-opts)
+                     missing-opts)
 
+            ; failed spec: parameter validation
+            (some? failing-param-spec)
+            (mkError config curr-path
+                     (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
+                     failing-param-spec)
+
+            ; failed spec: the general level
+            (some? failing-general-spec)
+            (mkError config curr-path
+                     (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
+                     failing-general-spec)
 
             ; If this is a global option and it went well so far,
             ; let's loop back and explore what's in store below
-
-
             global-node?
-            (recur subcommand-argv
-                   new-path
-                   new-parsed-options)
+            (recur next-path
+                   next-subcommand-argv
+                   total-parsed-opts)
 
-            ; any missing required global parm?
-            ; we raise only if there are no rrors in global parms
-            ;(and (empty? gl-errs) (pos? (count missing-gl-opts)))
-            ;(mkError config nil :ERR-PARMS-GLOBAL missing-gl-opts)
-
-            ; no errors?
-            ; as a last step, we assert that specs are okay
-
-
+            ; no errors and we are a leaf node? really? let's finish this charade.
+            ; teach the kids some geometry and theology.
             (nil? parse-errs)
-            (let [all-parsed-opts (-> new-parsed-options
+            (let [all-parsed-opts (-> total-parsed-opts
                                       (into {:_arguments parse-leftover-args}))]
-              {:subcommand     canonical-path
-               :subcommand-def (last current-xpath)
+              {:subcommand     curr-path
+               :subcommand-def curr-subcmd
                :commandline    all-parsed-opts
                :parse-errors    :NONE
                :error-text     ""})
 
-
-
-            ;(let [all-parsed-opts (-> new-parsed-options
-            ;                      (into {:_arguments cmd-args}))]
-            ;  (check-specs-on-parsed-args parsed-opts canonical-subcommand config))
-
-
+            ; something went bad.
             :else
-            (mkError config current-path :ERR-PARMS-SUBCMD parse-errs)))))))
+            (mkError config reqd-path :ERR-PARMS-SUBCMD parse-errs)))))))
 
 (defn OLD__parse-cmds
   "This is where magic happens.

@@ -4,8 +4,7 @@
             [cli-matic.platform-macros :refer [try-catch-all]]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
-            [cli-matic.core :refer [OLD__parse-cmds
-                                    parse-command-line
+            [cli-matic.core :refer [parse-command-line
                                     run-cmd*
                                     ->RV
                                     assert-unique-values
@@ -82,7 +81,7 @@
 (deftest simple-subcommand
   (testing "A simple subcommand - v2"
 
-    ;; Normal subcomamnd
+    ;; Normal subcomand
     (is (= (parse-command-line
             ["--bb" "1" "foo" "--cc" "2" "--dd" "3"]
             SIMPLE-SUBCOMMAND-CFG-v2)
@@ -184,43 +183,46 @@
                                 {:option "dd" :as "D" :type :int}]
                   :runs        cmd_foo}]})
 
-(comment
-  ;;; TEST SPENTO ;;;;
+(def MANDATORY-SUBCOMMAND-CFG-v2
+  (U2/convert-config-v1->v2 MANDATORY-SUBCOMMAND-CFG))
 
-  (deftest check-mandatory-options
-    (testing "Some real-life behavior with mandatory options"
-      (are [i o]
-           (= (run-cmd* MANDATORY-SUBCOMMAND-CFG i) o)
+(deftest check-mandatory-options
+  (testing "Some real-life behavior with mandatory options"
+    (are [i o]
+         (= (run-cmd* MANDATORY-SUBCOMMAND-CFG-v2 i) o)
 
         ; no parameters - displays cmd help
-        []
-        (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified.")
+      []
+      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified.")
 
-        ["x"]
-        (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "dummy: unknown sub-command 'x'.")
+      ["x"]
+        ;(->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "dummy: unknown sub-command 'x'.")
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa")
 
-        ["--lippa" "foo"]
-        (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Unknown option: \"--lippa\"")
+      ["--lippa" "foo"]
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Unknown option: \"--lippa\"")
 
         ; help globale
-        ["-?"]
-        (->RV 0 :OK :HELP-GLOBAL nil nil)
+      ["-?"]
+      (->RV 0 :OK :HELP-GLOBAL nil nil)
 
         ; help sub-commands (incl short version)
-        ["foo" "-?"]
-        (->RV 0 :OK :HELP-SUBCMD "foo" nil)
+      ["--aa" "1" "foo" "-?"]
+      (->RV 0 :OK :HELP-SUBCMD "dummy foo" nil)
 
         ; error no global cmd
-        ["foo" "--cc" "1"]
-        (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa")
+      ["foo" "--cc" "1"]
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa")
 
         ;; error no sub cmd
-        ["--aa" "1" "foo" "--dd" "1"]
-        (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" "Option error: Missing option: cc")
+      ["--aa" "1" "foo" "--dd" "1"]
+      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "dummy foo" "Option error: Missing option: cc")
 
         ;; works
-        ["--aa" "1" "foo" "--cc" "1"]
-        (->RV 0 :OK nil nil nil)))))
+      ["--aa" "1" "foo" "--cc" "1"]
+      (->RV 0 :OK nil nil nil))))
+
+
 ; Problems
 ; --------
 ;
@@ -262,65 +264,75 @@
        :option]
       :ERR)))
 
-(deftest check-cfg-format
-  (testing "Cfg format"
-    (are [i o]
-         (=  o
-             (try-catch-all
-              (-> i
-                  add-setup-defaults
-                  assert-cfg-sanity)
-              (fn [_]
+
+;;;; TODO
+;;;; Do not forget check for positional arguments in global
+
+
+(comment
+  ;;; TO DO
+
+  (deftest check-cfg-format
+    (testing "Cfg format"
+      (are [i o]
+           (= o
+              (try-catch-all
+               (-> i
+                   add-setup-defaults
+                   assert-cfg-sanity)
+               (fn [_]
                ;(prn e)
-                :ERR)))
+                 :ERR)))
 
-      ;; OK
-      {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
+        ;; OK
+        {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
-       :global-opts [{:option  "base" :as      "T"  :type    :int :default 10}]
+         :global-opts [{:option "base" :as "T" :type :int :default 10}]
 
-       :commands    [{:command     "add"                      :description "Adds" :runs identity
-                      :opts        [{:option "a" :as "Addendum 1" :type :int}
-                                    {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
-      nil
+         :commands    [{:command "add" :description "Adds" :runs identity
+                        :opts    [{:option "a" :as "Addendum 1" :type :int}
+                                  {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
+        nil
 
-      ;; No global options - still OK (bug #35)
-      {:app         {:command     "toycalc" :description "A" :version     "0.0.1"}
-       :commands    [{:command     "add"                      :description "Adds" :runs identity
-                      :opts        [{:option "a" :as "Addendum 1" :type :int}
-                                    {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
-      nil
+        ;; No global options - still OK (bug #35)
+        {:app      {:command "toycalc" :description "A" :version "0.0.1"}
+         :commands [{:command "add" :description "Adds" :runs identity
+                     :opts    [{:option "a" :as "Addendum 1" :type :int}
+                               {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
+        nil
 
-      ;; double in global
-      {:app         {:command "toycalc" :description "A" :version "0.0.1"}
+        ;; double in global
+        {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
-       :global-opts [{:option "base" :as "T" :type :int :default 10}
-                     {:option "base" :as "X" :type :int :default 10}]
+         :global-opts [{:option "base" :as "T" :type :int :default 10}
+                       {:option "base" :as "X" :type :int :default 10}]
 
-       :commands    [{:command "add" :description "Adds" :runs identity
-                      :opts    [{:option "a" :as "Addendum 1" :type :int}
-                                {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
-      :ERR
+         :commands    [{:command "add" :description "Adds" :runs identity
+                        :opts    [{:option "a" :as "Addendum 1" :type :int}
+                                  {:option "b" :as "Addendum 2" :type :int :default 0}]}]}
+        :ERR
 
-      ;; double in specific
-      {:app         {:command "toycalc" :description "A" :version "0.0.1"}
+        ;; double in specific
+        {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
-       :global-opts [{:option "base" :as "T" :type :int :default 10}]
+         :global-opts [{:option "base" :as "T" :type :int :default 10}]
 
-       :commands    [{:command "add" :description "Adds" :runs identity
-                      :opts    [{:option "a" :short "q" :as "Addendum 1" :type :int}
-                                {:option "b" :short "q" :as "Addendum 2" :type :int :default 0}]}]}
-      :ERR
+         :commands    [{:command "add" :description "Adds" :runs identity
+                        :opts    [{:option "a" :short "q" :as "Addendum 1" :type :int}
+                                  {:option "b" :short "q" :as "Addendum 2" :type :int :default 0}]}]}
+        :ERR
 
-      ;; positional subcmds in global opts
-      {:app         {:command "toycalc" :description "A" :version "0.0.1"}
+        ;; positional subcmds in global opts
+        {:app         {:command "toycalc" :description "A" :version "0.0.1"}
 
-       :global-opts [{:option "base" :short 0 :as "T" :type :int :default 10}]
+         :global-opts [{:option "base" :short 0 :as "T" :type :int :default 10}]
 
-       :commands    [{:command "add" :description "Adds" :runs identity
-                      :opts    [{:option "a" :short "q" :as "Addendum 1" :type :int}
-                                {:option "b" :short "d" :as "Addendum 2" :type :int :default 0}]}]}
-      :ERR)))
+         :commands    [{:command "add" :description "Adds" :runs identity
+                        :opts    [{:option "a" :short "q" :as "Addendum 1" :type :int}
+                                  {:option "b" :short "d" :as "Addendum 2" :type :int :default 0}]}]}
+        :ERR)))
+  ;;;;
+  )
 
 (def POSITIONAL-SUBCOMMAND-CFG
   {:app         {:command     "dummy"
@@ -335,37 +347,35 @@
                                 {:option "ee"  :short 1 :as "E" :type :int}]
                   :runs        cmd_save_opts}]})
 
-(comment
-  ;;;;; DA PROVARE  ;;;;;
-  (deftest check-positional-options
-    (testing "Some real-life behavior with mandatory options"
-      (are [i o]
-           (= (select-keys
-               (OLD__parse-cmds i POSITIONAL-SUBCOMMAND-CFG)
-               [:commandline :error-text]) o)
+(def POSITIONAL-SUBCOMMAND-CFG-v2
+  (U2/convert-config-v1->v2 POSITIONAL-SUBCOMMAND-CFG))
+
+(deftest check-positional-options
+  (testing "Some real-life behavior with mandatory options"
+    (are [i o]
+         (= (select-keys
+             (parse-command-line i POSITIONAL-SUBCOMMAND-CFG-v2)
+             [:commandline :error-text]) o)
 
         ;; a simple case
-        ["--aa" "10" "foo" "1" "2"]
-        {:commandline {:_arguments ["1" "2"]
-                       :aa         10
-                       :cc         1
-                       :ee         2}
-         :error-text  ""}
+      ["--aa" "10" "foo" "1" "2"]
+      {:commandline {:_arguments ["1" "2"]
+                     :aa         10
+                     :cc         1
+                     :ee         2}
+       :error-text  ""}
 
         ;; positional arg does not exist but is default present
-        ["--aa" "10" "foo"]
-        {:commandline {}
-         :error-text  "Missing option: cc"}
+      ["--aa" "10" "foo"]
+      {:commandline {}
+       :error-text  "Missing option: cc"}
 
         ;; positional arg does not exist and it is not default present
-        ["--aa" "10" "foo" "1"]
-        {:commandline {:_arguments ["1"]
-                       :aa         10
-                       :cc         1}
-         :error-text  ""})))
-
-  ;;;;
-  )
+      ["--aa" "10" "foo" "1"]
+      {:commandline {:_arguments ["1"]
+                     :aa         10
+                     :cc         1}
+       :error-text  ""})))
 
 (defn env-helper [s]
   (get {"VARA" "10"
@@ -422,6 +432,7 @@
 
 ; We add a stupid spec check
 ; Specs are checked after parsing, both on parameters and globally.
+; if presents, specs are checked
 
 (s/def ::ODD-NUMBER odd?)
 
@@ -441,6 +452,8 @@
                                 {:option "ee"  :short 1 :as "E" :type :int :spec ::ODD-NUMBER}]
                   :spec        ::GENERAL-SPEC-FOO
                   :runs        cmd_save_opts}]})
+(def SPEC-CFG-v2
+  (U2/convert-config-v1->v2 SPEC-CFG))
 
 (defn keep-1st-line-stderr
   "To avoid issues with expound changing messages, we remove all
@@ -461,35 +474,33 @@
 
 ;; ------------
 
-(comment
-  ;;; TEST SPENTO ;;;;
 
-  (deftest check-specs
-    (are [i o]
-         (= (keep-1st-line-stderr (run-cmd* SPEC-CFG i)) o)
+(deftest check-specs
+  (are [i o]
+       (= (keep-1st-line-stderr (run-cmd* SPEC-CFG-v2 i)) o)
 
       ; all of the should pass
-      ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
-      (->RV 0 :OK nil nil [])
+    ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
+    (->RV 0 :OK nil nil [])
 
       ; aa (global) non è dispari
-      ["--aa" "2" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
-      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for global option 'aa'"])
+    ["--aa" "2" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
+    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for global option 'aa'"])
 
       ; bb non esiste proprio
-      ["--aa" "3" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
-      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for global option 'bb': with value '' got java.lang.IllegalArgumentException: Argument must be an integer: "])
+    ["--aa" "3" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
+    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for global option 'bb': with value '' got java.lang.IllegalArgumentException: Argument must be an integer: "])
 
       ; dd (local)
-      ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "4" "--ee" "99"]
-      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" ["Option error: Spec failure for option 'dd'"])
+    ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "4" "--ee" "99"]
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "dummy foo" ["Option error: Spec failure for option 'dd'"])
 
       ; ee non 99 (validazione globale subcmd)
-      ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "5" "--ee" "97"]
-      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" ["Option error: Spec failure for subcommand 'foo'"])))
+    ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "5" "--ee" "97"]
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "dummy foo" ["Option error: Spec failure for subcommand 'dummy foo'"])))
 
   ;;;;;
-  )
+
 
 ; =================================================================
 ;
@@ -506,30 +517,27 @@
                   :opts        [{:option "kw" :as "blabla" :type #{:a :b :zebrafuffa}}]
                   :runs        cmd_save_opts}]})
 
-(comment
-  ;;; TEST SPENTO ;;;;
+(def SETS-CFG-v2
+  (U2/convert-config-v1->v2 SETS-CFG))
 
-
-  (deftest check-sets
-    (are [i o]
-         (= (run-cmd* SETS-CFG i) o)
+(deftest check-sets
+  (are [i o]
+       (= (run-cmd* SETS-CFG-v2 i) o)
 
       ; all of the should pass
-      ["foo" "--kw" "a"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--kw" "a"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--kw" "B"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--kw" "B"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--kw" "zebrafufa"]
-      {:help   :HELP-SUBCMD
-       :retval -1
-       :status :ERR-PARMS-SUBCMD
-       :stderr ["Option error: Error while parsing option \"--kw zebrafufa\": clojure.lang.ExceptionInfo: Value 'zebrafufa' not allowed. Did you mean ':zebrafuffa'? {}"]
-       :subcmd "foo"}))
+    ["foo" "--kw" "zebrafufa"]
+    {:help   :HELP-SUBCMD
+     :retval -1
+     :status :ERR-PARMS-SUBCMD
+     :stderr ["Option error: Error while parsing option \"--kw zebrafufa\": clojure.lang.ExceptionInfo: Value 'zebrafufa' not allowed. Did you mean ':zebrafuffa'? {}"]
+     :subcmd "dummy foo"}))
 
-  ;;;;
-  )
 
 ; =================================================================
 ;
@@ -547,147 +555,141 @@
                                 {:option "flag" :as "flag" :type :flag :default false}]
                   :runs        cmd_save_opts}]})
 
-(comment
-  ;;; TEST SPENTO ;;;;
+(def FLAGS-CFG-v2
+  (U2/convert-config-v1->v2 FLAGS-CFG))
 
+(deftest check-flags
+  (are [input expected]
+       (= expected (run-cmd* FLAGS-CFG-v2 input))
 
-  (deftest check-flags
-    (are [input expected]
-         (= expected (run-cmd* FLAGS-CFG input))
+    ["foo" "--bar"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--bar"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--no-bar"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--no-bar"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "Y"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "Y"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "Yes"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "Yes"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "On"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "On"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "T"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "T"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "True"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "True"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "1"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "1"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "N"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "N"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "No"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "No"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "Off"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "Off"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "F"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "F"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "False"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "False"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "false"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "false"]
-      (->RV 0 :OK nil nil [])
+    ["foo" "--flag" "0"]
+    (->RV 0 :OK nil nil [])
 
-      ["foo" "--flag" "0"]
-      (->RV 0 :OK nil nil [])
-
-      ["foo" "--flag" "2"]
-      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "foo" "Option error: Error while parsing option \"--flag 2\": clojure.lang.ExceptionInfo: Unsupported flag value {:flag \"2\"}"))
+    ["foo" "--flag" "2"]
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "dummy foo"
+          "Option error: Error while parsing option \"--flag 2\": clojure.lang.ExceptionInfo: Unsupported flag value {:flag \"2\"}")
 
     ["foo" "--bar" "--flag" "Y"]
     (->RV 0 :OK nil nil [])
 
     ["foo" "--no-bar" "--flag" "0"]
-    (->RV 0 :OK nil nil [])
+    (->RV 0 :OK nil nil [])))
 
-    (is (= (OLD__parse-cmds
-            ["foo" "--bar"]
-            FLAGS-CFG)
-           {:commandline    {:_arguments [] :bar true :flag false}
-            :error-text     ""
-            :parse-errors   :NONE
-            :subcommand     "foo"
-            :subcommand-def {:command     "foo"
-                             :description "I am function foo"
-                             :opts        [{:as      "bar"
-                                            :default false
-                                            :option  "bar"
-                                            :type    :with-flag}
-                                           {:as      "flag"
-                                            :default false
-                                            :option  "flag"
-                                            :type    :flag}]
-                             :runs        cmd_save_opts
-                             :short       "f"}}))
+(deftest check-flags-more-complex
+  (are [input expected]
+       (= expected (parse-command-line input FLAGS-CFG-v2))
 
-    (is (= (OLD__parse-cmds
-            ["foo" "--no-bar"]
-            FLAGS-CFG)
-           {:commandline    {:_arguments [] :bar false :flag false}
-            :error-text     ""
-            :parse-errors   :NONE
-            :subcommand     "foo"
-            :subcommand-def {:command     "foo"
-                             :description "I am function foo"
-                             :opts        [{:as      "bar"
-                                            :default false
-                                            :option  "bar"
-                                            :type    :with-flag}
-                                           {:as      "flag"
-                                            :default false
-                                            :option  "flag"
-                                            :type    :flag}]
-                             :runs        cmd_save_opts
-                             :short       "f"}}))
+    ["foo" "--bar"]
+    {:commandline    {:_arguments [] :bar true :flag false}
+     :error-text     ""
+     :parse-errors   :NONE
+     :subcommand     ["dummy" "foo"]
+     :subcommand-def {:command     "foo"
+                      :description "I am function foo"
+                      :opts        [{:as      "bar"
+                                     :default false
+                                     :option  "bar"
+                                     :type    :with-flag}
+                                    {:as      "flag"
+                                     :default false
+                                     :option  "flag"
+                                     :type    :flag}]
+                      :runs        cmd_save_opts
+                      :short       "f"}}
 
-    (is (= (OLD__parse-cmds
-            ["foo" "--no-bar" "--flag" "Y"]
-            FLAGS-CFG)
-           {:commandline    {:_arguments [] :bar false :flag true}
-            :error-text     ""
-            :parse-errors   :NONE
-            :subcommand     "foo"
-            :subcommand-def {:command     "foo"
-                             :description "I am function foo"
-                             :opts        [{:as      "bar"
-                                            :default false
-                                            :option  "bar"
-                                            :type    :with-flag}
-                                           {:as      "flag"
-                                            :default false
-                                            :option  "flag"
-                                            :type    :flag}]
-                             :runs        cmd_save_opts
-                             :short       "f"}}))
+    ["foo" "--no-bar"]
+    {:commandline    {:_arguments [] :bar false :flag false}
+     :error-text     ""
+     :parse-errors   :NONE
+     :subcommand     ["dummy" "foo"]
+     :subcommand-def {:command     "foo"
+                      :description "I am function foo"
+                      :opts        [{:as      "bar"
+                                     :default false
+                                     :option  "bar"
+                                     :type    :with-flag}
+                                    {:as      "flag"
+                                     :default false
+                                     :option  "flag"
+                                     :type    :flag}]
+                      :runs        cmd_save_opts
+                      :short       "f"}}
 
-    (is (= (OLD__parse-cmds
-            ["foo" "--no-bar" "--flag" "Off"]
-            FLAGS-CFG)
-           {:commandline    {:_arguments [] :bar false :flag false}
-            :error-text     ""
-            :parse-errors   :NONE
-            :subcommand     "foo"
-            :subcommand-def {:command     "foo"
-                             :description "I am function foo"
-                             :opts        [{:as      "bar"
-                                            :default false
-                                            :option  "bar"
-                                            :type    :with-flag}
-                                           {:as      "flag"
-                                            :default false
-                                            :option  "flag"
-                                            :type    :flag}]
-                             :runs        cmd_save_opts
-                             :short       "f"}})))
+    ["foo" "--no-bar" "--flag" "Y"]
+    {:commandline    {:_arguments [] :bar false :flag true}
+     :error-text     ""
+     :parse-errors   :NONE
+     :subcommand     ["dummy" "foo"]
+     :subcommand-def {:command     "foo"
+                      :description "I am function foo"
+                      :opts        [{:as      "bar"
+                                     :default false
+                                     :option  "bar"
+                                     :type    :with-flag}
+                                    {:as      "flag"
+                                     :default false
+                                     :option  "flag"
+                                     :type    :flag}]
+                      :runs        cmd_save_opts
+                      :short       "f"}}
 
-  ;;;;
-  )
+    ["foo" "--no-bar" "--flag" "Off"]
+    {:commandline    {:_arguments [] :bar false :flag false}
+     :error-text     ""
+     :parse-errors   :NONE
+     :subcommand     ["dummy" "foo"]
+     :subcommand-def {:command     "foo"
+                      :description "I am function foo"
+                      :opts        [{:as      "bar"
+                                     :default false
+                                     :option  "bar"
+                                     :type    :with-flag}
+                                    {:as      "flag"
+                                     :default false
+                                     :option  "flag"
+                                     :type    :flag}]
+                      :runs        cmd_save_opts
+                      :short       "f"}}))
+

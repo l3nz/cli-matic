@@ -300,18 +300,29 @@
 ;; --------------------------------------------------------------
 
 
+(defn positional-parms-from-opts
+  "
+  Returns a list of positional parameters from a subcommand option.
+  "
+  [opts]
+  (filterv #(integer? (:short %)) opts))
+
+(s/fdef
+  positional-parms-from-opts
+  :args (s/cat :opts ::S/opts)
+  :ret (s/coll-of ::S/climatic-option))
+
 (defn list-positional-parms
   "Extracts all positional parameters from the configuration."
   [cfg subcmd]
   ;;(prn "CFG" cfg "Sub" subcmd)
-  (let [opts (get-options-for cfg subcmd)
-        rv (filterv #(integer? (:short %)) opts)]
-    ;;(prn "Subcmd" subcmd "OPTS" opts "RV" rv )
-    rv))
+  (let [opts (get-options-for cfg subcmd)]
+    (positional-parms-from-opts opts)))
 
 (s/fdef
   list-positional-parms
-  :args (s/cat :cfg ::S/climatic-cfg :cmd (s/or :cmd ::S/command :global nil?))
+  :args (s/cat :cfg ::S/climatic-cfg-v2
+               :cmd ::S/subcommand-path)
   :ret (s/coll-of ::S/climatic-option))
 
 (defn a-positional-parm
@@ -333,14 +344,15 @@
 (defn capture-positional-parms
   "Captures positional parameters in the remaining-args of
   a subcommand."
-  [cfg subcmd remaining-args]
-  (let [pp (list-positional-parms cfg subcmd)]
+  [opts remaining-args]
+  (let [pp (positional-parms-from-opts opts)]
     (into {}
           (map (partial a-positional-parm remaining-args) pp))))
 
 (s/fdef
   capture-positional-parms
-  :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command :args sequential?)
+  :args (s/cat :opts ::S/opts
+               :args sequential?)
   :ret ::S/mapOfCliParams)
 
 
