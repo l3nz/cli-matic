@@ -103,6 +103,10 @@
 
 (s/def ::climatic-cfg (s/keys :req-un [::app ::global-opts ::commands]))
 
+(s/def ::global-help ifn?)
+(s/def ::subcmd-help ifn?)
+
+
 
 ;; Return value of parsing with tools.cli
 
@@ -117,12 +121,29 @@
 
 
 (s/def ::any-subcommand (s/keys :req-un [::command ::opts]
-                                :opt-un [::short ::description ::spec ::on-shutdown]))
+                                :opt-un [::short ::description ::spec]))
+
+; root has a version
+; root might have help-gen; if they exist, they are ifn?
+(s/def ::root-subcommand
+  (s/keys :req-un [::version]
+          :opt-un [::on-shutdown ::global-help ::subcmd-help]))
+
+(defn no-positional-opts
+  "Makes sure that this subcommand does not have
+  any positional argument in its opts"
+
+  [any-subcmd]
+  (let [o (:opts any-subcmd)]
+    (empty?
+     (filter int? o))))
 
 (s/def ::branch-subcommand
   (s/and
    ::any-subcommand
-   (s/keys :req-un [::subcommands])))
+   (s/keys :req-un [::subcommands])
+   ; no positional arguments
+   no-positional-opts))
 
 (s/def ::leaf-subcommand
   (s/and
@@ -135,7 +156,11 @@
 (s/def ::subcommands (s/coll-of
                       ::a-subcommand))
 
-(s/def ::climatic-cfg-v2  ::a-subcommand)
+(s/def ::climatic-cfg-v2
+  (s/and
+   ::a-subcommand
+    ;::root-subcommand
+   ))
 
 ; A subcommand path.
 ; If empty, no subcommands and no globals
@@ -145,7 +170,6 @@
   (s/coll-of ::existing-string))
 
 ; A path exploded into the actual subcommad definitions
-
 (s/def ::subcommand-executable-path
   (s/coll-of ::any-subcommand
              :min-count 1))
