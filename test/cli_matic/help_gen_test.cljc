@@ -1,178 +1,177 @@
 (ns cli-matic.help-gen-test
   (:require [clojure.test :refer [is are deftest testing]]
-            #?(:clj [cli-matic.platform-macros :refer [try-catch-all]]
+            #?(:clj  [cli-matic.platform-macros :refer [try-catch-all]]
                :cljs [cli-matic.platform-macros :refer-macros [try-catch-all]])
             [cli-matic.help-gen :refer [generate-possible-mistypes
                                         generate-section
                                         generate-a-command
                                         generate-global-help
-                                        generate-subcmd-help]]))
+                                        generate-subcmd-help]]
+            [cli-matic.utils-v2 :as U2]))
 
-(comment
+(deftest generate-possible-mistypes-test
 
-  ;;;;; TODO - IT ALL ;;;;;
+  (are [w c a o]
+       (= o (generate-possible-mistypes w c a))
 
+    ;
+    "purchasse"
+    ["purchase" "purchasing" "add" "remove"]
+    [nil "PP" "A" "R"]
+    ["purchase" "purchasing"]))
 
-  (deftest generate-possible-mistypes-test
+(deftest generate-section-test
 
-    (are [w c a o]
-         (= o (generate-possible-mistypes w c a))
+  (are [t l o]
+       (= o (-> (generate-section t l)
+                flatten
+                vec))
 
-      ;
-      "purchasse"
-      ["purchase" "purchasing" "add" "remove"]
-      [nil "PP" "A" "R"]
-      ["purchase" "purchasing"]))
+    ; full
+    "tit"
+    ["a" "b"]
+    ["tit:" " a" " b" ""]
 
-  (deftest generate-section-test
+    ; empty
+    "tittel"
+    []
+    []))
 
-    (are [t l o]
-         (= o (-> (generate-section t l)
-                  flatten
-                  vec))
+(deftest generate-a-command-test
 
-      ; full
-      "tit"
-      ["a" "b"]
-      ["tit:" " a" " b" ""]
+  (are [c s d o]
+       (= o (generate-a-command {:command c :short s :description d}))
 
-      ; empty
-      "tittel"
-      []
-      []))
+    ; full
+    "tit" "t" ["a" "b"]
+    "  tit, t               a"
 
-  (deftest generate-a-command-test
+    ; linea singola
+    "tit" "t" "singel"
+    "  tit, t               singel"
 
-    (are [c s d o]
-         (= o (generate-a-command {:command c :short s :description d}))
+    ; no description
+    "tit" "t" []
+    "  tit, t               ?"))
 
-      ; full
-      "tit" "t" ["a" "b"]
-      "  tit, t               a"
+(defn dummy-cmd [_])
 
-      ; linea singola
-      "tit" "t" "singel"
-      "  tit, t               singel"
+(def CONFIGURATION-TOYCALC
+  {:app         {:command     "toycalc"
+                 :description "A command-line toy calculator"
+                 :version     "0.0.1"}
+   :global-opts [{:option  "base"
+                  :as      "The number base for output"
+                  :type    :int
+                  :default 10}]
+   :commands    [{:command     "add" :short "a"
+                  :description ["Adds two numbers together"
+                                ""
+                                "Looks great, doesn't it?"]
+                  :opts        [{:option "a1" :short "a" :env "AA" :as "First addendum" :type :int :default 0}
+                                {:option "a2" :short "b" :as "Second addendum" :type :int :default 0}]
+                  :runs        dummy-cmd}
+                 {:command     "sub" :short "s"
+                  :description "Subtracts parameter B from A"
+                  :opts        [{:option "pa" :short "a" :as "Parameter A" :type :int :default 0}
+                                {:option "pb" :short "b" :as "Parameter B" :type :int :default 0}]
+                  :runs        dummy-cmd}]})
 
-      ; no description
-      "tit" "t" []
-      "  tit, t               ?"))
+(def CONFIGURATION-TOYCALC-v2
+  (U2/convert-config-v1->v2 CONFIGURATION-TOYCALC))
 
-  (defn dummy-cmd [_])
+(deftest generate-global-help-test
 
-  (def CONFIGURATION-TOYCALC
-    {:app         {:command     "toycalc"
-                   :description "A command-line toy calculator"
-                   :version     "0.0.1"}
-     :global-opts [{:option  "base"
-                    :as      "The number base for output"
-                    :type    :int
-                    :default 10}]
-     :commands    [{:command     "add" :short "a"
-                    :description ["Adds two numbers together"
-                                  ""
-                                  "Looks great, doesn't it?"]
-                    :opts        [{:option "a1" :short "a" :env "AA" :as "First addendum" :type :int :default 0}
-                                  {:option "a2" :short "b" :as "Second addendum" :type :int :default 0}]
-                    :runs        dummy-cmd}
-                   {:command     "sub" :short "s"
-                    :description "Subtracts parameter B from A"
-                    :opts        [{:option "pa" :short "a" :as "Parameter A" :type :int :default 0}
-                                  {:option "pb" :short "b" :as "Parameter B" :type :int :default 0}]
-                    :runs        dummy-cmd}]})
+  (is
+   (= ["NAME:"
+       " toycalc - A command-line toy calculator"
+       ""
+       "USAGE:"
+       " toycalc [global-options] command [command options] [arguments...]"
+       ""
+       "VERSION:"
+       " 0.0.1"
+       ""
+       "COMMANDS:"
+       "   add, a               Adds two numbers together"
+       "   sub, s               Subtracts parameter B from A"
+       ""
+       "GLOBAL OPTIONS:"
+       "       --base N  10  The number base for output"
+       "   -?, --help"
+       ""]
+      (generate-global-help CONFIGURATION-TOYCALC-v2))))
 
-  (deftest generate-global-help-test
+(deftest generate-subcmd-help-test
 
-    (is
-     (= ["NAME:"
-         " toycalc - A command-line toy calculator"
-         ""
-         "USAGE:"
-         " toycalc [global-options] command [command options] [arguments...]"
-         ""
-         "VERSION:"
-         " 0.0.1"
-         ""
-         "COMMANDS:"
-         "   add, a               Adds two numbers together"
-         "   sub, s               Subtracts parameter B from A"
-         ""
-         "GLOBAL OPTIONS:"
-         "       --base N  10  The number base for output"
-         "   -?, --help"
-         ""]
-        (generate-global-help CONFIGURATION-TOYCALC))))
+  (is
+   (= ["NAME:"
+       " toycalc add - Adds two numbers together"
+       " "
+       " Looks great, doesn't it?"
+       ""
+       "USAGE:"
+       " toycalc [add|a] [command options] [arguments...]"
+       ""
+       "OPTIONS:"
+       "   -a, --a1 N  0  First addendum [$AA]"
+       "   -b, --a2 N  0  Second addendum"
+       "   -?, --help"
+       ""]
+      (generate-subcmd-help CONFIGURATION-TOYCALC-v2 ["toycalc" "add"])))
 
-  (deftest generate-subcmd-help-test
+  (is
+   (= ["NAME:"
+       " toycalc sub - Subtracts parameter B from A"
+       ""
+       "USAGE:"
+       " toycalc [sub|s] [command options] [arguments...]"
+       ""
+       "OPTIONS:"
+       "   -a, --pa N  0  Parameter A"
+       "   -b, --pb N  0  Parameter B"
+       "   -?, --help"
+       ""]
+      (generate-subcmd-help CONFIGURATION-TOYCALC-v2 ["toycalc" "sub"])))
 
-    (is
-     (= ["NAME:"
-         " toycalc add - Adds two numbers together"
-         " "
-         " Looks great, doesn't it?"
-         ""
-         "USAGE:"
-         " toycalc [add|a] [command options] [arguments...]"
-         ""
-         "OPTIONS:"
-         "   -a, --a1 N  0  First addendum [$AA]"
-         "   -b, --a2 N  0  Second addendum"
-         "   -?, --help"
-         ""]
-        (generate-subcmd-help CONFIGURATION-TOYCALC "add")))
+  (is
+   (= :ERR
+      (try-catch-all
+       (generate-subcmd-help CONFIGURATION-TOYCALC-v2 ["toycalc" "undefined-cmd"])
+       (fn [_] :ERR)))))
 
-    (is
-     (= ["NAME:"
-         " toycalc sub - Subtracts parameter B from A"
-         ""
-         "USAGE:"
-         " toycalc [sub|s] [command options] [arguments...]"
-         ""
-         "OPTIONS:"
-         "   -a, --pa N  0  Parameter A"
-         "   -b, --pb N  0  Parameter B"
-         "   -?, --help"
-         ""]
-        (generate-subcmd-help CONFIGURATION-TOYCALC "sub")))
+(def CONFIGURATION-POSITIONAL-TOYCALC
+  {:app         {:command     "toycalc"
+                 :description "A command-line toy calculator"
+                 :version     "0.0.1"}
+   :global-opts [{:option  "base"
+                  :as      "The number base for output"
+                  :type    :int
+                  :default 10}]
+   :commands    [{:command     "add" :short "a"
+                  :description ["Adds two numbers together"
+                                ""
+                                "Looks great, doesn't it?"]
+                  :opts        [{:option "a1" :short 0 :env "AA" :as "First addendum" :type :int :default 0}
+                                {:option "a2" :short 1 :as "Second addendum" :type :int :default 0}]
+                  :runs        dummy-cmd}]})
 
-    (is
-     (= :ERR
-        (try-catch-all
-         (generate-subcmd-help CONFIGURATION-TOYCALC "undefined-cmd")
-         (fn [_] :ERR)))))
+(def CONFIGURATION-POSITIONAL-TOYCALC-v2
+  (U2/convert-config-v1->v2 CONFIGURATION-POSITIONAL-TOYCALC))
 
-  (def CONFIGURATION-POSITIONAL-TOYCALC
-    {:app         {:command     "toycalc"
-                   :description "A command-line toy calculator"
-                   :version     "0.0.1"}
-     :global-opts [{:option  "base"
-                    :as      "The number base for output"
-                    :type    :int
-                    :default 10}]
-     :commands    [{:command     "add" :short "a"
-                    :description ["Adds two numbers together"
-                                  ""
-                                  "Looks great, doesn't it?"]
-                    :opts        [{:option "a1" :short 0 :env "AA" :as "First addendum" :type :int :default 0}
-                                  {:option "a2" :short 1 :as "Second addendum" :type :int :default 0}]
-                    :runs        dummy-cmd}]})
-
-  (deftest generate-subcmd-positional-test
-    (is
-     (= ["NAME:"
-         " toycalc add - Adds two numbers together"
-         " "
-         " Looks great, doesn't it?"
-         ""
-         "USAGE:"
-         " toycalc [add|a] [command options] a1 a2"
-         ""
-         "OPTIONS:"
-         "       --a1 N  0  First addendum [$AA]"
-         "       --a2 N  0  Second addendum"
-         "   -?, --help"
-         ""]
-        (generate-subcmd-help CONFIGURATION-POSITIONAL-TOYCALC "add"))))
-
-  ;;;;
-  )
+(deftest generate-subcmd-positional-test
+  (is
+   (= ["NAME:"
+       " toycalc add - Adds two numbers together"
+       " "
+       " Looks great, doesn't it?"
+       ""
+       "USAGE:"
+       " toycalc [add|a] [command options] a1 a2"
+       ""
+       "OPTIONS:"
+       "       --a1 N  0  First addendum [$AA]"
+       "       --a2 N  0  Second addendum"
+       "   -?, --help"
+       ""]
+      (generate-subcmd-help CONFIGURATION-POSITIONAL-TOYCALC-v2 ["toycalc" "add"]))))

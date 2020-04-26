@@ -12,6 +12,8 @@
             [cli-matic.specs :as S]
           ;  [cli-matic.platform :as P]
             [cli-matic.utils :as U]
+            [cli-matic.utils-v2 :as U2]
+
             [cli-matic.utils-candidates :as UB]
             [cli-matic.optionals :as OPT]))
 
@@ -46,12 +48,21 @@
   "To get the summary of options, we pass options to
   tools.cli parse-opts and an empty set of arguments.
   Parsing will fail but we get the :summary.
-  We then split it into a collection of lines."
+  We then split it into a collection of lines.
+
+
+
+  "
   [cfg subcmd]
-  (let [cli-cfg (U/rewrite-opts cfg subcmd)
+  (let [cli-cfg (U2/rewrite-opts cfg subcmd)
         options-str (:summary
                      (cli/parse-opts [] cli-cfg))]
     (str/split-lines options-str)))
+
+(s/fdef
+  get-options-summary
+  :args (s/cat :cfg ::S/climatic-cfg-v2
+               :subcmd ::S/subcommand-path))
 
 (defn get-first-rest-description-rows
   "get title and description of description rows"
@@ -93,7 +104,7 @@
 
 (s/fdef
   generate-global-command-list
-  :args (s/cat :commands ::S/commands)
+  :args (s/cat :commands ::S/subcommands)
   :ret  (s/coll-of string?))
 
 (defn generate-global-help
@@ -102,28 +113,28 @@
 
   [cfg]
 
-  (let [name (get-in cfg [:app :command])
-        version (get-in cfg [:app :version])
-        descr (get-in cfg [:app :description])
+  (let [name (get-in cfg [:command])
+        version (get-in cfg [:version])
+        descr (get-in cfg [:description])
         [desc0 descr-extra] (get-first-rest-description-rows descr)]
 
     (generate-sections
      [(str name " - " desc0) descr-extra]
      version
      (str name " [global-options] command [command options] [arguments...]")
-     (generate-global-command-list (:commands cfg))
+     (generate-global-command-list (:subcommands cfg))
      "GLOBAL OPTIONS"
-     (get-options-summary cfg nil))))
+     (get-options-summary cfg []))))
 
 (s/fdef
   generate-global-help
-  :args (s/cat :cfg ::S/climatic-cfg)
+  :args (s/cat :cfg ::S/climatic-cfg-v2)
   :ret (s/coll-of string?))
 
 (defn arg-list-with-positional-entries
   "Creates the `[arguments...]`"
   [cfg cmd]
-  (let [pos-args (sort-by :short (U/list-positional-parms cfg cmd))]
+  (let [pos-args (sort-by :short (U2/list-positional-parms cfg cmd))]
     (if (empty? pos-args)
       "[arguments...]"
       (str/join " " (map :option pos-args)))))
@@ -132,28 +143,34 @@
   "This is where we generate help for a specific subcommand."
   [cfg cmd]
 
-  (let [glname (get-in cfg [:app :command])
-        cmd-cfg (U/OLD__get-subcommand cfg cmd)
-        name (:command cmd-cfg)
-        shortname (:short cmd-cfg)
+  (let [cmd-cfg (U2/walk cfg cmd)
+        path (U2/as-canonical-path cmd-cfg)
+        path-but-last (reverse (rest (reverse path)))
+        fullname (U2/canonical-path-to-string path)
+        fullname-but-last (U2/canonical-path-to-string path-but-last)
+
+        this-cmd (last cmd-cfg)
+        name (:command this-cmd)
+        shortname (:short this-cmd)
         name-short (if shortname
                      (str "[" name "|" shortname "]")
                      name)
-        descr (:description cmd-cfg)
+        descr (:description this-cmd)
         [desc0 descr-extra] (get-first-rest-description-rows descr)
         arglist (arg-list-with-positional-entries cfg cmd)]
 
     (generate-sections
-     [(str glname " " name " - " desc0) descr-extra]
+     [(str fullname " - " desc0) descr-extra]
      nil
-     (str glname " " name-short " [command options] " arglist)
+     (str fullname-but-last " " name-short " [command options] " arglist)
      nil
      "OPTIONS"
      (get-options-summary cfg cmd))))
 
 (s/fdef
   generate-subcmd-help
-  :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
+  :args (s/cat :cfg ::S/climatic-cfg-v2
+               :cmd ::S/subcommand-path)
   :ret (s/coll-of string?))
 
 (def MISTYPE-ERR-RATIO 0.35)

@@ -14,6 +14,8 @@
 - Remove useless functions from core (any maybe otherwise as well)
 - Test: core_test: check-cfg-format
 - Test: help_gen_test: all
+- Core: assert-cfg-sanity
+
 
 ## TO TEST
 

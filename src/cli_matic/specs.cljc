@@ -26,8 +26,7 @@
 (s/def ::help   (s/or :none nil?
                       :some #{:HELP-GLOBAL :HELP-SUBCMD}))
 
-(s/def ::subcmd (s/or :none ::existing-string
-                      :nil  nil?))
+(s/def ::subcmd (s/coll-of ::existing-string))
 
 (s/def ::stderr (s/coll-of string?))
 
@@ -104,23 +103,10 @@
 
 (s/def ::climatic-cfg (s/keys :req-un [::app ::global-opts ::commands]))
 
-;; Parsing of options.
-(s/def ::subcommand (s/or :empty nil?
-                          :some ::existing-string))
-
-(s/def ::subcommand-def (s/or :empty nil?
-                              :some ::a-command))
-
-(s/def ::commandline map?) ;; contains :_arguments as vec
-
-(s/def ::parse-errors (s/or :oth #{:NONE :HELP-GLOBAL :HELP-SUBCMD}
-                            :err ::climatic-errors))
-
-(s/def ::error-text string?)
-
-(s/def ::lineParseResult (s/keys :req-un [::subcommand ::subcommand-def ::commandline ::parse-errors ::error-text]))
 
 ;; Return value of parsing with tools.cli
+
+
 (s/def ::parsedCliOpts map?)
 
 (s/def ::mapOfCliParams (s/map-of string? (s/or :empty nil? :str string?)))
@@ -164,3 +150,22 @@
   (s/coll-of ::any-subcommand
              :min-count 1))
 
+
+
+;; Parsing of options.
+
+
+(s/def ::subcommand (s/or :empty nil?
+                          :some ::existing-string))
+
+(s/def ::subcommand-def (s/or :empty nil?
+                              :some ::a-command))
+
+(s/def ::commandline map?) ;; contains :_arguments as vec
+
+(s/def ::parse-errors (s/or :oth #{:NONE :HELP-GLOBAL :HELP-SUBCMD}
+                            :err ::climatic-errors))
+
+(s/def ::error-text string?)
+
+(s/def ::lineParseResult (s/keys :req-un [::subcommand ::subcommand-path ::subcommand-def ::commandline ::parse-errors ::error-text]))

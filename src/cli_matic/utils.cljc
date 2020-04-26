@@ -251,7 +251,7 @@
   :args (s/cat :args ::S/climatic-cfg :sub string?)
   :ret string?)
 
-(defn get-options-for
+(defn OLD__get-options-for
   "Gets specific :options for a subcommand or,
   if nil, for global."
   [climatic-args subcmd]
@@ -273,7 +273,7 @@
    (mapv mk-cli-option climatic-opts)
    ["-?" "--help" "" :id :_help_trigger]))
 
-(defn rewrite-opts
+(defn OLD__rewrite-opts
   "
   Out of a cli-matic arg list, generates a set of
   options for tools.cli.
@@ -281,9 +281,9 @@
   to trigger display of helpness.
   "
   [climatic-args subcmd]
-  (cm-opts->cli-opts (get-options-for climatic-args subcmd)))
+  (cm-opts->cli-opts (OLD__get-options-for climatic-args subcmd)))
 
-(s/fdef rewrite-opts
+(s/fdef OLD__rewrite-opts
   :args (s/cat :args some?
                :mode (s/or :common nil?
                            :a-subcommand string?))
@@ -310,19 +310,6 @@
 (s/fdef
   positional-parms-from-opts
   :args (s/cat :opts ::S/opts)
-  :ret (s/coll-of ::S/climatic-option))
-
-(defn list-positional-parms
-  "Extracts all positional parameters from the configuration."
-  [cfg subcmd]
-  ;;(prn "CFG" cfg "Sub" subcmd)
-  (let [opts (get-options-for cfg subcmd)]
-    (positional-parms-from-opts opts)))
-
-(s/fdef
-  list-positional-parms
-  :args (s/cat :cfg ::S/climatic-cfg-v2
-               :cmd ::S/subcommand-path)
   :ret (s/coll-of ::S/climatic-option))
 
 (defn a-positional-parm

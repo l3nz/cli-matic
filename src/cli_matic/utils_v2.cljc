@@ -7,7 +7,6 @@
 
   "
   (:require
-   [cli-matic.help-gen :as H]
    [cli-matic.utils :as U]
    [cli-matic.specs :as S]
    [clojure.spec.alpha :as s]
@@ -48,8 +47,9 @@
 
 
 (def SETUP-DEFAULTS-v1
-  {:app {:global-help H/generate-global-help
-         :subcmd-help H/generate-subcmd-help}
+  {:app {; see help-gen/
+         :global-help nil
+         :subcmd-help nil}
    :global-opts []})
 
 (defn add-setup-defaults-v1
@@ -65,8 +65,8 @@
   [cfg]
 
   (cond
-    ; in v2, we have no ::global-opts
-    (nil? (:global-opts cfg))
+    ; in v2, we have no :app
+    (nil? (:app cfg))
     cfg
 
     ; else, we need to covert it
@@ -75,8 +75,8 @@
 
 (s/fdef cfg-v2
   :args (s/cat :cfg (s/or :v1 ::S/climatic-cfg
-                          :v2 ::S/climatic-cfg-v2)
-               :ret ::S/climatic-cfg-v2))
+                          :v2 ::S/climatic-cfg-v2))
+  :ret ::S/climatic-cfg-v2)
 
 (defn isRightCmd?
   "Check if this is the right command or not,
@@ -196,3 +196,35 @@
 
 (defn get-subcommand [cfg path]
   (last (walk cfg path)))
+
+(defn get-options-for
+  [cfg path]
+  (:opts (get-subcommand cfg path)))
+
+(defn rewrite-opts
+  "
+  Out of a cli-matic arg list, generates a set of
+  options for tools.cli.
+  It also adds in the -? and --help options
+  to trigger display of helpness.
+  "
+  [climatic-args subcmd]
+  (U/cm-opts->cli-opts (get-options-for climatic-args subcmd)))
+
+(s/fdef rewrite-opts
+  :args (s/cat :args ::S/climatic-cfg-v2
+               :path ::S/subcommand-path)
+  :ret some?)
+
+(defn list-positional-parms
+  "Extracts all positional parameters from the configuration."
+  [cfg subcmd]
+  ;;(prn "CFG" cfg "Sub" subcmd)
+  (let [opts (get-options-for cfg subcmd)]
+    (U/positional-parms-from-opts opts)))
+
+(s/fdef
+  list-positional-parms
+  :args (s/cat :cfg ::S/climatic-cfg-v2
+               :cmd ::S/subcommand-path)
+  :ret (s/coll-of ::S/climatic-option))

@@ -33,6 +33,7 @@
   (dissoc
    (parse-command-line args cfg)
    :subcommand
+   :subcommand-path
    :subcommand-def))
 
 (defn str-val

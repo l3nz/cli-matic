@@ -86,7 +86,8 @@
             SIMPLE-SUBCOMMAND-CFG-v2)
 
            {:commandline    {:bb 1 :cc 2 :dd 3 :_arguments []}
-            :subcommand     ["dummy" "foo"]
+            :subcommand     "dummy foo"
+            :subcommand-path     ["dummy" "foo"]
             :parse-errors   :NONE
             :error-text     ""
             :subcommand-def {:command     "foo"
@@ -103,12 +104,15 @@
 
 
     ;; short subcommand
+
+
     (is (= (parse-command-line
             ["--bb" "1" "f" "--cc" "2" "--dd" "3"]
             SIMPLE-SUBCOMMAND-CFG-v2)
 
            {:commandline    {:bb 1 :cc 2 :dd 3 :_arguments []}
-            :subcommand     ["dummy" "foo"]
+            :subcommand     "dummy foo"
+            :subcommand-path     ["dummy" "foo"]
             :parse-errors   :NONE
             :error-text     ""
             :subcommand-def {:command     "foo"
@@ -131,6 +135,7 @@
             :error-text     "Unknown sub-command: 'dummy unknown'."
             :parse-errors   :ERR-UNKNOWN-SUBCMD
             :subcommand     "dummy unknown"
+            :subcommand-path ["dummy" "unknown"]
             :subcommand-def nil}))))
 
 (deftest run-examples
@@ -157,13 +162,13 @@
 
       ; help sub-commands (incl short version)
       ["foo"  "-?"]
-      (->RV 0 :OK :HELP-SUBCMD "dummy foo" nil)
+      (->RV 0 :OK :HELP-SUBCMD ["dummy" "foo"] nil)
 
       ["bar" "--help"]
-      (->RV 0 :OK :HELP-SUBCMD "dummy bar" nil)
+      (->RV 0 :OK :HELP-SUBCMD ["dummy" "bar"] nil)
 
       ["f"  "-?"]
-      (->RV 0 :OK :HELP-SUBCMD "dummy foo" nil)
+      (->RV 0 :OK :HELP-SUBCMD ["dummy" "foo"] nil)
 
       ["rets"]
       (->RV 0 :OK nil nil nil))))
@@ -205,7 +210,7 @@
 
         ; help sub-commands (incl short version)
       ["--aa" "1" "foo" "-?"]
-      (->RV 0 :OK :HELP-SUBCMD "dummy foo" nil)
+      (->RV 0 :OK :HELP-SUBCMD ["dummy" "foo"] nil)
 
         ; error no global cmd
       ["foo" "--cc" "1"]
@@ -213,7 +218,7 @@
 
         ;; error no sub cmd
       ["--aa" "1" "foo" "--dd" "1"]
-      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "dummy foo" "Option error: Missing option: cc")
+      (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD ["dummy" "foo"] "Option error: Missing option: cc")
 
         ;; works
       ["--aa" "1" "foo" "--cc" "1"]
@@ -260,9 +265,6 @@
         {:option "a" :as "Parameter B" :type :int :default 0}]
        :option]
       :ERR)))
-
-
-
 
 (comment
   ;;; TO DO
@@ -488,11 +490,11 @@
 
       ; dd (local)
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "4" "--ee" "99"]
-    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "dummy foo" ["Option error: Spec failure for option 'dd'"])
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD ["dummy" "foo"] ["Option error: Spec failure for option 'dd'"])
 
       ; ee non 99 (validazione globale subcmd)
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "5" "--ee" "97"]
-    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "dummy foo" ["Option error: Spec failure for subcommand 'dummy foo'"])))
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD ["dummy" "foo"] ["Option error: Spec failure for subcommand 'dummy foo'"])))
 
   ;;;;;
 
@@ -531,7 +533,7 @@
      :retval -1
      :status :ERR-PARMS-SUBCMD
      :stderr ["Option error: Error while parsing option \"--kw zebrafufa\": clojure.lang.ExceptionInfo: Value 'zebrafufa' not allowed. Did you mean ':zebrafuffa'? {}"]
-     :subcmd "dummy foo"}))
+     :subcmd ["dummy" "foo"]}))
 
 
 ; =================================================================
@@ -603,7 +605,7 @@
     (->RV 0 :OK nil nil [])
 
     ["foo" "--flag" "2"]
-    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD "dummy foo"
+    (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD ["dummy" "foo"]
           "Option error: Error while parsing option \"--flag 2\": clojure.lang.ExceptionInfo: Unsupported flag value {:flag \"2\"}")
 
     ["foo" "--bar" "--flag" "Y"]
@@ -620,7 +622,8 @@
     {:commandline    {:_arguments [] :bar true :flag false}
      :error-text     ""
      :parse-errors   :NONE
-     :subcommand     ["dummy" "foo"]
+     :subcommand      "dummy foo"
+     :subcommand-path     ["dummy" "foo"]
      :subcommand-def {:command     "foo"
                       :description "I am function foo"
                       :opts        [{:as      "bar"
@@ -638,7 +641,8 @@
     {:commandline    {:_arguments [] :bar false :flag false}
      :error-text     ""
      :parse-errors   :NONE
-     :subcommand     ["dummy" "foo"]
+     :subcommand      "dummy foo"
+     :subcommand-path     ["dummy" "foo"]
      :subcommand-def {:command     "foo"
                       :description "I am function foo"
                       :opts        [{:as      "bar"
@@ -656,7 +660,8 @@
     {:commandline    {:_arguments [] :bar false :flag true}
      :error-text     ""
      :parse-errors   :NONE
-     :subcommand     ["dummy" "foo"]
+     :subcommand      "dummy foo"
+     :subcommand-path     ["dummy" "foo"]
      :subcommand-def {:command     "foo"
                       :description "I am function foo"
                       :opts        [{:as      "bar"
@@ -674,7 +679,8 @@
     {:commandline    {:_arguments [] :bar false :flag false}
      :error-text     ""
      :parse-errors   :NONE
-     :subcommand     ["dummy" "foo"]
+     :subcommand      "dummy foo"
+     :subcommand-path     ["dummy" "foo"]
      :subcommand-def {:command     "foo"
                       :description "I am function foo"
                       :opts        [{:as      "bar"
