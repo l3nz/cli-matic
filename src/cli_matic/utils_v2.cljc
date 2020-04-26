@@ -5,12 +5,10 @@
   - Convert commands v1 to v2 (fully nested).
   - Accessors for data in a nested structure
 
-
-
-
-
   "
   (:require
+   [cli-matic.help-gen :as H]
+   [cli-matic.utils :as U]
    [cli-matic.specs :as S]
    [clojure.spec.alpha :as s]
    #?(:clj  [cli-matic.platform-macros :refer [try-catch-all]]
@@ -39,6 +37,46 @@
 (s/fdef convert-config-v1->v2
   :args (s/cat :cmdv1 ::S/climatic-cfg)
   :ret ::S/climatic-cfg-v2)
+
+
+
+
+
+;
+;
+;
+
+
+(def SETUP-DEFAULTS-v1
+  {:app {:global-help H/generate-global-help
+         :subcmd-help H/generate-subcmd-help}
+   :global-opts []})
+
+(defn add-setup-defaults-v1
+  "Adds all elements that need to be in the setup spec
+  but we allow the caller not specify explicitly."
+  [supplied-setup]
+  (U/deep-merge SETUP-DEFAULTS-v1 supplied-setup))
+
+(defn cfg-v2
+  " Converts a config object into v2, if not already v2.
+
+  "
+  [cfg]
+
+  (cond
+    ; in v2, we have no ::global-opts
+    (nil? (:global-opts cfg))
+    cfg
+
+    ; else, we need to covert it
+    :else
+    (convert-config-v1->v2 (add-setup-defaults-v1 cfg))))
+
+(s/fdef cfg-v2
+  :args (s/cat :cfg (s/or :v1 ::S/climatic-cfg
+                          :v2 ::S/climatic-cfg-v2)
+               :ret ::S/climatic-cfg-v2))
 
 (defn isRightCmd?
   "Check if this is the right command or not,

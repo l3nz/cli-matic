@@ -9,8 +9,7 @@
                                     ->RV
                                     assert-unique-values
                                     assert-cfg-sanity
-                                    parse-cmds-with-defaults
-                                    add-setup-defaults]]
+                                    parse-cmds-with-defaults]]
             [cli-matic.utils-v2 :as U2]))
 
 (defn cmd_foo [& opts] nil)
@@ -104,8 +103,6 @@
 
 
     ;; short subcommand
-
-
     (is (= (parse-command-line
             ["--bb" "1" "f" "--cc" "2" "--dd" "3"]
             SIMPLE-SUBCOMMAND-CFG-v2)
@@ -265,8 +262,6 @@
       :ERR)))
 
 
-;;;; TODO
-;;;; Do not forget check for positional arguments in global
 
 
 (comment
@@ -278,7 +273,7 @@
            (= o
               (try-catch-all
                (-> i
-                   add-setup-defaults
+                   U2/add-setup-defaults-v1
                    assert-cfg-sanity)
                (fn [_]
                ;(prn e)

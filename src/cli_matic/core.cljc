@@ -686,10 +686,11 @@
   On exceptions, it will raise an exception message.
 
   "
-
   [setup args]
-  (let [{:keys [subcommand subcommand-def parse-errors error-text commandline]}
-        (parse-command-line args setup)]
+  (let [args-not-null (if (nil? args) [] args)
+
+        {:keys [subcommand subcommand-def parse-errors error-text commandline]}
+        (parse-command-line args-not-null setup)]
     ;; maybe there was an error parsing
     (condp = parse-errors
       :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in CLI-matic configuration.")
@@ -703,17 +704,6 @@
                               (str "Option error: " error-text))
       :NONE (invoke-subcmd subcommand-def commandline))))
 
-(def SETUP-DEFAULTS
-  {:app {:global-help H/generate-global-help
-         :subcmd-help H/generate-subcmd-help}
-   :global-opts []})
-
-(defn add-setup-defaults
-  "Adds all elements that need to be in the setup spec
-  but we allow the caller not specify explicitly."
-  [supplied-setup]
-  (U/deep-merge SETUP-DEFAULTS supplied-setup))
-
 (defn run-cmd
   "This is the actual function that is executed.
   It wraps [[run-cmd*]] and then does the printing
@@ -723,9 +713,8 @@
   a REPL (well, you technically can, but...).
   "
   [args supplied-setup]
-  (let [setup (add-setup-defaults supplied-setup)
-        {:keys [help stderr subcmd retval]}
-        (run-cmd* setup (if (nil? args) [] args))]
+  (let [setup (U2/cfg-v2 supplied-setup)
+        {:keys [help stderr subcmd retval]} (run-cmd* setup args)]
     (when (seq stderr)
       (println
        (U/asString ["** ERROR: **" stderr "" ""])))
