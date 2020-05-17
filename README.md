@@ -7,9 +7,12 @@ Clojure is not good for scripting?).
 	 	-----------------------------
 	 	I could definitely use a few helping hands in moving forward
 	 	with version 0.4 - no rocket science, just 5 minutes of
-	 	your time. 
-	 	See the README of the development branch here: https://github.com/l3nz/cli-matic/tree/b69_nested
+	 	your time. Just try out the snapshot....
 	 	Thank you!
+
+See the README of the development branch here: https://github.com/l3nz/cli-matic/tree/b69_nested
+
+---
 
 
 **Especially when scripting, you should write interesting code, not boilerplate.** Command line apps are usually so tiny that there is absolutely no reason why your code should not be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
