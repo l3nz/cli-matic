@@ -1,5 +1,24 @@
 # CLI-matic (branch bug 69)
 
+## Want to help develop the new generation of CLI-matic?
+
+This branch is dedicated to version 0.4.0, a version having aribtrarily nested parameters - see https://github.com/l3nz/cli-matic/issues/69
+
+As this required quite a bit of clean-up in existing code, my first goal is to only have internal changes in a format that may support hierarchical parameter nesting, and automatically convert parameters as documented in older scripts to the new format. When this works, we'll expand the hyerarchical thing. Now the code is mostly done, but I need your help in making sure there are no surprises.
+
+As a side effect, for now I'm not merging anything into version master until 0.4 is stable.
+
+**How you can help:**  just add the current snapshot of 0.4 to your scripts, and make sure they (still) work. Make no other changes. If you find any regressions, please open a bug here (and revert to 0.3 until fixed). That's all there is to do. **Thank you!**
+
+## Open bugs to 0.4
+
+- (none yet)
+
+
+
+
+## Same as always....
+
 Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
 Clojure is not good for scripting?).
 
