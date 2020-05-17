@@ -10,6 +10,17 @@ As a side effect, for now I'm not merging anything into version master until 0.4
 
 **How you can help:**  just add the current snapshot of 0.4 to your scripts, and make sure they (still) work. Make no other changes. If you find any regressions, please open a bug here (and revert to 0.3 until fixed). That's all there is to do. **Thank you!**
 
+Just use:
+
+Leiningen/Boot
+
+		[cli-matic "0.4.0.1-SNAPSHOT"]
+
+Clojure CLI/deps.edn
+
+		cli-matic {:mvn/version "0.4.0.1-SNAPSHOT"}
+
+
 ## Open bugs to 0.4
 
 - (none yet)
