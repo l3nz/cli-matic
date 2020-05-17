@@ -3,6 +3,15 @@
 Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
 Clojure is not good for scripting?).
 
+	 	Dude, can you spare a second?
+	 	-----------------------------
+	 	I could definitely use a few helping hands in moving forward
+	 	with version 0.4 - no rocket science, just 5 minutes of
+	 	your time. 
+	 	See the README of the development branch here: https://github.com/l3nz/cli-matic/tree/b69_nested
+	 	Thank you!
+
+
 **Especially when scripting, you should write interesting code, not boilerplate.** Command line apps are usually so tiny that there is absolutely no reason why your code should not be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
 
 CLI-matic works with GraalVM, giving unbeatable performance for stand-alone command-line apps that do not even need a Java installation - see [Command-line apps with Clojure and GraalVM: 300x better start-up times](https://www.astrecipes.net/blog/2018/07/20/cmd-line-apps-with-clojure-and-graalvm/).
@@ -326,3 +335,4 @@ By using this software in any fashion, you are agreeing to be bound by
 the terms of this license.
 
 You must not remove this notice, or any other, from this software.
+	
