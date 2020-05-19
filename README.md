@@ -21,10 +21,7 @@ Clojure CLI/deps.edn
 		cli-matic {:mvn/version "0.4.0.1-SNAPSHOT"}
 
 
-## Open bugs to 0.4
-
-- (none yet)
-
+The current state of 0.4.0 can be found at https://github.com/l3nz/cli-matic/milestone/1
 
 
 
