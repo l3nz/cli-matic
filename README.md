@@ -1,46 +1,7 @@
-# CLI-matic (branch bug 69)
-
-## Want to help develop the new generation of CLI-matic?
-
-This branch is dedicated to version 0.4.0, a version having aribtrarily nested parameters - see https://github.com/l3nz/cli-matic/issues/69
-
-As this required quite a bit of clean-up in existing code, my first goal is to only have internal changes in a format that may support hierarchical parameter nesting, and automatically convert parameters as documented in older scripts to the new format. When this works, we'll expand the hyerarchical thing. Now the code is mostly done, but I need your help in making sure there are no surprises.
-
-As a side effect, for now I'm not merging anything into version master until 0.4 is stable.
-
-**How you can help:**  just add the current snapshot of 0.4 to your scripts, and make sure they (still) work. Make no other changes. If you find any regressions, please open a bug here (and revert to 0.3 until fixed). That's all there is to do. **Thank you!**
-
-Just use:
-
-Leiningen/Boot
-
-		[cli-matic "0.4.0.1-SNAPSHOT"]
-
-Clojure CLI/deps.edn
-
-		cli-matic {:mvn/version "0.4.0.1-SNAPSHOT"}
-
-
-The current state of 0.4.0 can be found at https://github.com/l3nz/cli-matic/milestone/1
-
-
-
-## Same as always....
+# CLI-matic 
 
 Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
 Clojure is not good for scripting?).
-
-	 	Dude, can you spare a second?
-	 	-----------------------------
-	 	I could definitely use a few helping hands in moving forward
-	 	with version 0.4 - no rocket science, just 5 minutes of
-	 	your time. Just try out the snapshot....
-	 	Thank you!
-
-See the README of the development branch here: https://github.com/l3nz/cli-matic/tree/b69_nested
-
----
-
 
 **Especially when scripting, you should write interesting code, not boilerplate.** Command line apps are usually so tiny that there is absolutely no reason why your code should not be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
 

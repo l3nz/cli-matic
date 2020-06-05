@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# 0.4.0 - 2020-06-05
+###  Changes
+* Fixes #69 - Recursively nested sub-commands
+
 # 0.3.12 - xxxx-xx-xx
 ### Changes
 * Fixes #88 - Tests now pass in a timezone-independent way (tks lread)
