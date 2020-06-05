@@ -1,12 +1,13 @@
 (ns cli-matic.help-gen-test
   (:require [clojure.test :refer [is are deftest testing]]
-            #?(:clj [cli-matic.platform-macros :refer [try-catch-all]]
+            #?(:clj  [cli-matic.platform-macros :refer [try-catch-all]]
                :cljs [cli-matic.platform-macros :refer-macros [try-catch-all]])
             [cli-matic.help-gen :refer [generate-possible-mistypes
                                         generate-section
                                         generate-a-command
                                         generate-global-help
-                                        generate-subcmd-help]]))
+                                        generate-subcmd-help]]
+            [cli-matic.utils-v2 :as U2]))
 
 (deftest generate-possible-mistypes-test
 
@@ -70,11 +71,14 @@
                   :opts        [{:option "a1" :short "a" :env "AA" :as "First addendum" :type :int :default 0}
                                 {:option "a2" :short "b" :as "Second addendum" :type :int :default 0}]
                   :runs        dummy-cmd}
-                 {:command     "sub"  :short "s"
+                 {:command     "sub" :short "s"
                   :description "Subtracts parameter B from A"
                   :opts        [{:option "pa" :short "a" :as "Parameter A" :type :int :default 0}
                                 {:option "pb" :short "b" :as "Parameter B" :type :int :default 0}]
                   :runs        dummy-cmd}]})
+
+(def CONFIGURATION-TOYCALC-v2
+  (U2/convert-config-v1->v2 CONFIGURATION-TOYCALC))
 
 (deftest generate-global-help-test
 
@@ -96,7 +100,7 @@
        "       --base N  10  The number base for output"
        "   -?, --help"
        ""]
-      (generate-global-help CONFIGURATION-TOYCALC))))
+      (generate-global-help CONFIGURATION-TOYCALC-v2))))
 
 (deftest generate-subcmd-help-test
 
@@ -114,7 +118,7 @@
        "   -b, --a2 N  0  Second addendum"
        "   -?, --help"
        ""]
-      (generate-subcmd-help CONFIGURATION-TOYCALC "add")))
+      (generate-subcmd-help CONFIGURATION-TOYCALC-v2 ["toycalc" "add"])))
 
   (is
    (= ["NAME:"
@@ -128,12 +132,12 @@
        "   -b, --pb N  0  Parameter B"
        "   -?, --help"
        ""]
-      (generate-subcmd-help CONFIGURATION-TOYCALC "sub")))
+      (generate-subcmd-help CONFIGURATION-TOYCALC-v2 ["toycalc" "sub"])))
 
   (is
    (= :ERR
       (try-catch-all
-       (generate-subcmd-help CONFIGURATION-TOYCALC "undefined-cmd")
+       (generate-subcmd-help CONFIGURATION-TOYCALC-v2 ["toycalc" "undefined-cmd"])
        (fn [_] :ERR)))))
 
 (def CONFIGURATION-POSITIONAL-TOYCALC
@@ -152,6 +156,9 @@
                                 {:option "a2" :short 1 :as "Second addendum" :type :int :default 0}]
                   :runs        dummy-cmd}]})
 
+(def CONFIGURATION-POSITIONAL-TOYCALC-v2
+  (U2/convert-config-v1->v2 CONFIGURATION-POSITIONAL-TOYCALC))
+
 (deftest generate-subcmd-positional-test
   (is
    (= ["NAME:"
@@ -167,4 +174,4 @@
        "       --a2 N  0  Second addendum"
        "   -?, --help"
        ""]
-      (generate-subcmd-help CONFIGURATION-POSITIONAL-TOYCALC "add"))))
+      (generate-subcmd-help CONFIGURATION-POSITIONAL-TOYCALC-v2 ["toycalc" "add"]))))

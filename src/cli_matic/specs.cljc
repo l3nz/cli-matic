@@ -26,8 +26,7 @@
 (s/def ::help   (s/or :none nil?
                       :some #{:HELP-GLOBAL :HELP-SUBCMD}))
 
-(s/def ::subcmd (s/or :none ::existing-string
-                      :nil  nil?))
+(s/def ::subcmd (s/coll-of ::existing-string))
 
 (s/def ::stderr (s/coll-of string?))
 
@@ -104,7 +103,82 @@
 
 (s/def ::climatic-cfg (s/keys :req-un [::app ::global-opts ::commands]))
 
+(s/def ::global-help ifn?)
+(s/def ::subcmd-help ifn?)
+
+
+
+;; Return value of parsing with tools.cli
+
+
+(s/def ::parsedCliOpts map?)
+
+(s/def ::mapOfCliParams (s/map-of string? (s/or :empty nil? :str string?)))
+
+;
+; b69
+;
+
+
+(s/def ::any-subcommand (s/keys :req-un [::command ::opts]
+                                :opt-un [::short ::description ::spec]))
+
+; root has a version
+; root might have help-gen; if they exist, they are ifn?
+(s/def ::root-subcommand
+  (s/keys :req-un [::version]
+          :opt-un [::on-shutdown ::global-help ::subcmd-help]))
+
+(defn no-positional-opts
+  "Makes sure that this subcommand does not have
+  any positional argument in its opts"
+
+  [any-subcmd]
+  (let [o (:opts any-subcmd)]
+    (empty?
+     (filter int? o))))
+
+(s/def ::branch-subcommand
+  (s/and
+   ::any-subcommand
+   (s/keys :req-un [::subcommands])
+   ; no positional arguments
+   no-positional-opts))
+
+(s/def ::leaf-subcommand
+  (s/and
+   ::any-subcommand
+   (s/keys :req-un [::runs])))
+
+(s/def ::a-subcommand (s/or :branch ::branch-subcommand
+                            :leaf ::leaf-subcommand))
+
+(s/def ::subcommands (s/coll-of
+                      ::a-subcommand))
+
+(s/def ::climatic-cfg-v2
+  (s/and
+   ::a-subcommand
+    ;::root-subcommand
+   ))
+
+; A subcommand path.
+; If empty, no subcommands and no globals
+; Each member is the canonical name of a subcommand.
+; Each member but the last is of type ::branch-subcommand
+(s/def ::subcommand-path
+  (s/coll-of ::existing-string))
+
+; A path exploded into the actual subcommad definitions
+(s/def ::subcommand-executable-path
+  (s/coll-of ::any-subcommand
+             :min-count 1))
+
+
+
 ;; Parsing of options.
+
+
 (s/def ::subcommand (s/or :empty nil?
                           :some ::existing-string))
 
@@ -118,9 +192,4 @@
 
 (s/def ::error-text string?)
 
-(s/def ::lineParseResult (s/keys :req-un [::subcommand ::subcommand-def ::commandline ::parse-errors ::error-text]))
-
-;; Return value of parsing with tools.cli
-(s/def ::parsedCliOpts map?)
-
-(s/def ::mapOfCliParams (s/map-of string? (s/or :empty nil? :str string?)))
+(s/def ::lineParseResult (s/keys :req-un [::subcommand ::subcommand-path ::subcommand-def ::commandline ::parse-errors ::error-text]))

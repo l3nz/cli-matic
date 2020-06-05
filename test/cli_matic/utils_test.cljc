@@ -85,7 +85,7 @@
 
 
 ;
-; cli-mattic specific
+; cli-matic specific
 ;
 
 
