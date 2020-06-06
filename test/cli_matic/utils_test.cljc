@@ -6,7 +6,9 @@
                                      all-subcommands-aliases
                                      all-subcommands
                                      canonicalize-subcommand
-                                     mk-cli-option]]
+                                     mk-cli-option
+                                     exit! exception-info]]
+            [cli-matic.platform-macros :refer [try-catch-all]]
             [cli-matic.platform :as P]
             [cli-matic.presets :as PR]))
 
@@ -178,3 +180,18 @@
       ["-f" "--flag F" "A flag option"
        :parse-fn PR/parseFlag
        :default false])))
+
+(deftest test-exit!
+
+  (is (= ["Ciao" 23]
+         (try-catch-all
+          (exit! "Ciao" 23)
+          (fn [t]
+            (exception-info t)))))
+
+  (is (= -1
+         (last (try-catch-all
+                (/ 10 0)
+                (fn [t]
+                  (exception-info t)))))))
+

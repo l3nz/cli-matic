@@ -357,5 +357,29 @@
                :args sequential?)
   :ret ::S/mapOfCliParams)
 
+(defn exit!
+  "Raises an exception that will print a message
+  without the stack trace. Can specify an optional
+  exit code; if not specified, zero."
+  [message errorcode]
+  (throw
+   (ex-info (str "**CLI-MATIC**:" message)
+            {:cli-matic 1973
+             :message   message
+             :errorcode errorcode})))
 
+(defn exception-info
+  "Checks the exception; if it was created using [[exit!]]
+   we get that data out; if not, standard exception.
 
+   Returns [message exit-code].
+  "
+  [e]
+  (let [data (ex-data e)]
+    (cond
+      (= 1973 (:cli-matic data))
+      [(:message data) (:errorcode data)]
+
+      :else
+      [(str "Exception: "
+            (with-out-str (println e))) -1])))

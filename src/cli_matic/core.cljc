@@ -687,9 +687,8 @@
        :else        (->RV 0 :OK nil nil nil)))
 
    (fn [t]
-     (->RV -1 :EXCEPTION nil nil
-           (str "JVM Exception: "
-                (with-out-str (println t)))))))
+     (let [[msg exitcode] (U/exception-info t)]
+       (->RV exitcode :EXCEPTION nil nil msg)))))
 
 (defn run-cmd*
   "
