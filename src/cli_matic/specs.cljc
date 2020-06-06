@@ -101,7 +101,8 @@
 
 (s/def ::commands (s/coll-of ::a-command))
 
-(s/def ::climatic-cfg (s/keys :req-un [::app ::global-opts ::commands]))
+(s/def ::climatic-cfg-classic
+  (s/keys :req-un [::app ::global-opts ::commands]))
 
 (s/def ::global-help ifn?)
 (s/def ::subcmd-help ifn?)
@@ -156,7 +157,7 @@
 (s/def ::subcommands (s/coll-of
                       ::a-subcommand))
 
-(s/def ::climatic-cfg-v2
+(s/def ::climatic-cfg
   (s/and
    ::a-subcommand
     ;::root-subcommand

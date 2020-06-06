@@ -34,8 +34,8 @@
    :subcommands (get-in cmd_v1 [:commands])})
 
 (s/fdef convert-config-v1->v2
-  :args (s/cat :cmdv1 ::S/climatic-cfg)
-  :ret ::S/climatic-cfg-v2)
+  :args (s/cat :cmdv1 ::S/climatic-cfg-classic)
+  :ret ::S/climatic-cfg)
 
 
 
@@ -74,9 +74,9 @@
     (convert-config-v1->v2 (add-setup-defaults-v1 cfg))))
 
 (s/fdef cfg-v2
-  :args (s/cat :cfg (s/or :v1 ::S/climatic-cfg
-                          :v2 ::S/climatic-cfg-v2))
-  :ret ::S/climatic-cfg-v2)
+  :args (s/cat :cfg (s/or :v1 ::S/climatic-cfg-classic
+                          :v2 ::S/climatic-cfg))
+  :ret ::S/climatic-cfg)
 
 (defn isRightCmd?
   "Check if this is the right command or not,
@@ -86,7 +86,6 @@
       (= (:short cfg) command-or-short-name)))
 
 (defn walk
-  [cfg path]
   "
   Walks a path through a configuration object,
   and returns a list of all elements,
@@ -105,6 +104,7 @@
   into a path with [[as-canonical-path]].
 
   "
+  [cfg path]
   (cond
 
     ; No path: return a vector with the only option
@@ -142,7 +142,7 @@
 
 (s/fdef walk
   :args (s/cat
-         :cfg ::S/climatic-cfg-v2
+         :cfg ::S/climatic-cfg
          :path ::S/subcommand-path)
   :ret ::S/subcommand-executable-path)
 
@@ -161,7 +161,7 @@
 
 (s/fdef can-walk?
   :args (s/cat
-         :cfg ::S/climatic-cfg-v2
+         :cfg ::S/climatic-cfg
          :path ::S/subcommand-path)
   :ret boolean?)
 
@@ -212,7 +212,7 @@
   (U/cm-opts->cli-opts (get-options-for climatic-args subcmd)))
 
 (s/fdef rewrite-opts
-  :args (s/cat :args ::S/climatic-cfg-v2
+  :args (s/cat :args ::S/climatic-cfg
                :path ::S/subcommand-path)
   :ret some?)
 
@@ -225,6 +225,6 @@
 
 (s/fdef
   list-positional-parms
-  :args (s/cat :cfg ::S/climatic-cfg-v2
+  :args (s/cat :cfg ::S/climatic-cfg
                :cmd ::S/subcommand-path)
   :ret (s/coll-of ::S/climatic-option))

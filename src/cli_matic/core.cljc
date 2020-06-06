@@ -46,8 +46,8 @@
 
 (s/fdef
   mkError
-  :args (s/cat :config (s/or :cfg_v1 ::S/climatic-cfg
-                             :cfg_v2 ::S/climatic-cfg-v2)
+  :args (s/cat :config (s/or :cfg_v1 ::S/climatic-cfg-classic
+                             :cfg_v2 ::S/climatic-cfg)
                :subcmd (s/or :s ::S/subcommand-path)
                :err    (s/or :err ::S/climatic-errors
                              :help ::S/help)
@@ -250,62 +250,62 @@
                :parsed-results map?
                :type string?))
 
-(defn OLD__check-specs-on-parsed-args
-  "As a last step, before we call the subcommand itself, we assert
-  that any spec that was actually defined is passed.
-
-  We just care about the first spec that fails, so we can get a
-  lazy list of failures and get the first of them (or nil).
-  "
-
-  [parsed-args canonical-subcommand config]
-
-  (let [globals-opts (U/OLD__get-options-for config nil)
-        subcmd-def  (U/OLD__get-subcommand config canonical-subcommand)
-        subcmd-opts  (U/OLD__get-options-for config canonical-subcommand)
-
-        ; if we have no subcmd spec, we just call (true) instead
-        subcmd-spec  (get subcmd-def :spec (constantly true))
-
-        ;
-        ;_ (prn "SUB: globals" globals-opts)
-        ;_ (prn "SUB: def" subcmd-opts)
-        ;_ (prn "Spec for subcmd " subcmd-spec)
-
-        failing-global-spec (first (check-specs-on-parameters globals-opts parsed-args "global option"))
-        failing-subcmd-spec (first (check-specs-on-parameters subcmd-opts parsed-args "option"))
-        failing-subcmd-general (check-one-spec canonical-subcommand "subcommand" subcmd-spec parsed-args)
-
-        ; 
-        ;_ (prn "Failing global" failing-global-spec)
-        ;_ (prn "Failing local" failing-subcmd-spec)
-        ;_ (prn "Failing total" failing-subcmd-general))
-        ]
-
-    (cond
-      (some? failing-global-spec)
-      (mkError config nil :ERR-PARMS-GLOBAL failing-global-spec)
-
-      (some? failing-subcmd-spec)
-      (mkError config canonical-subcommand :ERR-PARMS-SUBCMD failing-subcmd-spec)
-
-      (some? failing-subcmd-general)
-      (mkError config canonical-subcommand :ERR-PARMS-SUBCMD failing-subcmd-general)
-
-      :else
-      ; all went well.... phew!
-      {:subcommand     canonical-subcommand
-       :subcommand-def subcmd-def
-       :commandline    parsed-args
-       :parse-errors    :NONE
-       :error-text     ""})))
-
-(s/fdef
-  OLD__check-specs-on-parsed-args
-  :args (s/cat :parsed-args map?
-               :canonical-subcommand string?
-               :config ::S/climatic-cfg)
-  :ret ::S/lineParseResult)
+;(defn OLD__check-specs-on-parsed-args
+;  "As a last step, before we call the subcommand itself, we assert
+;  that any spec that was actually defined is passed.
+;
+;  We just care about the first spec that fails, so we can get a
+;  lazy list of failures and get the first of them (or nil).
+;  "
+;
+;  [parsed-args canonical-subcommand config]
+;
+;  (let [globals-opts (U/OLD__get-options-for config nil)
+;        subcmd-def  (U/OLD__get-subcommand config canonical-subcommand)
+;        subcmd-opts  (U/OLD__get-options-for config canonical-subcommand)
+;
+;        ; if we have no subcmd spec, we just call (true) instead
+;        subcmd-spec  (get subcmd-def :spec (constantly true))
+;
+;        ;
+;        ;_ (prn "SUB: globals" globals-opts)
+;        ;_ (prn "SUB: def" subcmd-opts)
+;        ;_ (prn "Spec for subcmd " subcmd-spec)
+;
+;        failing-global-spec (first (check-specs-on-parameters globals-opts parsed-args "global option"))
+;        failing-subcmd-spec (first (check-specs-on-parameters subcmd-opts parsed-args "option"))
+;        failing-subcmd-general (check-one-spec canonical-subcommand "subcommand" subcmd-spec parsed-args)
+;
+;        ;
+;        ;_ (prn "Failing global" failing-global-spec)
+;        ;_ (prn "Failing local" failing-subcmd-spec)
+;        ;_ (prn "Failing total" failing-subcmd-general))
+;        ]
+;
+;    (cond
+;      (some? failing-global-spec)
+;      (mkError config nil :ERR-PARMS-GLOBAL failing-global-spec)
+;
+;      (some? failing-subcmd-spec)
+;      (mkError config canonical-subcommand :ERR-PARMS-SUBCMD failing-subcmd-spec)
+;
+;      (some? failing-subcmd-general)
+;      (mkError config canonical-subcommand :ERR-PARMS-SUBCMD failing-subcmd-general)
+;
+;      :else
+;      ; all went well.... phew!
+;      {:subcommand     canonical-subcommand
+;       :subcommand-def subcmd-def
+;       :commandline    parsed-args
+;       :parse-errors    :NONE
+;       :error-text     ""})))
+;
+;(s/fdef
+;  OLD__check-specs-on-parsed-args
+;  :args (s/cat :parsed-args map?
+;               :canonical-subcommand string?
+;               :config ::S/climatic-cfg)
+;  :ret ::S/lineParseResult)
 
 (defn parse-command-line
   "
@@ -355,185 +355,194 @@
             curr-path-str (U2/canonical-path-to-string curr-path)
             global-node?     (not (U2/is-runnable? curr-xpath))
             options       (:opts curr-subcmd)
-            general-spec  (:spec curr-subcmd)]
+            general-spec  (:spec curr-subcmd)
 
-        (let [parsed-opts (if global-node?
+            parsed-opts (if global-node?
                             ; global: no positions
-                            (parse-cmds-with-defaults options unparsed-argv true P/read-env)
+                          (parse-cmds-with-defaults options unparsed-argv true P/read-env)
                             ; leaf: use positions
-                            (parse-cmds-with-positions options unparsed-argv P/read-env))
+                          (parse-cmds-with-positions options unparsed-argv P/read-env))
 
               ; do we miss any mandatory option?
-              missing-opts (errors-for-missing-mandatory-args options parsed-opts {})
+            missing-opts (errors-for-missing-mandatory-args options parsed-opts {})
               ; destructure results
-              {parse-errs :errors parsed-opts :options parse-leftover-args :arguments} parsed-opts
+            {parse-errs :errors parsed-opts :options parse-leftover-args :arguments} parsed-opts
               ; if global, the subcommand to process next....
-              next-subcommand (first parse-leftover-args)
+            next-subcommand (first parse-leftover-args)
               ; ...and its parameters
-              next-subcommand-argv (vec (rest parse-leftover-args))
+            next-subcommand-argv (vec (rest parse-leftover-args))
               ; the new path that will be run
-              next-path  (conj curr-path next-subcommand)
+            next-path  (conj curr-path next-subcommand)
               ; the total set of parsed options: the ones we got now plus any previous ones
-              total-parsed-opts (merge current-parsed-opts parsed-opts)
+            total-parsed-opts (merge current-parsed-opts parsed-opts)
 
               ; the (first) failing spec for a parameter we just extracted
-              failing-param-spec (when (empty? parse-errs)
-                                   (first
-                                    (check-specs-on-parameters options parsed-opts
-                                                               (if global-node?
-                                                                 "global option"
-                                                                 "option"))))
+            failing-param-spec (when (empty? parse-errs)
+                                 (first
+                                  (check-specs-on-parameters options parsed-opts
+                                                             (if global-node?
+                                                               "global option"
+                                                               "option"))))
 
               ; whether the general spec for this level fails
-              failing-general-spec (when (empty? parse-errs)
-                                     (check-one-spec curr-path-str
-                                                     "subcommand"
-                                                     general-spec
-                                                     total-parsed-opts))]
+            failing-general-spec (when (empty? parse-errs)
+                                   (check-one-spec curr-path-str
+                                                   "subcommand"
+                                                   general-spec
+                                                   total-parsed-opts))]
 
-          (cond
+        (cond
             ; any parse errors?
-            (some? parse-errs)
-            (mkError config curr-path
-                     (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
-                     parse-errs)
+          (some? parse-errs)
+          (mkError config curr-path
+                   (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
+                   parse-errs)
 
             ; did we ask for help?
-            (some? (:_help_trigger parsed-opts))
-            (mkError config curr-path
-                     (if global-node? :HELP-GLOBAL :HELP-SUBCMD) nil)
+          (some? (:_help_trigger parsed-opts))
+          (mkError config curr-path
+                   (if global-node? :HELP-GLOBAL :HELP-SUBCMD) nil)
 
             ; looks like there is no sub-command specified
-            (and global-node? (nil? next-subcommand))
-            (mkError config curr-path :ERR-NO-SUBCMD "")
+          (and global-node? (nil? next-subcommand))
+          (mkError config curr-path :ERR-NO-SUBCMD "")
 
             ; missing required parms?
             ; we raise this only if there are no errors in cmd parms
-            (and (empty? parse-errs) (pos? (count missing-opts)))
-            (mkError config curr-path
-                     (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
-                     missing-opts)
+          (and (empty? parse-errs) (pos? (count missing-opts)))
+          (mkError config curr-path
+                   (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
+                   missing-opts)
 
             ; failed spec: parameter validation
-            (some? failing-param-spec)
-            (mkError config curr-path
-                     (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
-                     failing-param-spec)
+          (some? failing-param-spec)
+          (mkError config curr-path
+                   (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
+                   failing-param-spec)
 
             ; failed spec: the general level
-            (some? failing-general-spec)
-            (mkError config curr-path
-                     (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
-                     failing-general-spec)
+          (some? failing-general-spec)
+          (mkError config curr-path
+                   (if global-node? :ERR-PARMS-GLOBAL :ERR-PARMS-SUBCMD)
+                   failing-general-spec)
 
             ; If this is a global option and it went well so far,
             ; let's loop back and explore what's in store below
-            global-node?
-            (recur next-path
-                   next-subcommand-argv
-                   total-parsed-opts)
+          global-node?
+          (recur next-path
+                 next-subcommand-argv
+                 total-parsed-opts)
 
             ; no errors and we are a leaf node? really? let's finish this charade.
             ; teach the kids some geometry and theology.
-            (nil? parse-errs)
-            (let [all-parsed-opts (-> total-parsed-opts
-                                      (into {:_arguments parse-leftover-args}))]
-              {:subcommand      curr-path-str
-               :subcommand-path curr-path
-               :subcommand-def  curr-subcmd
-               :commandline     all-parsed-opts
-               :parse-errors    :NONE
-               :error-text      ""})
+          (nil? parse-errs)
+          (let [all-parsed-opts (-> total-parsed-opts
+                                    (into {:_arguments parse-leftover-args}))]
+            {:subcommand      curr-path-str
+             :subcommand-path curr-path
+             :subcommand-def  curr-subcmd
+             :commandline     all-parsed-opts
+             :parse-errors    :NONE
+             :error-text      ""})
 
             ; something went bad.
-            :else
-            (mkError config reqd-path :ERR-PARMS-SUBCMD parse-errs)))))))
-
-(defn OLD__parse-cmds
-  "This is where magic happens.
-  We first parse global options, then stop,
-  get the subcommand, parse specific options for the subcommand
-  and if all went well we prepare to run it.
-
-  This function returns a structure ::S/lineParseResult
-  that contains information about what went wrong or the command
-  to run.
-  "
-  [argv config]
-
-  (let [gl-options (U/OLD__get-options-for config nil)
-        ;_ (prn "Cmdline" cmdline)
-        parsed-gl-opts (parse-cmds-with-defaults gl-options argv true P/read-env) ;(parse-opts cmdline cli-gl-options :in-order true)
-        missing-gl-opts (errors-for-missing-mandatory-args
-                         (U/OLD__get-options-for config nil)
-                         parsed-gl-opts {})
-        ;_ (prn "Common cmdline" parsed-common-cmdline)
-        {gl-errs :errors gl-opts :options gl-args :arguments} parsed-gl-opts]
-
-    (cond
-      ; any parse errors?
-      (some? gl-errs)
-      (mkError config nil :ERR-PARMS-GLOBAL gl-errs)
-
-      ; did we ask for help?
-      (some? (:_help_trigger gl-opts))
-      (mkError config nil :HELP-GLOBAL nil)
-
-      :else
-      (let [subcommand (first gl-args)
-            subcommand-argv (vec (rest gl-args))]
-
-        (cond
-          (nil? subcommand)
-          (mkError config nil :ERR-NO-SUBCMD "")
-
-          (nil? ((U/all-subcommands config) subcommand))
-          (mkError config subcommand :ERR-UNKNOWN-SUBCMD
-                   (H/generate-help-possible-mistypes config subcommand))
-
           :else
-          (let [canonical-subcommand (U/canonicalize-subcommand config subcommand)
-                parsed-cmd-opts (parse-cmds-with-positions config canonical-subcommand subcommand-argv);_ (prn "Subcmd cmdline" parsed-cmd-opts)
-                ;_ (prn "G" missing-gl-opts)
-                ;_ (prn "C" missing-cmd-opts)
-                {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts;; run checks on parameters
-                missing-cmd-opts (errors-for-missing-mandatory-args
-                                  (U/OLD__get-options-for config canonical-subcommand)
-                                  parsed-cmd-opts {})]
-
-            (cond
-              ; asking for help?
-              (some? (:_help_trigger cmd-opts))
-              (mkError config canonical-subcommand :HELP-SUBCMD nil)
-
-              ; any missing required global parm?
-              ; we raise only if there are no rrors in global parms
-              (and (empty? gl-errs) (pos? (count missing-gl-opts)))
-              (mkError config nil :ERR-PARMS-GLOBAL missing-gl-opts)
-
-              ; missing required parms?
-              ; we raise this only if there are no errors in cmd parms
-              (and (empty? cmd-errs) (pos? (count missing-cmd-opts)))
-              (mkError config canonical-subcommand :ERR-PARMS-SUBCMD missing-cmd-opts)
-
-              ; no errors?
-              ; as a last step, we assert that specs are okay
-              (nil? cmd-errs)
-              (let [parsed-opts (-> {}
-                                    (into gl-opts)
-                                    (into cmd-opts)
-                                    (into {:_arguments cmd-args}))]
-                (OLD__check-specs-on-parsed-args parsed-opts canonical-subcommand config))
-
-              ;; sth went wrong
-              :else
-              (mkError config canonical-subcommand :ERR-PARMS-SUBCMD cmd-errs))))))))
+          (mkError config reqd-path :ERR-PARMS-SUBCMD parse-errs))))))
 
 (s/fdef
-  OLD__parse-cmds
+  parse-command-line
   :args (s/cat :args (s/coll-of string?)
                :opts ::S/climatic-cfg)
   :ret ::S/lineParseResult)
+
+
+
+;(defn OLD__parse-cmds
+;  "This is where magic happens.
+;  We first parse global options, then stop,
+;  get the subcommand, parse specific options for the subcommand
+;  and if all went well we prepare to run it.
+;
+;  This function returns a structure ::S/lineParseResult
+;  that contains information about what went wrong or the command
+;  to run.
+;  "
+;  [argv config]
+;
+;  (let [gl-options (U/OLD__get-options-for config nil)
+;        ;_ (prn "Cmdline" cmdline)
+;        parsed-gl-opts (parse-cmds-with-defaults gl-options argv true P/read-env) ;(parse-opts cmdline cli-gl-options :in-order true)
+;        missing-gl-opts (errors-for-missing-mandatory-args
+;                         (U/OLD__get-options-for config nil)
+;                         parsed-gl-opts {})
+;        ;_ (prn "Common cmdline" parsed-common-cmdline)
+;        {gl-errs :errors gl-opts :options gl-args :arguments} parsed-gl-opts]
+;
+;    (cond
+;      ; any parse errors?
+;      (some? gl-errs)
+;      (mkError config nil :ERR-PARMS-GLOBAL gl-errs)
+;
+;      ; did we ask for help?
+;      (some? (:_help_trigger gl-opts))
+;      (mkError config nil :HELP-GLOBAL nil)
+;
+;      :else
+;      (let [subcommand (first gl-args)
+;            subcommand-argv (vec (rest gl-args))]
+;
+;        (cond
+;          (nil? subcommand)
+;          (mkError config nil :ERR-NO-SUBCMD "")
+;
+;          (nil? ((U/all-subcommands config) subcommand))
+;          (mkError config subcommand :ERR-UNKNOWN-SUBCMD
+;                   (H/generate-help-possible-mistypes config subcommand))
+;
+;          :else
+;          (let [canonical-subcommand (U/canonicalize-subcommand config subcommand)
+;                parsed-cmd-opts (parse-cmds-with-positions config canonical-subcommand subcommand-argv);_ (prn "Subcmd cmdline" parsed-cmd-opts)
+;                ;_ (prn "G" missing-gl-opts)
+;                ;_ (prn "C" missing-cmd-opts)
+;                {cmd-errs :errors cmd-opts :options cmd-args :arguments} parsed-cmd-opts;; run checks on parameters
+;                missing-cmd-opts (errors-for-missing-mandatory-args
+;                                  (U/OLD__get-options-for config canonical-subcommand)
+;                                  parsed-cmd-opts {})]
+;
+;            (cond
+;              ; asking for help?
+;              (some? (:_help_trigger cmd-opts))
+;              (mkError config canonical-subcommand :HELP-SUBCMD nil)
+;
+;              ; any missing required global parm?
+;              ; we raise only if there are no rrors in global parms
+;              (and (empty? gl-errs) (pos? (count missing-gl-opts)))
+;              (mkError config nil :ERR-PARMS-GLOBAL missing-gl-opts)
+;
+;              ; missing required parms?
+;              ; we raise this only if there are no errors in cmd parms
+;              (and (empty? cmd-errs) (pos? (count missing-cmd-opts)))
+;              (mkError config canonical-subcommand :ERR-PARMS-SUBCMD missing-cmd-opts)
+;
+;              ; no errors?
+;              ; as a last step, we assert that specs are okay
+;              (nil? cmd-errs)
+;              (let [parsed-opts (-> {}
+;                                    (into gl-opts)
+;                                    (into cmd-opts)
+;                                    (into {:_arguments cmd-args}))]
+;                (OLD__check-specs-on-parsed-args parsed-opts canonical-subcommand config))
+;
+;              ;; sth went wrong
+;              :else
+;              (mkError config canonical-subcommand :ERR-PARMS-SUBCMD cmd-errs))))))))
+;
+;(s/fdef
+;  OLD__parse-cmds
+;  :args (s/cat :args (s/coll-of string?)
+;               :opts ::S/climatic-cfg)
+;  :ret ::S/lineParseResult)
+
 
 (defn assert-unique-values
   "Check that all values are unique.
@@ -696,7 +705,7 @@
   [setup args]
   (let [args-not-null (if (nil? args) [] args)
 
-        {:keys [subcommand subcommand-path subcommand-def parse-errors error-text commandline] :as xxx}
+        {:keys [subcommand-path subcommand-def parse-errors error-text commandline]}
         (parse-command-line args-not-null setup)]
 
     ;; maybe there was an error parsing

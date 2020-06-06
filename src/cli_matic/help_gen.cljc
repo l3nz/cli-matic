@@ -61,7 +61,7 @@
 
 (s/fdef
   get-options-summary
-  :args (s/cat :cfg ::S/climatic-cfg-v2
+  :args (s/cat :cfg ::S/climatic-cfg
                :subcmd ::S/subcommand-path))
 
 (defn get-first-rest-description-rows
@@ -128,7 +128,7 @@
 
 (s/fdef
   generate-global-help
-  :args (s/cat :cfg ::S/climatic-cfg-v2)
+  :args (s/cat :cfg ::S/climatic-cfg)
   :ret (s/coll-of string?))
 
 (defn arg-list-with-positional-entries
@@ -169,7 +169,7 @@
 
 (s/fdef
   generate-subcmd-help
-  :args (s/cat :cfg ::S/climatic-cfg-v2
+  :args (s/cat :cfg ::S/climatic-cfg
                :cmd ::S/subcommand-path)
   :ret (s/coll-of string?))
 
@@ -223,7 +223,7 @@
 
 (s/fdef
   generate-help-possible-mistypes
-  :args (s/cat :cfg ::S/climatic-cfg :cmd ::S/command)
+  :args (s/cat :cfg ::S/climatic-cfg-classic :cmd ::S/command)
   :ret (s/coll-of (s/or :str string?
                         :cs (s/coll-of string?))))
 
