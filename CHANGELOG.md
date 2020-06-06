@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# 0.4.1 - 2020-06-06
+###  Changes
+* Fixes #102 - Managed exceptions to terminate script with an error
+* Fix #100: Errors should use std-err
+* Fix #108: helpgen does not work after 0.4.0
+* Fix #110: Display help for subcomand sets
+* Fix #98 - Subcommands not required
+* Fix #107:  Clean-up of Kondo-reported issues
+* Fixing #104 - Update tools.cli to 1.0.194
+
 # 0.4.0 - 2020-06-05
 ###  Changes
 * Fixes #69 - Recursively nested sub-commands
