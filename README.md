@@ -139,43 +139,24 @@ So we define a configuration:
 	                                   :runs        subtract_numbers}]}]}]
 
 
-
-## Old (non-recursive) configuration
-
-
-	(def CONFIGURATION
-	  {:app         {:command     "toycalc"
-	                 :description "A command-line toy calculator"
-	                 :version     "0.0.1"}
-
-	   :global-opts [{:option  "base"
-	                  :as      "The number base for output"
-	                  :type    :int
-	                  :default 10}]
-
-	   :commands    [{:command     "add"
-	                  :description "Adds two numbers together"
-	                  :opts        [{:option "a" :as "Addendum 1" :type :int}
-	                                {:option "b" :as "Addendum 2" :type :int :default 0}]              
-	                  :runs        add_numbers}
-
-	                 {:command     "sub"
-	                  :description "Subtracts parameter B from A"
-	                  :opts        [{:option "a" :as "Parameter A" :type :int :default 0}
-	                                {:option "b" :as "Parameter B" :type :int :default 0}]
-	                  :runs        subtract_numbers}
-	                 ]})
-
 It contains:
 
 * Information on the app itself (name, version)
-* The list of global parameters, i.e. the ones that apply to al subcommands (may be empty, or you may skip it at all)
-* A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`. You can optionally validate the full parameter-map that is received by subcommand at once by passing a Spec into `:spec`.
-* If within the subcommand you add a 0-arity function to `:on-shutdown`, it will be called when the JVM terminates. This is
-  mostly useful for long running servers, or to do some clean-up. Note that the hook is always called - whether the shutdown 
-  is forced by pressing (say) Ctrl+C or just by the JVM exiting. See the examples. 
+* The list of global parameters as `:opts`, i.e. the ones that apply to all subcommands (may be empty, or you may skip it at all)
+* A list of sub-commands, each with its own parameters in `:opts`, and a function to be called in `:runs`, or more `:subcommands`. You can optionally validate the full parameter-map that is received by the function implementing the subcommand at once by passing a Spec into `:spec`.
 
 And...that's it!
+
+
+### Handling multiple layers of sub-commands
+
+As the configuration is recursive (what you have in `:subcommands` can contain more subcommands)  you can have multiple layers of subcommands, each with their own "global" options; or you can have no subbcommands at all by simply defining a `:runs` function at the main level.
+
+* If within the subcommand you add a 0-arity function to `:on-shutdown`, it will be called when the JVM terminates. This is mostly useful for long running servers, or to do some clean-up. Note that the hook is always called - whether the shutdown is forced by pressing (say) Ctrl+C or just by the JVM exiting. See the examples. 
+* When printing a version number, the most-specific wins; that is, you could have a different version string per
+  sub command. If not found, the most-specific ancestor found is used.
+* The same goes for help generation; you can have it customized per sub-command if needed.  
+
 
 
 
@@ -261,18 +242,49 @@ CLI-matic comes with pre-packaged help text generators for global and sub-comman
 These generators can be overridden by supplying one or more of your own functions in the `:app` section of the configuration:
 
 
-	(defn my-command-help [setup]
+	(defn my-command-help [setup subcmd]
 	  " ... ")
 	
 	(defn gen-sub-command-help [setup subcmd]
 	  " ... ")
 	
-	{:app {:global-help my-command-help
-	       :subcmd-help gen-sub-command-help}}
+	{:command "toycalc"
+	 :global-help my-command-help
+	 :subcmd-help gen-sub-command-help}}
+
+Both functions receive the the configuration and the sub-command it was called with, and  return a string (or an array of strings) that CLI-matic prints verbatim to the user as the full help text.
 
 
-The function specified for `:global-help` accepts the CLI configuration, and `:subcmd-help` additionally accepts the sub-command it was called with.
-Each function returns a string that CLI-matic prints verbatim to the user as the full help text.
+
+## Old (non-recursive) configuration
+
+The following configuration, that forced you to use exactly one layer, is still supported and translated automagically.
+
+
+	(def CONFIGURATION
+	  {:app         {:command     "toycalc"
+	                 :description "A command-line toy calculator"
+	                 :version     "0.0.1"}
+
+	   :global-opts [{:option  "base"
+	                  :as      "The number base for output"
+	                  :type    :int
+	                  :default 10}]
+
+	   :commands    [{:command     "add"
+	                  :description "Adds two numbers together"
+	                  :opts        [{:option "a" :as "Addendum 1" :type :int}
+	                                {:option "b" :as "Addendum 2" :type :int :default 0}]              
+	                  :runs        add_numbers}
+
+	                 {:command     "sub"
+	                  :description "Subtracts parameter B from A"
+	                  :opts        [{:option "a" :as "Parameter A" :type :int :default 0}
+	                                {:option "b" :as "Parameter B" :type :int :default 0}]
+	                  :runs        subtract_numbers}
+	                 ]})
+
+Note that custom help-text generators are not translated, as their arity changed in v0.4.0+
 
 
 

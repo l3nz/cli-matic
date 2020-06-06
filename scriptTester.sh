@@ -34,6 +34,20 @@ CLJS="./examples-cljs-planck"
 
 
 
+#
+# custom messages
+#
+SCRIPT="helpgen:"
+CMD="$CLJ/helpgen.clj"
+testPresence "$CMD echo -?" \
+	"====== SPECIFIC SUBCMD HELP CONFIG: " "$SCRIPT subcommand"
+
+testPresence "$CMD -?" \
+	"====== GENERIC 'global' HELP CONFIG: " "$SCRIPT main"
+
+
+
+
 
 #
 # CLJ - Help for subcommands (#110)
@@ -157,17 +171,6 @@ CMD="$CLJ/shutdown.clj"
 testPresence "$CMD add -a 10 -b 20" \
 	"Shutdown called" "$SCRIPT plain"
 
-
-#
-# custom messages
-#
-#SCRIPT="helpgen:"
-#CMD="$CLJ/helpgen.clj"
-#testPresence "$CMD echo -?" \
-#	"Specific help" "$SCRIPT subcommand"
-
-#testPresence "$CMD -?" \
-#	"helpgen command help" "$SCRIPT main"
 
 
 #
