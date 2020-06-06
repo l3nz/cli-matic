@@ -6,7 +6,8 @@
             [cli-matic.utils-v2 :refer [convert-config-v1->v2
                                         walk
                                         can-walk?
-                                        as-canonical-path]]))
+                                        as-canonical-path
+                                        get-most-specific-value]]))
 
 
 ;
@@ -136,15 +137,15 @@
 
     (are [p o]  (= (can-walk? cfg p) o)
 
-                ; es 1
+      ; es 1
       ["toycalc" "add"]
       true
 
-                ; es 2
+      ; es 2
       ["toycalc" "subc" "sub"]
       true
 
-                ; not found
+      ; not found
       ["toycalc" "addq"]
       false
 
@@ -167,18 +168,75 @@
 
                  o)
 
-                ; es 1
+      ; es 1
       ["onlyone"]
       ["onlyone"]
 
 
-                ; Nothing
+      ; Nothing
 
 
       []
       ["onlyone"]
 
-                ; notfound
+      ; notfound
+      ["toycalc" "subc" "xx"]
+      :ERR)))
+
+
+
+; :on-shutdown
+
+
+(defn shutdown_BASE [] 0)
+(defn shutdown_SUB  [] 1)
+
+(deftest get-most-specific-value-test
+
+  (let [cfg {:command     "toycalc"
+             :description "A command-line toy calculator"
+             :version     "0.0.1"
+             :on-shutdown shutdown_BASE
+             :opts        []
+             :subcommands [{:command     "add"
+                            :description "Adds two numbers together"
+                            :opts        []
+                            :runs        add_numbers}
+                           {:command     "subc"
+                            :description "Subtracts parameter B from A"
+                            :opts        []
+                            :subcommands [{:command     "sub"
+                                           :description "Subtracts"
+                                           :opts        []
+                                           :runs        subtract_numbers
+                                           :on-shutdown shutdown_SUB}]}]}]
+
+    (are [p o]
+         (= (try-catch-all
+             (get-most-specific-value cfg p :on-shutdown "-NF-")
+             (fn [_] :ERR))
+            o)
+
+      ; Definito nella root
+      ["toycalc"]
+      shutdown_BASE
+
+      ; Sempre da root
+      ["toycalc" "add"]
+      shutdown_BASE
+
+      ; non definito, quindi uso root
+      ["toycalc" "subc"]
+      shutdown_BASE
+
+      ; definito specifico
+      ["toycalc" "subc" "sub"]
+      shutdown_SUB
+
+      ; not found
+      ["toycalc" "addq"]
+      :ERR
+
       ["toycalc" "subc" "xx"]
       :ERR)))
 

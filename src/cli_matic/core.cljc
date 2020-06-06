@@ -711,10 +711,11 @@
     ;; maybe there was an error parsing
     (condp = parse-errors
       :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in CLI-matic configuration.")
-      :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified.")
-      :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil error-text)
-      :HELP-GLOBAL (->RV 0 :OK :HELP-GLOBAL nil nil)
-      :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil
+      :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL subcommand-path "No sub-command specified.")
+      :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL subcommand-path
+                                error-text)
+      :HELP-GLOBAL (->RV 0 :OK :HELP-GLOBAL subcommand-path nil)
+      :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL subcommand-path
                               (str "Global option error: " error-text))
       :HELP-SUBCMD (->RV 0 :OK :HELP-SUBCMD subcommand-path nil)
       :ERR-PARMS-SUBCMD (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD subcommand-path
@@ -729,21 +730,25 @@
   As it invokes `System.exit` you cannot use it from
   a REPL (well, you technically can, but...).
   "
-  [args supplied-setup]
-  (let [setup (U2/cfg-v2 supplied-setup)
-        {:keys [help stderr subcmd retval]} (run-cmd* setup args)]
+  [args supplied-config]
+  (let [config (U2/cfg-v2 supplied-config)
+        {:keys [help stderr subcmd retval]} (run-cmd* config args)]
+
+    ; prints the error message, if present
     (when (seq stderr)
-      (println
-       (U/asString ["** ERROR: **" stderr "" ""])))
+      (U/printString ["** ERROR: **" stderr "" ""]))
+
+    ; prints help
     (cond
       (= :HELP-GLOBAL help)
-      (let [helpFn (get-in setup [:app :global-help] H/generate-global-help)]
-        (println (U/asString (helpFn setup))))
+      (let [helpFn (H/getGlobalHelperFn config subcmd)]
+        (U/printString (helpFn config subcmd)))
 
       (= :HELP-SUBCMD help)
-      (let [helpFn (get-in setup [:app :subcmd-help] H/generate-subcmd-help)]
-        (println (U/asString (helpFn setup subcmd)))))
+      (let [helpFn (H/getSubcommandHelperFn config subcmd)]
+        (U/printString (helpFn config subcmd))))
 
+    ; bye bye baby
     (P/exit-script retval)))
 
 (OPT/orchestra-instrument)

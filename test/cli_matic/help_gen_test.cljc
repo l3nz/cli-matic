@@ -80,6 +80,44 @@
 (def CONFIGURATION-TOYCALC-v2
   (U2/convert-config-v1->v2 CONFIGURATION-TOYCALC))
 
+(def CONFIGURATION-TOYCALC-NESTED
+  {:command     "toycalc"
+   :description "A command-line toy calculator"
+   :version     "0.0.1"
+   :opts        [{:as      "The number base for output"
+                  :default 10
+                  :option  "base"
+                  :type    :int}]
+   :subcommands [{:command     "add"
+                  :short       "a"
+                  :description "Adds two numbers together"
+                  :opts        [{:as     "Addendum 1"
+                                 :option "a"
+                                 :type   :int}
+                                {:as      "Addendum 2"
+                                 :default 0
+                                 :option  "b"
+                                 :type    :int}]
+                  :runs        dummy-cmd}
+                 {:command     "subc"
+                  :description "Subtracts parameter B from A"
+                  :version     "1.2.3"
+                  :opts        [{:as      "Parameter q"
+                                 :default 0
+                                 :option  "q"
+                                 :type    :int}]
+                  :subcommands [{:command     "sub"
+                                 :description "Subtracts"
+                                 :opts        [{:as      "Parameter A to subtract from"
+                                                :default 0
+                                                :option  "a"
+                                                :type    :int}
+                                               {:as      "Parameter B"
+                                                :default 0
+                                                :option  "b"
+                                                :type    :int}]
+                                 :runs        dummy-cmd}]}]})
+
 (deftest generate-global-help-test
 
   (is
@@ -100,7 +138,68 @@
        "       --base N  10  The number base for output"
        "   -?, --help"
        ""]
-      (generate-global-help CONFIGURATION-TOYCALC-v2))))
+      (generate-global-help CONFIGURATION-TOYCALC-v2 ["toycalc"]))))
+
+(deftest generate-global-help-test-nested
+
+  (is
+   (= ["NAME:"
+       " toycalc - A command-line toy calculator"
+       ""
+       "USAGE:"
+       " toycalc [global-options] command [command options] [arguments...]"
+       ""
+       "VERSION:"
+       " 0.0.1"
+       ""
+       "COMMANDS:"
+       "   add, a               Adds two numbers together"
+       "   subc                 Subtracts parameter B from A"
+       ""
+       "GLOBAL OPTIONS:"
+       "       --base N  10  The number base for output"
+       "   -?, --help"
+       ""]
+      (generate-global-help CONFIGURATION-TOYCALC-NESTED ["toycalc"])))
+
+  (is
+   (= ["NAME:"
+       " toycalc - A command-line toy calculator"
+       ""
+       "USAGE:"
+       " toycalc [global-options] command [command options] [arguments...]"
+       ""
+       "VERSION:"
+       " 0.0.1"
+       ""
+       "COMMANDS:"
+       "   add, a               Adds two numbers together"
+       "   subc                 Subtracts parameter B from A"
+       ""
+       "GLOBAL OPTIONS:"
+       "       --base N  10  The number base for output"
+       "   -?, --help"
+       ""]
+      (generate-global-help CONFIGURATION-TOYCALC-NESTED [])))
+
+  (is
+   (= ["NAME:"
+       " toycalc subc - Subtracts parameter B from A"
+       ""
+       "USAGE:"
+       " toycalc subc [global-options] command [command options] [arguments...]"
+       ""
+       "VERSION:"
+       " 1.2.3"
+       ""
+       "COMMANDS:"
+       "   sub                  Subtracts"
+       ""
+       "GLOBAL OPTIONS:"
+       "       --q N   0  Parameter q"
+       "   -?, --help"
+       ""]
+      (generate-global-help CONFIGURATION-TOYCALC-NESTED ["toycalc" "subc"]))))
 
 (deftest generate-subcmd-help-test
 

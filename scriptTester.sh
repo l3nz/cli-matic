@@ -34,6 +34,44 @@ CLJS="./examples-cljs-planck"
 
 
 
+
+#
+# CLJ - Help for subcommands (#110)
+#
+SCRIPT="toycalc-nested CLJ:"
+CMD="$CLJ/toycalc-nested.clj"
+
+testPresence "$CMD" \
+     "toycalc - A command-line" "No params"
+
+testPresence "$CMD --help" \
+     "toycalc - A command-line" "No params just help"
+
+
+testPresence "$CMD --base 16 add  --a 1 --b 26" \
+     "1b" "Add with base"
+
+testPresence "$CMD --base 16 subc sub  --a 16 --b 3" \
+     "d" "sub with base"
+
+testPresence "$CMD --base 16 subc --scale 2 sub --a 16 --b 3" \
+     "1a" "Sub with scale and base"
+
+testPresence "$CMD  subc  --scale 2 sub --a 16 --b 3" \
+     "26" "Sub scale, no base"
+
+testPresence "$CMD  subc sub --help" \
+     "Parameter A to subtract from" "Help subc sub --help"
+
+testPresence "$CMD  subc --help " \
+     "toycalc subc - Subtracts" "Help: subc --help "
+
+testPresence "$CMD  subc " \
+     "toycalc subc - Subtracts" "Help: subc"
+
+
+
+
 #
 # CLJ - No subcommand (#98)
 #

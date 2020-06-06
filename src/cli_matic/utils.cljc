@@ -32,6 +32,13 @@
     s
     (str/join "\n" (flatten s))))
 
+(defn printString
+  "Prints a string (either single, or a nested vector of it)."
+  [s]
+  (-> s
+      asString
+      println))
+
 (defn asStrVec
   "Whatever we get in, we want a vector of strings out."
   [s]

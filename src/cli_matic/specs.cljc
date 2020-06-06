@@ -117,18 +117,22 @@
 (s/def ::mapOfCliParams (s/map-of string? (s/or :empty nil? :str string?)))
 
 ;
-; b69
+; Configuration for nested sub-commands
+; (see bug #69 and more)
 ;
 
 
 (s/def ::any-subcommand (s/keys :req-un [::command ::opts]
-                                :opt-un [::short ::description ::spec]))
+                                :opt-un [::short ::description ::spec
+                                         ::version
+                                         ::on-shutdown ::global-help ::subcmd-help]))
 
 ; root has a version
 ; root might have help-gen; if they exist, they are ifn?
+
+
 (s/def ::root-subcommand
-  (s/keys :req-un [::version]
-          :opt-un [::on-shutdown ::global-help ::subcmd-help]))
+  (s/keys :req-un [::version]))
 
 (defn no-positional-opts
   "Makes sure that this subcommand does not have
@@ -158,15 +162,14 @@
                       ::a-subcommand))
 
 (s/def ::climatic-cfg
-  (s/and
-   ::a-subcommand
-    ;::root-subcommand
-   ))
+  ::a-subcommand)
 
 ; A subcommand path.
 ; If empty, no subcommands and no globals
 ; Each member is the canonical name of a subcommand.
 ; Each member but the last is of type ::branch-subcommand
+
+
 (s/def ::subcommand-path
   (s/coll-of ::existing-string))
 

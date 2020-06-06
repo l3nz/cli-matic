@@ -49,9 +49,6 @@
   tools.cli parse-opts and an empty set of arguments.
   Parsing will fail but we get the :summary.
   We then split it into a collection of lines.
-
-
-
   "
   [cfg subcmd]
   (let [cli-cfg (U2/rewrite-opts cfg subcmd)
@@ -109,26 +106,36 @@
 
 (defn generate-global-help
   "This is where we generate global help, so
-  global attributes and subcommands."
+  global attributes and subcommands.
 
-  [cfg]
+  This is called for all branch nodes (not just the root),
+  and not leaves, therefore we had to add the path as
+  a parameter to tell who is who.
 
-  (let [name (get-in cfg [:command])
-        version (get-in cfg [:version])
-        descr (get-in cfg [:description])
-        [desc0 descr-extra] (get-first-rest-description-rows descr)]
+  "
+
+  [cfg path]
+
+  (let [name (U2/canonical-path-to-string
+              (U2/as-canonical-path
+               (U2/walk cfg path)))
+        version (U2/get-most-specific-value cfg path :version "-")
+        descr (U2/get-most-specific-value cfg path :description [])
+        [desc0 descr-extra] (get-first-rest-description-rows descr)
+        my-command (U2/get-subcommand cfg path)]
 
     (generate-sections
      [(str name " - " desc0) descr-extra]
      version
      (str name " [global-options] command [command options] [arguments...]")
-     (generate-global-command-list (:subcommands cfg))
+     (generate-global-command-list (:subcommands my-command))
      "GLOBAL OPTIONS"
-     (get-options-summary cfg []))))
+     (get-options-summary cfg path))))
 
 (s/fdef
   generate-global-help
-  :args (s/cat :cfg ::S/climatic-cfg)
+  :args (s/cat :cfg ::S/climatic-cfg
+               :cmd ::S/subcommand-path)
   :ret (s/coll-of string?))
 
 (defn arg-list-with-positional-entries
@@ -226,5 +233,13 @@
   :args (s/cat :cfg ::S/climatic-cfg-classic :cmd ::S/command)
   :ret (s/coll-of (s/or :str string?
                         :cs (s/coll-of string?))))
+
+(defn getGlobalHelperFn
+  [cfg path]
+  (U2/get-most-specific-value cfg path :global-help generate-global-help))
+
+(defn getSubcommandHelperFn
+  [cfg path]
+  (U2/get-most-specific-value cfg path :subcmd-help generate-subcmd-help))
 
 (OPT/orchestra-instrument)

@@ -194,10 +194,15 @@
          :path ::S/subcommand-path)
   :ret string?)
 
-(defn get-subcommand [cfg path]
+(defn get-subcommand
+  "Given a configuration and a path through it,
+  reeturns the last subcommand."
+  [cfg path]
   (last (walk cfg path)))
 
 (defn get-options-for
+  "Given a configuration and a path through it,
+  returnss :opts for the last subcommmand."
   [cfg path]
   (:opts (get-subcommand cfg path)))
 
@@ -228,3 +233,28 @@
   :args (s/cat :cfg ::S/climatic-cfg
                :cmd ::S/subcommand-path)
   :ret (s/coll-of ::S/climatic-option))
+
+(defn get-most-specific-value
+  "Given a configuration and a path through it, gets the most
+  specific value for an option.
+
+  For example, the help generator might be defined on each subcommand,
+  or on the root node, or nowhere. We always take the most specific
+  value.
+
+  If the value is defined nowhere, we return a default.
+
+  "
+  ([cfg path a-key default]
+   (let [path-as-objects (walk cfg path)
+         values (map a-key path-as-objects)
+         non-nil-values (filter some? values)]
+
+     (if (empty? non-nil-values)
+       default
+       (last non-nil-values))))
+
+  ([cfg path a-key]
+   (get-most-specific-value cfg path a-key nil)))
+
+

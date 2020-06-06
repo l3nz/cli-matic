@@ -145,20 +145,20 @@
 
       ; no parameters - displays cmd help
       []
-      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified.")
+      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL ["dummy"] "No sub-command specified.")
 
       ["x"]
-      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "Unknown sub-command: 'dummy x'.")
+      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL ["dummy" "x"] "Unknown sub-command: 'dummy x'.")
 
       ["--lippa" "foo"]
-      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Unknown option: \"--lippa\"")
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL ["dummy"] "Global option error: Unknown option: \"--lippa\"")
 
       ; help globale
       ["-?"]
-      (->RV 0 :OK :HELP-GLOBAL nil nil)
+      (->RV 0 :OK :HELP-GLOBAL ["dummy"] nil)
 
       ["--help"]
-      (->RV 0 :OK :HELP-GLOBAL nil nil)
+      (->RV 0 :OK :HELP-GLOBAL ["dummy"] nil)
 
       ; help sub-commands (incl short version)
       ["foo"  "-?"]
@@ -193,34 +193,33 @@
     (are [i o]
          (= (run-cmd* MANDATORY-SUBCOMMAND-CFG-v2 i) o)
 
-        ; no parameters - displays cmd help
+      ; no parameters - displays cmd help
       []
-      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL nil "No sub-command specified.")
+      (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL ["dummy"] "No sub-command specified.")
 
       ["x"]
-        ;(->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL nil "dummy: unknown sub-command 'x'.")
-      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa")
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL ["dummy"] "Global option error: Missing option: aa")
 
       ["--lippa" "foo"]
-      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Unknown option: \"--lippa\"")
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL ["dummy"] "Global option error: Unknown option: \"--lippa\"")
 
-        ; help globale
+      ; help globale
       ["-?"]
-      (->RV 0 :OK :HELP-GLOBAL nil nil)
+      (->RV 0 :OK :HELP-GLOBAL ["dummy"] nil)
 
-        ; help sub-commands (incl short version)
+      ; help sub-commands (incl short version)
       ["--aa" "1" "foo" "-?"]
       (->RV 0 :OK :HELP-SUBCMD ["dummy" "foo"] nil)
 
-        ; error no global cmd
+      ; error no global cmd
       ["foo" "--cc" "1"]
-      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil "Global option error: Missing option: aa")
+      (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL ["dummy"] "Global option error: Missing option: aa")
 
-        ;; error no sub cmd
+      ; error no sub cmd
       ["--aa" "1" "foo" "--dd" "1"]
       (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD ["dummy" "foo"] "Option error: Missing option: cc")
 
-        ;; works
+      ; works
       ["--aa" "1" "foo" "--cc" "1"]
       (->RV 0 :OK nil nil nil))))
 
@@ -476,23 +475,23 @@
   (are [i o]
        (= (keep-1st-line-stderr (run-cmd* SPEC-CFG-v2 i)) o)
 
-      ; all of the should pass
+    ; all of the should pass
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
     (->RV 0 :OK nil nil [])
 
-      ; aa (global) non è dispari
+    ; aa (global) non è dispari
     ["--aa" "2" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
-    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for global option 'aa'"])
+    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL ["dummy"] ["Global option error: Spec failure for global option 'aa'"])
 
-      ; bb non esiste proprio
+    ; bb non esiste proprio
     ["--aa" "3" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
-    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL nil ["Global option error: Spec failure for global option 'bb': with value '' got java.lang.IllegalArgumentException: Argument must be an integer: "])
+    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL ["dummy"] ["Global option error: Spec failure for global option 'bb': with value '' got java.lang.IllegalArgumentException: Argument must be an integer: "])
 
-      ; dd (local)
+    ; dd (local)
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "4" "--ee" "99"]
     (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD ["dummy" "foo"] ["Option error: Spec failure for option 'dd'"])
 
-      ; ee non 99 (validazione globale subcmd)
+    ; ee non 99 (validazione globale subcmd)
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "5" "--ee" "97"]
     (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD ["dummy" "foo"] ["Option error: Spec failure for subcommand 'dummy foo'"])))
 
