@@ -736,17 +736,17 @@
 
     ; prints the error message, if present
     (when (seq stderr)
-      (U/printString ["** ERROR: **" stderr "" ""]))
+      (U/printErr ["** ERROR: **" stderr "" ""]))
 
     ; prints help
     (cond
       (= :HELP-GLOBAL help)
       (let [helpFn (H/getGlobalHelperFn config subcmd)]
-        (U/printString (helpFn config subcmd)))
+        (U/printErr (helpFn config subcmd)))
 
       (= :HELP-SUBCMD help)
       (let [helpFn (H/getSubcommandHelperFn config subcmd)]
-        (U/printString (helpFn config subcmd))))
+        (U/printErr (helpFn config subcmd))))
 
     ; bye bye baby
     (P/exit-script retval)))

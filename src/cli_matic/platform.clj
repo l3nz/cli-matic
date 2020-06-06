@@ -109,5 +109,9 @@
                   (str "Value is not deferred " v)
                   {}))))
 
-
-
+(defn printError
+  "On ClojureScript, STDERR is not *err* but it's platform dependent.
+  On JVM, standard approach."
+  [o]
+  (binding [*out* *err*]
+    (println o)))

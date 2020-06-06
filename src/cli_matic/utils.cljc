@@ -12,7 +12,8 @@
   (:require [clojure.string :as str]
             [cli-matic.presets :as PRESETS]
             [cli-matic.specs :as S]
-            [clojure.spec.alpha :as s]))
+            [clojure.spec.alpha :as s]
+            [cli-matic.platform :as P]))
 
 
 ; ================================================
@@ -38,6 +39,13 @@
   (-> s
       asString
       println))
+
+(defn printErr
+  "Like [[printString]] but writes on stderr"
+  [s]
+  (-> s
+      asString
+      P/printError))
 
 (defn asStrVec
   "Whatever we get in, we want a vector of strings out."

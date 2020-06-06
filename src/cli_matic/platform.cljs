@@ -10,7 +10,8 @@
   (:require [planck.core :as plk]
             [planck.environ :as plkenv]
             [cljs.reader :as csrdr]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cljs.pprint :as pp]))
 
 (defn read-env
   "Reads an environment variable.
@@ -104,3 +105,16 @@
     :else (throw (ex-info
                   (str "Value is not deferred " x)
                   {}))))
+
+(defn printError
+  "On ClojureScript, STDERR is not *err* but it's platform dependent.
+
+  I don't know how to do this in Planck.
+  "
+  [o]
+  (comment
+    (binding [pp/*print-pretty* false]
+      (pp/pprint o plk/*err*)))
+
+  (println o))
+
