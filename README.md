@@ -102,6 +102,46 @@ the correct help screen, etc., should ideally not be a concern.**
 
 So we define a configuration:
 
+	(def CONFIGURATION
+		{:command     "toycalc"
+	     :description "A command-line toy calculator"
+	     :version     "0.0.1"
+	     :opts        [{:as      "The number base for output"
+	                    :default 10
+	                    :option  "base"
+	                    :type    :int}]
+	     :subcommands [{:command     "add"
+	                    :description "Adds two numbers together"
+	                    :opts        [{:as     "Addendum 1"
+	                                   :option "a"
+	                                   :type   :int}
+	                                  {:as      "Addendum 2"
+	                                   :default 0
+	                                   :option  "b"
+	                                   :type    :int}]
+	                    :runs        add_numbers}
+	                   {:command     "subc"
+	                    :description "Subtracts parameter B from A"
+	                    :opts        [{:as      "Parameter q"
+	                                   :default 0
+	                                   :option  "q"
+	                                   :type    :int}]
+	                    :subcommands [{:command     "sub"
+	                                   :description "Subtracts"
+	                                   :opts        [{:as      "Parameter A"
+	                                                  :default 0
+	                                                  :option  "a"
+	                                                  :type    :int}
+	                                                 {:as      "Parameter B"
+	                                                  :default 0
+	                                                  :option  "b"
+	                                                  :type    :int}]
+	                                   :runs        subtract_numbers}]}]}]
+
+
+
+## Old (non-recursive) configuration
+
 
 	(def CONFIGURATION
 	  {:app         {:command     "toycalc"

@@ -34,6 +34,14 @@ CLJS="./examples-cljs-planck"
 
 
 
+#
+# CLJ - No subcommand (#98)
+#
+SCRIPT="toycalc-nosub CLJ:"
+CMD="$CLJ/toycalc-nosub.clj"
+testPresence "$CMD --a 10 --b 7 " \
+	"17" "No subcommand"
+
 
 
 #
@@ -115,13 +123,13 @@ testPresence "$CMD add -a 10 -b 20" \
 #
 # custom messages
 #
-SCRIPT="helpgen:"
-CMD="$CLJ/helpgen.clj"
-testPresence "$CMD echo -?" \
-	"Specific help" "$SCRIPT subcommand"
+#SCRIPT="helpgen:"
+#CMD="$CLJ/helpgen.clj"
+#testPresence "$CMD echo -?" \
+#	"Specific help" "$SCRIPT subcommand"
 
-testPresence "$CMD -?" \
-	"helpgen command help" "$SCRIPT main"
+#testPresence "$CMD -?" \
+#	"helpgen command help" "$SCRIPT main"
 
 
 #
@@ -203,6 +211,9 @@ testPresence "$CMD future " \
 
 testPresence "$CMD async " \
 	"RETVAL:3" "$SCRIPT exit 3"
+
+
+
 
 
 
