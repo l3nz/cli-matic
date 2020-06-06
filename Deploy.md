@@ -27,6 +27,10 @@ Also, make sure you check test coverage - can it be improved?
 
 	lein cloverage
 
+Also it's a good time to check for outdated dependencies:
+
+	lein ancient check
+
 
 ## Pushing to Clojars
 

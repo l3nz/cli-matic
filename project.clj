@@ -17,14 +17,14 @@
   [[org.clojure/clojure "1.9.0" :scope "provided"]
    [org.clojure/clojurescript "1.10.439" :scope "provided"]
    [org.clojure/spec.alpha "0.1.143" :scope "provided"]
-   [org.clojure/tools.cli "0.4.2"]
-   [orchestra "2018.12.06-2" :scope "provided"]
-   [cheshire "5.8.1" :scope "provided"]
+   [org.clojure/tools.cli "1.0.194"]
+   [orchestra "2019.02.06-1" :scope "provided"]
+   [cheshire "5.10.0" :scope "provided"]
    [io.forward/yaml "1.0.9" :scope "provided"]
    [org.clojure/core.async "0.5.527" :scope "provided"]
    ;[planck "2.22.0" :scope "provided"]
    [l3nz/planck "0.0.0" :scope "provided"]
-   [expound "0.8.0"]]
+   [expound "0.8.4"]]
 
   ;:scm {:name "git"
   ;      ;; :tag "..."
@@ -37,13 +37,14 @@
             [lein-cljsbuild "1.1.7"]
             [lein-doo "0.1.11"]
             [lein-ancient "0.6.15"]
-            [lein-cloverage "1.1.2"]]
+            [lein-cloverage "1.1.2"]
+            [lein-ancient "0.6.15"]]
 
   :profiles {:test
-             {:dependencies [[cljc.java-time "0.1.6"]]}
+             {:dependencies [[cljc.java-time "0.1.11"]]}
              :kondo
              {:dependencies [[org.clojure/clojure "1.10.1"]
-                             [clj-kondo "2019.10.11-alpha"]]}}
+                             [clj-kondo "2020.05.09"]]}}
 
   :cljsbuild
   {:test-commands {"unit-tests" ["node" "target/unit-tests.js"]}
