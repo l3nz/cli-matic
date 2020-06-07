@@ -456,14 +456,11 @@
   but the first line in stderr for testing."
   [{:keys [stderr] :as all}]
 
-  (let [nv
+  (let [nv (if (and (vector? stderr) (pos? (count stderr)))
+             (let [lines (str/split-lines (first stderr))
+                   vec-of-fline [(first lines)]]
 
-        (if (and (vector? stderr) (pos? (count stderr)))
-
-          (let [lines (str/split-lines (first stderr))
-                vec-of-fline [(first lines)]]
-
-            vec-of-fline) stderr)]
+               vec-of-fline) stderr)]
 
     (assoc all
            :stderr nv)))
@@ -479,17 +476,21 @@
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
     (->RV 0 :OK nil nil [])
 
-    ; aa (global) non è dispari
+    ; aa (global) not odd
     ["--aa" "2" "--bb" "7" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
     (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL ["dummy"] ["Global option error: Spec failure for global option 'aa'"])
 
-    ; bb non esiste proprio
+    ; bb does not exist but it's not mandatory
     ["--aa" "3" "foo" "--cc" "2" "--dd" "3" "--ee" "99"]
-    (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL ["dummy"] ["Global option error: Spec failure for global option 'bb': with value '' got java.lang.IllegalArgumentException: Argument must be an integer: "])
+    (->RV 0 :OK nil nil nil)
 
     ; dd (local)
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "4" "--ee" "99"]
     (->RV -1 :ERR-PARMS-SUBCMD :HELP-SUBCMD ["dummy" "foo"] ["Option error: Spec failure for option 'dd'"])
+
+    ; dd is missing - spec not checked - bug #105
+    ["--aa" "3" "--bb" "7" "foo" "--cc" "2"  "--ee" "99"]
+    (->RV 0 :OK nil nil nil)
 
     ; ee non 99 (validazione globale subcmd)
     ["--aa" "3" "--bb" "7" "foo" "--cc" "2" "--dd" "5" "--ee" "97"]
@@ -692,4 +693,20 @@
                                      :type    :flag}]
                       :runs        cmd_save_opts
                       :short       "f"}}))
+
+(deftest spec-on-options-bug105
+  (let [CFG {:command     "toycalc"
+             :description "A command-line toy adder"
+             :version     "0.0.1"
+             :opts        [{:as      "Parameter A"
+                            :default 0
+                            :option  "a"
+                            :type    :int}
+                           {:as      "Parameter B"
+                            :default 0
+                            :option  "b"
+                            :type    :int}]
+             :runs        cmd_foo}]))
+
+
 

@@ -198,6 +198,7 @@
   - If spec passes, returns nil; if not, returns the failure.
   - If there is an error raised, creates a fake spec result.
   - If spec is nil, we consider it a pass.
+  - if the value is nil, we consider it missing and don't need to check.
 
   `explain-data` return nil if everything okay.
 
@@ -207,11 +208,17 @@
   "
   [name type spec value]
 
-  (if (nil? spec)
-    ; no spec - all went well
+  (cond
+    ; no spec - all went well (at least, I have nothing to complain about)
+    (nil? spec)
+    nil
+
+    ; no value - must be an optional, so I should not validate it
+    (nil? value)
     nil
 
     ; let's check this spec
+    :else
     (try-catch-all
      (let [expound-result (expound/expound-str spec value)]
        (if (not= expound-result "Success!\n")
@@ -233,6 +240,12 @@
 (defn check-specs-on-parameters
   "Given a set of option (so, global options, or a subcommand's options)
   and the fully parsed results, we assert that any defined specs pass.
+
+  This we do only if the parameter is not nil, that is, is present or
+  has a default value.
+
+  If the parameter should be present but it's not, it's not a spec issue
+  but a ':default :present' issue.
   "
   [options parsed-results type]
   ;(prn "Validating Specs" options parsed-results)
@@ -358,25 +371,25 @@
             general-spec  (:spec curr-subcmd)
 
             parsed-opts (if global-node?
-                            ; global: no positions
+                          ; global: no positions
                           (parse-cmds-with-defaults options unparsed-argv true P/read-env)
-                            ; leaf: use positions
+                          ; leaf: use positions
                           (parse-cmds-with-positions options unparsed-argv P/read-env))
 
-              ; do we miss any mandatory option?
+            ; do we miss any mandatory option?
             missing-opts (errors-for-missing-mandatory-args options parsed-opts {})
-              ; destructure results
+            ; destructure results
             {parse-errs :errors parsed-opts :options parse-leftover-args :arguments} parsed-opts
-              ; if global, the subcommand to process next....
+            ; if global, the subcommand to process next....
             next-subcommand (first parse-leftover-args)
-              ; ...and its parameters
+            ; ...and its parameters
             next-subcommand-argv (vec (rest parse-leftover-args))
-              ; the new path that will be run
+            ; the new path that will be run
             next-path  (conj curr-path next-subcommand)
-              ; the total set of parsed options: the ones we got now plus any previous ones
+            ; the total set of parsed options: the ones we got now plus any previous ones
             total-parsed-opts (merge current-parsed-opts parsed-opts)
 
-              ; the (first) failing spec for a parameter we just extracted
+            ; the (first) failing spec for a parameter we just extracted
             failing-param-spec (when (empty? parse-errs)
                                  (first
                                   (check-specs-on-parameters options parsed-opts
@@ -384,7 +397,7 @@
                                                                "global option"
                                                                "option"))))
 
-              ; whether the general spec for this level fails
+            ; whether the general spec for this level fails
             failing-general-spec (when (empty? parse-errs)
                                    (check-one-spec curr-path-str
                                                    "subcommand"
