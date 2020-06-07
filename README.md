@@ -257,7 +257,7 @@ These generators can be overridden by supplying one or more of your own function
 
 Both functions receive the the configuration and the sub-command it was called with, and  return a string (or an array of strings) that CLI-matic prints verbatim to the user as the full help text.
 
-See example in ``.
+See example in `helpgen.clj`.
 
 
 ## Old (non-recursive) configuration
@@ -372,6 +372,12 @@ And so you have a nice place not to forget to set `skip-macros`!
 ## Contribuiting
 
 Before submitting a bug or pull request, make sure you read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Similar projects / inspiration
+
+* OCLIF (JavaScript/Node) @ https://github.com/oclif/oclif
+* Cobra (Golang) @ https://github.com/spf13/cobra
+* PicoCLI (Java) @ https://picocli.info/
 
 ## License
 
