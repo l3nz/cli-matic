@@ -9,6 +9,10 @@
 
 (s/def ::existing-string (s/and string? has-elements?))
 
+; In many places you can have "foo” or ["foo" "bar"]
+(s/def ::string-or-strings (s/or :a-string ::existing-string
+                                 :coll-str (s/coll-of string?)))
+
 (s/def ::climatic-errors #{:ERR-CFG
                            :ERR-NO-SUBCMD
                            :ERR-UNKNOWN-SUBCMD
@@ -79,8 +83,9 @@
           :opt-un [::short ::default ::env ::spec]))
 
 ;; CLI-matic configuration
-(s/def ::description (s/or :a-string ::existing-string
-                           :coll-str (s/coll-of string?)))
+(s/def ::description ::string-or-strings)
+
+(s/def ::examples ::string-or-strings)
 
 (s/def ::version ::existing-string)
 
@@ -125,12 +130,10 @@
 (s/def ::any-subcommand (s/keys :req-un [::command ::opts]
                                 :opt-un [::short ::description ::spec
                                          ::version
+                                         ::examples
                                          ::on-shutdown ::global-help ::subcmd-help]))
 
 ; root has a version
-; root might have help-gen; if they exist, they are ifn?
-
-
 (s/def ::root-subcommand
   (s/keys :req-un [::version]))
 

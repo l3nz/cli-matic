@@ -112,6 +112,7 @@ So we define a configuration:
 	                    :type    :int}]
 	     :subcommands [{:command     "add"
 	                    :description "Adds two numbers together"
+	                    :examples    ["First example" "Second example"]
 	                    :opts        [{:as     "Addendum 1"
 	                                   :option "a"
 	                                   :type   :int}
@@ -153,9 +154,10 @@ And...that's it!
 As the configuration is recursive (what you have in `:subcommands` can contain more subcommands)  you can have multiple layers of subcommands, each with their own "global" options; or you can have no subbcommands at all by simply defining a `:runs` function at the main level.
 
 * If within the subcommand you add a 0-arity function to `:on-shutdown`, it will be called when the JVM terminates. This is mostly useful for long running servers, or to do some clean-up. Note that the hook is always called - whether the shutdown is forced by pressing (say) Ctrl+C or just by the JVM exiting. See the examples. 
-* When printing a version number, the most-specific wins; that is, you could have a different version string per
-  sub command. If not found, the most-specific ancestor found is used.
+* When printing a version number, the most-specific wins; that is, you could have a different version string per subcommand. If not found, the most-specific ancestor found is used.
 * The same goes for help generation; you can have it customized per sub-command if needed.  
+* Each subcommand can have an optional `:examples` key, that can contain a string or
+  a sequence of strings, that will be printed out under EXAMPLES.
 
 
 
@@ -254,6 +256,7 @@ These generators can be overridden by supplying one or more of your own function
 
 Both functions receive the the configuration and the sub-command it was called with, and  return a string (or an array of strings) that CLI-matic prints verbatim to the user as the full help text.
 
+See example in ``.
 
 
 ## Old (non-recursive) configuration

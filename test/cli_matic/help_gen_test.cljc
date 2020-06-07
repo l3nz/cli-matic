@@ -91,6 +91,8 @@
    :subcommands [{:command     "add"
                   :short       "a"
                   :description "Adds two numbers together"
+                  :version     "3.3.3"
+                  :examples    ["Example One" "Example Two"]
                   :opts        [{:as     "Addendum 1"
                                  :option "a"
                                  :type   :int}
@@ -101,6 +103,7 @@
                   :runs        dummy-cmd}
                  {:command     "subc"
                   :description "Subtracts parameter B from A"
+                  :examples    "Just one example"
                   :version     "1.2.3"
                   :opts        [{:as      "Parameter q"
                                  :default 0
@@ -189,6 +192,9 @@
        "USAGE:"
        " toycalc subc [global-options] command [command options] [arguments...]"
        ""
+       "EXAMPLES:"
+       " Just one example"
+       ""
        "VERSION:"
        " 1.2.3"
        ""
@@ -200,6 +206,28 @@
        "   -?, --help"
        ""]
       (generate-global-help CONFIGURATION-TOYCALC-NESTED ["toycalc" "subc"]))))
+
+(deftest generate-subcmd-help-test-nested
+  (is
+   (= ["NAME:"
+       " toycalc add - Adds two numbers together"
+       ""
+       "USAGE:"
+       " toycalc [add|a] [command options] [arguments...]"
+       ""
+       "EXAMPLES:"
+       " Example One"
+       " Example Two"
+       ""
+       "VERSION:"
+       " 3.3.3"
+       ""
+       "OPTIONS:"
+       "       --a N      Addendum 1"
+       "       --b N   0  Addendum 2"
+       "   -?, --help"
+       ""]
+      (generate-subcmd-help CONFIGURATION-TOYCALC-NESTED ["toycalc" "add"]))))
 
 (deftest generate-subcmd-help-test
 

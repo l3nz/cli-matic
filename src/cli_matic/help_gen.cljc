@@ -34,12 +34,13 @@
   "Generates all sections.
   All those positional parameters are not that nice.
   "
-  [name version usage commands opts-title opts]
+  [name version usage commands opts-title opts examples]
 
   (vec
    (flatten
     [(generate-section "NAME" name)
      (generate-section "USAGE" usage)
+     (generate-section "EXAMPLES" examples)
      (generate-section "VERSION" version)
      (generate-section "COMMANDS" commands)
      (generate-section opts-title opts)])))
@@ -116,21 +117,22 @@
 
   [cfg path]
 
-  (let [name (U2/canonical-path-to-string
+  (let [cmd-cfg (U2/walk cfg path)
+        name (U2/canonical-path-to-string
               (U2/as-canonical-path
-               (U2/walk cfg path)))
+               cmd-cfg))
         version (U2/get-most-specific-value cfg path :version "-")
         descr (U2/get-most-specific-value cfg path :description [])
         [desc0 descr-extra] (get-first-rest-description-rows descr)
-        my-command (U2/get-subcommand cfg path)]
+        this-cmd (last cmd-cfg)]
 
     (generate-sections
      [(str name " - " desc0) descr-extra]
      version
      (str name " [global-options] command [command options] [arguments...]")
-     (generate-global-command-list (:subcommands my-command))
-     "GLOBAL OPTIONS"
-     (get-options-summary cfg path))))
+     (generate-global-command-list (:subcommands this-cmd))
+     "GLOBAL OPTIONS" (get-options-summary cfg path)
+     (:examples this-cmd))))
 
 (s/fdef
   generate-global-help
@@ -155,24 +157,26 @@
         path-but-last (reverse (rest (reverse path)))
         fullname (U2/canonical-path-to-string path)
         fullname-but-last (U2/canonical-path-to-string path-but-last)
-
         this-cmd (last cmd-cfg)
+
         name (:command this-cmd)
         shortname (:short this-cmd)
         name-short (if shortname
                      (str "[" name "|" shortname "]")
                      name)
         descr (:description this-cmd)
+        version-or-nil (:version this-cmd)
         [desc0 descr-extra] (get-first-rest-description-rows descr)
         arglist (arg-list-with-positional-entries cfg cmd)]
 
     (generate-sections
      [(str fullname " - " desc0) descr-extra]
-     nil
+     version-or-nil
      (str fullname-but-last " " name-short " [command options] " arglist)
      nil
      "OPTIONS"
-     (get-options-summary cfg cmd))))
+     (get-options-summary cfg cmd)
+     (:examples this-cmd))))
 
 (s/fdef
   generate-subcmd-help
