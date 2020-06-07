@@ -2,8 +2,11 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 
-## 0.4.2 - xxxx
+## 0.4.2 - 2020-06-07
 ###  Changes
+* Fix #94: Support multi-line for option :as
+* Fix #101 - Add examples configuration
+* Fix #105 - Spec on options always checked even if option missing
 * Fixes #111 - Planck too writes on STDERR.
 
 ## 0.4.1 - 2020-06-06
