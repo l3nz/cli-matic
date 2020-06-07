@@ -1,7 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-# 0.4.1 - 2020-06-06
+
+## 0.4.2 - xxxx
+###  Changes
+* Fixes #111 - Planck too writes on STDERR.
+
+## 0.4.1 - 2020-06-06
 ###  Changes
 * Fixes #102 - Managed exceptions to terminate script with an error
 * Fix #100: Errors should use std-err
@@ -11,11 +16,11 @@ All notable changes to this project will be documented in this file. This change
 * Fix #107:  Clean-up of Kondo-reported issues
 * Fixing #104 - Update tools.cli to 1.0.194
 
-# 0.4.0 - 2020-06-05
+## 0.4.0 - 2020-06-05
 ###  Changes
 * Fixes #69 - Recursively nested sub-commands
 
-# 0.3.12 - xxxx-xx-xx
+## 0.3.12 - xxxx-xx-xx
 ### Changes
 * Fixes #88 - Tests now pass in a timezone-independent way (tks lread)
 * Fixes #86 - Upgrade to Expound 0.8.0

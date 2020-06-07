@@ -10,8 +10,7 @@
   (:require [planck.core :as plk]
             [planck.environ :as plkenv]
             [cljs.reader :as csrdr]
-            [clojure.string :as str]
-            [cljs.pprint :as pp]))
+            [clojure.string :as str]))
 
 (defn read-env
   "Reads an environment variable.
@@ -109,12 +108,9 @@
 (defn printError
   "On ClojureScript, STDERR is not *err* but it's platform dependent.
 
-  I don't know how to do this in Planck.
+  Thanks @mfikes for the tip!  (issue #111)
   "
   [o]
-  (comment
-    (binding [pp/*print-pretty* false]
-      (pp/pprint o plk/*err*)))
-
-  (println o))
+  (binding [*print-fn* *print-err-fn*]
+    (println o)))
 
