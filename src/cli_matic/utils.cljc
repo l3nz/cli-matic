@@ -96,9 +96,6 @@
          maps))
 
 
-
-
-
 ; ==================================================================
 ; CLI-matic specific stuff
 ; ==================================================================
@@ -200,17 +197,6 @@
   :args (s/cat :opts ::S/climatic-option)
   :ret some?)
 
-;(defn OLD__get-subcommand
-;  "Given args and the canonical name of a subcommand,
-;  returns the map describing it.
-;  "
-;  [climatic-args subcmd]
-;  (let [subcommands (:commands climatic-args)]
-;    (first (filter #(= (:command %) subcmd) subcommands))))
-;
-;(s/fdef OLD__get-subcommand
-;  :args (s/cat :args ::S/climatic-cfg :subcmd string?)
-;  :ret ::S/a-command)
 
 (defn all-subcommands-aliases
   "Maps all subcommands and subcommand aliases
@@ -267,13 +253,6 @@
   :args (s/cat :args ::S/climatic-cfg-classic :sub string?)
   :ret string?)
 
-;(defn OLD__get-options-for
-;  "Gets specific :options for a subcommand or,
-;  if nil, for global."
-;  [climatic-args subcmd]
-;  (if (nil? subcmd)
-;    (:global-opts climatic-args)
-;    (:opts (OLD__get-subcommand climatic-args subcmd))))
 
 ;; Out of a cli-matic arg list,
 ;; generates a set of commands for tools.cli
@@ -289,22 +268,6 @@
    (mapv mk-cli-option climatic-opts)
    ["-?" "--help" "" :id :_help_trigger]))
 
-;(defn OLD__rewrite-opts
-;  "
-;  Out of a cli-matic arg list, generates a set of
-;  options for tools.cli.
-;  It also adds in the -? and --help options
-;  to trigger display of helpness.
-;  "
-;  [climatic-args subcmd]
-;  (cm-opts->cli-opts (OLD__get-options-for climatic-args subcmd)))
-;
-;(s/fdef OLD__rewrite-opts
-;  :args (s/cat :args some?
-;               :mode (s/or :common nil?
-;                           :a-subcommand string?))
-;  :ret some?)
-;
 
 
 ;; -------------------------------------------------------------
