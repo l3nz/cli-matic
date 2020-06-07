@@ -2,9 +2,6 @@
   "
   ## Generate help texts.
 
-
-
-
   "
   (:require [clojure.tools.cli :as cli]
             [clojure.spec.alpha :as s]
@@ -45,6 +42,41 @@
      (generate-section "COMMANDS" commands)
      (generate-section opts-title opts)])))
 
+(defn- expand-multiline-parts
+  "Expands multilines within parts so that they can be
+   aligned appropriately."
+  [parts]
+  (mapcat (fn [line-part]
+            (let [p1 (map str/split-lines line-part)
+                  max-col-length (apply max (map count p1))]
+              (->> p1
+                   (map #(concat % (repeat (- max-col-length (count %)) "")))
+                   (apply mapv vector))))
+          parts))
+
+(defn- summarize-for-tools-cli
+  "This customized `summarize` adapts the version from `clojure.tools.cli`
+  to expand multiline parts so that they are aligned properly.
+
+  Original description from clojure.tools.cli:
+
+  Reduce options specs into a options summary for printing at a terminal.
+  Note that the specs argument should be the compiled version. That effectively
+  means that you shouldn't call summarize directly. When you call parse-opts
+  you get back a :summary key which is the result of calling summarize (or
+  your user-supplied :summary-fn option) on the compiled option specs."
+  [specs]
+  (if (seq specs)
+    (let [show-defaults? (some #(and (:required %)
+                                     (or (contains? % :default)
+                                         (contains? % :default-fn))) specs)
+          parts (-> (map (partial cli/make-summary-part show-defaults?) specs)
+                    expand-multiline-parts)
+          lens (apply map (fn [& cols] (apply max (map count cols))) parts)
+          lines (cli/format-lines lens parts)]
+      (str/join \newline lines))
+    ""))
+
 (defn get-options-summary
   "To get the summary of options, we pass options to
   tools.cli parse-opts and an empty set of arguments.
@@ -54,7 +86,8 @@
   [cfg subcmd]
   (let [cli-cfg (U2/rewrite-opts cfg subcmd)
         options-str (:summary
-                     (cli/parse-opts [] cli-cfg))]
+                     (cli/parse-opts [] cli-cfg
+                                     :summary-fn summarize-for-tools-cli))]
     (str/split-lines options-str)))
 
 (s/fdef

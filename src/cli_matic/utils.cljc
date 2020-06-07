@@ -171,12 +171,13 @@
   "
   [{:keys [option short as type default multiple env]}]
 
-  (let [preset (get-cli-option type)
+  (let [as_description (asString as)
+        preset (get-cli-option type)
         placeholder (str (:placeholder preset)
                          (if (= :present default) "*" ""))
         positional-opts [(mk-short-opt short)
                          (mk-long-opt option placeholder type)
-                         (mk-env-name as env false)]
+                         (mk-env-name as_description env false)]
 
         ;; step 1 - remove :placeholder
         opts-1 (dissoc preset :placeholder)

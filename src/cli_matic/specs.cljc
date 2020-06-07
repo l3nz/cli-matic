@@ -46,7 +46,7 @@
 (s/def ::short (s/or :str ::existing-string
                      :pos ::positional-arg))
 
-(s/def ::as ::existing-string)
+(s/def ::as ::string-or-strings)
 
 (s/def ::set-of-strings
   (s/and set?

@@ -202,7 +202,7 @@
 
 (defn get-options-for
   "Given a configuration and a path through it,
-  returnss :opts for the last subcommmand."
+  returns :opts for the last subcommmand."
   [cfg path]
   (:opts (get-subcommand cfg path)))
 
@@ -214,7 +214,8 @@
   to trigger display of helpness.
   "
   [climatic-args subcmd]
-  (U/cm-opts->cli-opts (get-options-for climatic-args subcmd)))
+  (U/cm-opts->cli-opts
+   (get-options-for climatic-args subcmd)))
 
 (s/fdef rewrite-opts
   :args (s/cat :args ::S/climatic-cfg

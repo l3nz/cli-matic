@@ -161,7 +161,6 @@ As the configuration is recursive (what you have in `:subcommands` can contain m
 
 
 
-
 ### Current pre-sets
 
 The following pre-sets (`:type`) are available:
@@ -193,6 +192,8 @@ For all options, you can then add:
 * `:default` the default value, as expected after conversion. If no default, the value will be
   passed only if present. If you set `:default :present` this means that CLI-matic will abort
   if that option is not present (and it appears with a trailing asterisk in the help)
+* `:as` is the description that appears in help. It can be a multi-line array, or
+  a single string.
 * `:multiple` if true, the values for all options with the same name are stored in an array
 * `:short`: a shortened name for the command (if a string), or a positional argument if integer (see below).
 * `:env` if set, the default is read from the current value of an env variable you specify. For capture to happen, either the option must be missing, or its value must be invalid. If an option has an `:env` value specified to FOO, its description in the help shows `[$FOO]`.
