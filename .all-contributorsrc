@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "jwhitlark",
+      "name": "Jason Whitlark",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/59580?v=4",
+      "profile": "https://github.com/jwhitlark",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "cli-matic",
+  "projectOwner": "l3nz",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
