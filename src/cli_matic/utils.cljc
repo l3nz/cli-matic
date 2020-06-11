@@ -197,7 +197,6 @@
   :args (s/cat :opts ::S/climatic-option)
   :ret some?)
 
-
 (defn all-subcommands-aliases
   "Maps all subcommands and subcommand aliases
   to their canonical name.
@@ -256,6 +255,8 @@
 
 ;; Out of a cli-matic arg list,
 ;; generates a set of commands for tools.cli
+
+
 (defn cm-opts->cli-opts
   "
   Out of a cli-matic arg list, generates a set of
@@ -324,7 +325,10 @@
 (defn exit!
   "Raises an exception that will print a message
   without the stack trace. Can specify an optional
-  exit code; if not specified, zero."
+  exit code; if not specified, zero.
+
+  See [[exception-info]].
+  "
   [message errorcode]
   (throw
    (ex-info (str "**CLI-MATIC**:" message)
@@ -337,6 +341,10 @@
    we get that data out; if not, standard exception.
 
    Returns [message exit-code].
+
+   To understand whether it was created by [[exit!]] we
+   check for a *top-secret* key with a secret value - pls don't tell
+   anyone, man. You might immanentize the eschaton.
   "
   [e]
   (let [data (ex-data e)]

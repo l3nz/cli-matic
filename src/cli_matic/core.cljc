@@ -263,7 +263,6 @@
                :parsed-results map?
                :type string?))
 
-
 (defn parse-command-line
   "
   This is where the magic happens.
@@ -411,9 +410,6 @@
   :args (s/cat :args (s/coll-of string?)
                :opts ::S/climatic-cfg)
   :ret ::S/lineParseResult)
-
-
-
 
 (defn assert-unique-values
   "Check that all values are unique.

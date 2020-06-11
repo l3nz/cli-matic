@@ -38,10 +38,7 @@
   :ret ::S/climatic-cfg)
 
 
-
-
-
-;
+      ;
 ;
 ;
 

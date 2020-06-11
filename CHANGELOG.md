@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.4.3 - 2020-06-11
+###  Changes
+* Fix #115: Convert old configuration objects to new ones automatically.
 
 ## 0.4.2 - 2020-06-07
 ###  Changes
