@@ -1,6 +1,6 @@
 # CLI-matic 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Compact [sub]command line parsing library, for Clojure. Perfect for scripting (who said
@@ -406,6 +406,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://jeiwan.net/"><img src="https://avatars0.githubusercontent.com/u/8029346?v=4" width="100px;" alt=""/><br /><sub><b>Ivan Kuznetsov</b></sub></a><br /><a href="https://github.com/l3nz/cli-matic/commits?author=Jeiwan" title="Code">💻</a></td>
     <td align="center"><a href="https://cortys.de"><img src="https://avatars2.githubusercontent.com/u/1737630?v=4" width="100px;" alt=""/><br /><sub><b>Clemens Damke</b></sub></a><br /><a href="https://github.com/l3nz/cli-matic/commits?author=Cortys" title="Code">💻</a></td>
     <td align="center"><a href="http://choomnuan.com"><img src="https://avatars2.githubusercontent.com/u/4092543?v=4" width="100px;" alt=""/><br /><sub><b>Burin Choomnuan</b></sub></a><br /><a href="https://github.com/l3nz/cli-matic/commits?author=agilecreativity" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/lread"><img src="https://avatars2.githubusercontent.com/u/967328?v=4" width="100px;" alt=""/><br /><sub><b>Lee Read</b></sub></a><br /><a href="https://github.com/l3nz/cli-matic/commits?author=lread" title="Code">💻</a></td>
+    <td align="center"><a href="http://blog.fikesfarm.com"><img src="https://avatars1.githubusercontent.com/u/1723464?v=4" width="100px;" alt=""/><br /><sub><b>Mike Fikes</b></sub></a><br /><a href="#question-mfikes" title="Answering Questions">💬</a></td>
   </tr>
 </table>
 
