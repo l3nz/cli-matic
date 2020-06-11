@@ -1,0 +1,51 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "jwhitlark",
+      "name": "Jason Whitlark",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/59580?v=4",
+      "profile": "https://github.com/jwhitlark",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ty-i3",
+      "name": "ty-i3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/38514663?v=4",
+      "profile": "https://github.com/ty-i3",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Cortys",
+      "name": "Clemens Damke",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1737630?v=4",
+      "profile": "https://cortys.de",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "agilecreativity",
+      "name": "Burin Choomnuan",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/4092543?v=4",
+      "profile": "http://choomnuan.com",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "cli-matic",
+  "projectOwner": "l3nz",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
