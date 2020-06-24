@@ -2,8 +2,10 @@
   (:require [clojure.test :refer [is are deftest testing]]
             [cli-matic.platform :as P]
             [cli-matic.platform-macros :refer [try-catch-all]]
-            [clojure.spec.alpha :as s]
+            #?(:bb      [spartan.spec :as s]
+               :default [clojure.spec.alpha :as s])
             [clojure.string :as str]
+            [cli-matic.optionals :as OPT]
             [cli-matic.core :refer [parse-command-line
                                     run-cmd*
                                     ->RV
@@ -326,9 +328,8 @@
          :commands    [{:command "add" :description "Adds" :runs identity
                         :opts    [{:option "a" :short "q" :as "Addendum 1" :type :int}
                                   {:option "b" :short "d" :as "Addendum 2" :type :int :default 0}]}]}
-        :ERR)))
+        :ERR))))
   ;;;;
-  )
 
 (def POSITIONAL-SUBCOMMAND-CFG
   {:app         {:command     "dummy"
@@ -455,19 +456,16 @@
   "To avoid issues with expound changing messages, we remove all
   but the first line in stderr for testing."
   [{:keys [stderr] :as all}]
-
   (let [nv (if (and (vector? stderr) (pos? (count stderr)))
              (let [lines (str/split-lines (first stderr))
                    vec-of-fline [(first lines)]]
-
                vec-of-fline) stderr)]
-
     (assoc all
            :stderr nv)))
 
 ;; ------------
 
-
+;FIXME fails in eftest
 (deftest check-specs
   (are [i o]
        (= (keep-1st-line-stderr (run-cmd* SPEC-CFG-v2 i)) o)

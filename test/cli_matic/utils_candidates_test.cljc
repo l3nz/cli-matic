@@ -1,6 +1,6 @@
 (ns cli-matic.utils-candidates-test
-  (:require [clojure.test :refer :all])
-  (:require [cli-matic.utils-candidates :refer [str-distance
+  (:require [clojure.test :refer [deftest are]]
+            [cli-matic.utils-candidates :refer [str-distance
                                                 candidate-suggestions]]))
 
 (defn abs [n] (max n (- n)))

@@ -1,12 +1,13 @@
 (ns cli-matic.presets-test
-  (:require [clojure.test :refer [is are deftest testing]]
+  (:require [clojure.test :refer [are deftest is testing]]
             [cljc.java-time.zone-id :as zone-id]
             [cljc.java-time.local-date :as local-date]
             [cljc.java-time.local-date-time :as local-date-time]
             [cljc.java-time.zoned-date-time :as zoned-date-time]
             [cli-matic.core :refer [parse-command-line]]
             [cli-matic.utils-v2 :refer [convert-config-v1->v2]]
-            [cli-matic.presets :refer [set-help-values set-find-value set-find-didyoumean]]))
+            [cli-matic.presets :refer [set-help-values set-find-value set-find-didyoumean]]
+            [cli-matic.optionals :refer [with-yaml?]]))
 
 (defn cmd_foo [v]
   (prn "Foo:" v)
@@ -25,9 +26,6 @@
                 :description "I am function foo"
                 :opts  [myOption]
                 :runs  cmd_foo}]}))
-
-; :subcommand     "foo"
-; :subcommand-def
 
 (defn parse-cmds-simpler [args cfg]
   (dissoc
@@ -49,10 +47,10 @@
 
   (testing "int value"
     (are [i o]
-         (= (parse-cmds-simpler
+         (= o
+            (parse-cmds-simpler
              i
-             (mkDummyCfg {:option "val" :as "x" :type :int}))
-            o)
+             (mkDummyCfg {:option "val" :as "x" :type :int})))
 
       ; integers
       ["foo" "--val" "7"]
@@ -64,10 +62,10 @@
   ;
   (testing "int-0 value"
     (are [i o]
-         (= (parse-cmds-simpler
+         (= o
+            (parse-cmds-simpler
              i
-             (mkDummyCfg {:option "val" :as "x" :type :int-0}))
-            o)
+             (mkDummyCfg {:option "val" :as "x" :type :int-0})))
 
       ; integers
       ["foo" "--val" "7"]
@@ -89,11 +87,11 @@
 
   (testing "float value"
     (are [i o]
-         (= (str-val (parse-cmds-simpler
-                      i
-                      (mkDummyCfg {:option "val" :as "x" :type :float})))
+         (= (str-val o)
 
-            (str-val o))
+            (str-val (parse-cmds-simpler
+                      i
+                      (mkDummyCfg {:option "val" :as "x" :type :float}))))
 
     ; integers as floats
       ["foo" "--val" "7"]
@@ -111,11 +109,11 @@
 
   (testing "float0 value"
     (are [i o]
-         (= (str-val (parse-cmds-simpler
-                      i
-                      (mkDummyCfg {:option "val" :as "x" :type :float-0})))
+         (= (str-val o)
 
-            (str-val o))
+            (str-val (parse-cmds-simpler
+                      i
+                      (mkDummyCfg {:option "val" :as "x" :type :float-0}))))
 
     ; integers as floats
       ["foo" "--val" "7"]
@@ -142,9 +140,9 @@
 (deftest test-keyword
   (testing "simple keyword"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :keyword})))
 
                                         ;
       ["foo" "--val" "abcd"]
@@ -154,9 +152,9 @@
        :parse-errors :NONE}))
   (testing "Already keyword"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :keyword})))
 
                                         ;
       ["foo" "--val" ":core/xyz"]
@@ -166,9 +164,9 @@
        :parse-errors :NONE}))
   (testing "double colon"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :keyword})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :keyword})))
 
                                         ;
       ["foo" "--val" "::abcd"]
@@ -181,9 +179,9 @@
 (deftest test-string
   (testing "just strings"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :string})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :string})))
 
          ;
       ["foo" "--val" "abcd"]
@@ -194,9 +192,9 @@
 
   (testing
    (are [i o]
-        (= (parse-cmds-simpler
-            i
-            (mkDummyCfg {:option "val" :short "v" :as "x" :type :string})) o)
+        (= o (parse-cmds-simpler
+              i
+              (mkDummyCfg {:option "val" :short "v" :as "x" :type :string})))
 
         ;
      ["foo" "-v" "abcd" "aaarg"]
@@ -207,9 +205,9 @@
 
   (testing "multiple strings"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :string :multiple true})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :string :multiple true})))
          ;
       ["foo" "--val" "abcd"]
       {:commandline  {:_arguments []
@@ -225,9 +223,9 @@
 
   (testing "multiple strings but no multiple option"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :string :multiple false})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :string :multiple false})))
 
          ;
       ["foo" "--val" "abcd"]
@@ -247,9 +245,9 @@
 (deftest test-dates
   (testing "YYYY-MM-DD suck"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :yyyy-mm-dd})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :yyyy-mm-dd})))
 
       ; this works
       ["foo" "--val" "2018-01-01"]
@@ -274,9 +272,9 @@
 (deftest test-slurping
   (testing "Slurping all-in-one"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :slurp})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :slurp})))
 
       ; one file
       ["foo" "--val" "resources/three_lines.txt"]
@@ -301,9 +299,9 @@
 (deftest test-json
   (testing "JSON single value"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :json})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :json})))
 
       ; one file
       ["foo" "--val" "{\"a\":1, \"b\":2}"]
@@ -315,9 +313,9 @@
 
   (testing "Slurping multiline JSON"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :jsonfile})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :jsonfile})))
 
       ; one file
       ["foo" "--val" "resources/json_simple.json"]
@@ -333,9 +331,9 @@
 (deftest test-edn
   (testing "EDN single value"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :edn})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :edn})))
 
       ; one file
       ["foo" "--val" "{:a 1, :b 2}"]
@@ -347,9 +345,9 @@
 
   (testing "Slurping multiline EDN"
     (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :ednfile})) o)
+         (= o (parse-cmds-simpler
+               i
+               (mkDummyCfg {:option "val" :as "x" :type :ednfile})))
 
       ; one file
       ["foo" "--val" "resources/edn_simple.edn"]
@@ -362,54 +360,59 @@
 
 ; YAML
 
-(deftest test-yaml
-  (testing "YAML single value"
-    (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :yaml})) o)
+#?(:bb nil
+   ;FIXME fails on master. yaml is not being loaded for tests (even with `lein with-profile +provided eftest`)
+   :clj (deftest test-yaml
+          (testing "YAML dependency is loaded"
+            (is with-yaml?))
 
-                                        ; one file
-      ["foo" "--val" "a: 1\nb: 2"]
-      {:commandline    {:_arguments []
-                        :val        {"a" 1
-                                     "b" 2}}
-       :error-text     ""
-       :parse-errors   :NONE}))
+          (testing "YAML single value"
+            (are [i o]
+                 (= o (parse-cmds-simpler
+                       i
+                       (mkDummyCfg {:option "val" :as "x" :type :yaml})))
 
-  (testing "Slurping multiline YAML"
-    (are [i o]
-         (= (parse-cmds-simpler
-             i
-             (mkDummyCfg {:option "val" :as "x" :type :yamlfile})) o)
+                                                ; one file
+              ["foo" "--val" "a: 1\nb: 2"]
+              {:commandline    {:_arguments []
+                                :val        {"a" 1
+                                             "b" 2}}
+               :error-text     ""
+               :parse-errors   :NONE}))
 
-      ; one file
-      ["foo" "--val" "resources/yaml_simple.yaml"]
-      {:commandline    {:_arguments []
-                        :val        {"list"   [1 2 "hi"]
-                                     "intval" 100
-                                     "strval" "good"}}
-       :error-text     ""
-       :parse-errors   :NONE}))
+          (testing "Slurping multiline YAML"
+            (are [i o]
+                 (= o (parse-cmds-simpler
+                       i
+                       (mkDummyCfg {:option "val" :as "x" :type :yamlfile})))
 
-  (testing "Complex multiline YAML"
-    (are [i o]
-         (= (-> (parse-cmds-simpler
-                 i
-                 (mkDummyCfg {:option "val" :as "x" :type :yamlfile}))
-                (get-in [:commandline :val])
-                (select-keys ["invoice" "date"])) o)
+              ; one file
+              ["foo" "--val" "resources/yaml_simple.yaml"]
+              {:commandline    {:_arguments []
+                                :val        {"list"   [1 2 "hi"]
+                                             "intval" 100
+                                             "strval" "good"}}
+               :error-text     ""
+               :parse-errors   :NONE}))
 
-      ; one file
-      ["foo" "--val" "resources/yaml_full.yaml"]
-      {"invoice" 34843
-       "date" #inst "2001-01-23"}
-      #_{:commandline    {:_arguments []
-                          :val        {"list"   [1 2 "hi"]
-                                       "intval" 100
-                                       "strval" "good"}}
-         :error-text     ""
-         :parse-errors   :NONE})))
+          (testing "Complex multiline YAML"
+            (are [i o]
+                 (= o (-> (parse-cmds-simpler
+                           i
+                           (mkDummyCfg {:option "val" :as "x" :type :yamlfile}))
+                          (get-in [:commandline :val])
+                          (select-keys ["invoice" "date"])))
+
+              ; one file
+              ["foo" "--val" "resources/yaml_full.yaml"]
+              {"invoice" 34843
+               "date" #inst "2001-01-23"}
+              #_{:commandline    {:_arguments []
+                                  :val        {"list"   [1 2 "hi"]
+                                               "intval" 100
+                                               "strval" "good"}}
+                 :error-text     ""
+                 :parse-errors   :NONE}))))
 
 
 ; =============== SETS ==========

@@ -16,9 +16,6 @@
    [cli-matic.utils-v2 :as U2]
    [clojure.pprint :as pp]))
 
-
-
-
 ;;
 
 
@@ -44,6 +41,7 @@
 
 (defn fn->className
   "Extracts the class name for a given function."
+  ;TODO add IFn tag
   [a-fn]
   (-> a-fn
       .getClass

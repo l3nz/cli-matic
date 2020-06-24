@@ -1,4 +1,4 @@
-(defproject cli-matic "0.4.3"
+(defproject cli-matic "0.5.0"
   :description "Compact [sub]command line parsing library, for Clojure"
   :url "https://github.com/l3nz/cli-matic"
   :license {:name "Eclipse Public License, v2"
@@ -14,17 +14,18 @@
                               "clj-kondo.main" "--" "--lint" "test/" "--cache" ".cli-kondo-cache"]}
 
   :dependencies
-  [[org.clojure/clojure "1.9.0" :scope "provided"]
+  [[org.clojure/clojure "1.10.1" :scope "provided"]
    [org.clojure/clojurescript "1.10.439" :scope "provided"]
    [org.clojure/spec.alpha "0.1.143" :scope "provided"]
    [org.clojure/tools.cli "1.0.194"]
+   [cljc.java-time "0.1.11"]
    [orchestra "2019.02.06-1" :scope "provided"]
    [cheshire "5.10.0" :scope "provided"]
    [io.forward/yaml "1.0.9" :scope "provided"]
    [org.clojure/core.async "0.5.527" :scope "provided"]
    ;[planck "2.22.0" :scope "provided"]
    [l3nz/planck "0.0.0" :scope "provided"]
-   [expound "0.8.4"]]
+   [expound "0.8.4" :scope "provided"]]
 
   ;:scm {:name "git"
   ;      ;; :tag "..."
@@ -40,9 +41,7 @@
             [lein-cloverage "1.1.2"]
             [lein-ancient "0.6.15"]]
 
-  :profiles {:test
-             {:dependencies [[cljc.java-time "0.1.11"]]}
-             :kondo
+  :profiles {:kondo
              {:dependencies [[org.clojure/clojure "1.10.1"]
                              [clj-kondo "2020.05.09"]]}}
 

@@ -4,12 +4,12 @@
 
   "
   (:require [clojure.tools.cli :as cli]
-            [clojure.spec.alpha :as s]
+            #?(:bb      [spartan.spec :as s]
+               :default [clojure.spec.alpha :as s])
             [clojure.string :as str]
             [cli-matic.specs :as S]
             [cli-matic.utils :as U]
             [cli-matic.utils-v2 :as U2]
-
             [cli-matic.utils-candidates :as UB]
             [cli-matic.optionals :as OPT]))
 
@@ -69,7 +69,9 @@
     (let [show-defaults? (some #(and (:required %)
                                      (or (contains? % :default)
                                          (contains? % :default-fn))) specs)
-          parts (-> (map (partial cli/make-summary-part show-defaults?) specs)
+          ;FIXME cli/make-summary-part does not exist in babashka
+          parts (-> (map (partial #?(:bb      (throw (RuntimeException. (str "Unsupported function: " `cli/make-summary-part)))
+                                     :default cli/make-summary-part) show-defaults?) specs)
                     expand-multiline-parts)
           lens (apply map (fn [& cols] (apply max (map count cols))) parts)
           lines (cli/format-lines lens parts)]
@@ -89,10 +91,12 @@
                                      :summary-fn summarize-for-tools-cli))]
     (str/split-lines options-str)))
 
-(s/fdef
-  get-options-summary
-  :args (s/cat :cfg ::S/climatic-cfg
-               :subcmd ::S/subcommand-path))
+;TODO remove :bb expression once https://github.com/borkdude/spartan.spec has fdef
+#?(:bb  nil
+   :default (s/fdef
+              get-options-summary
+              :args (s/cat :cfg ::S/climatic-cfg
+                           :subcmd ::S/subcommand-path)))
 
 (defn get-first-rest-description-rows
   "get title and description of description rows"
@@ -132,10 +136,11 @@
   [commands]
   (map generate-a-command commands))
 
-(s/fdef
-  generate-global-command-list
-  :args (s/cat :commands ::S/subcommands)
-  :ret  (s/coll-of string?))
+#?(:bb  nil
+   :default (s/fdef
+              generate-global-command-list
+              :args (s/cat :commands ::S/subcommands)
+              :ret  (s/coll-of string?)))
 
 (defn generate-global-help
   "This is where we generate global help, so
@@ -166,11 +171,12 @@
      "GLOBAL OPTIONS" (get-options-summary cfg path)
      (:examples this-cmd))))
 
-(s/fdef
-  generate-global-help
-  :args (s/cat :cfg ::S/climatic-cfg
-               :cmd ::S/subcommand-path)
-  :ret (s/coll-of string?))
+#?(:bb  nil
+   :default (s/fdef
+              generate-global-help
+              :args (s/cat :cfg ::S/climatic-cfg
+                           :cmd ::S/subcommand-path)
+              :ret (s/coll-of string?)))
 
 (defn arg-list-with-positional-entries
   "Creates the `[arguments...]`"
@@ -183,7 +189,6 @@
 (defn generate-subcmd-help
   "This is where we generate help for a specific subcommand."
   [cfg cmd]
-
   (let [cmd-cfg (U2/walk cfg cmd)
         path (U2/as-canonical-path cmd-cfg)
         path-but-last (reverse (rest (reverse path)))
@@ -210,11 +215,12 @@
      (get-options-summary cfg cmd)
      (:examples this-cmd))))
 
-(s/fdef
-  generate-subcmd-help
-  :args (s/cat :cfg ::S/climatic-cfg
-               :cmd ::S/subcommand-path)
-  :ret (s/coll-of string?))
+#?(:bb  nil
+   :default (s/fdef
+              generate-subcmd-help
+              :args (s/cat :cfg ::S/climatic-cfg
+                           :cmd ::S/subcommand-path)
+              :ret (s/coll-of string?)))
 
 (def MISTYPE-ERR-RATIO 0.35)
 
@@ -232,12 +238,13 @@
                         (into aliases))]
     (UB/candidate-suggestions all-subcmds wrong-subcmd MISTYPE-ERR-RATIO)))
 
-(s/fdef
-  generate-possible-mistypes
-  :args (s/cat :wrong-cmd string?
-               :subcmd (s/coll-of (s/or :s string? :nil nil?))
-               :aliases (s/coll-of (s/or :s string? :nil nil?)))
-  :ret (s/coll-of string?))
+#?(:bb  nil
+   :default (s/fdef
+              generate-possible-mistypes
+              :args (s/cat :wrong-cmd string?
+                           :subcmd (s/coll-of (s/or :s string? :nil nil?))
+                           :aliases (s/coll-of (s/or :s string? :nil nil?)))
+              :ret (s/coll-of string?)))
 
 (defn generate-help-possible-mistypes
   "If we have a wrong subcommand, can we guess what the correct
@@ -264,11 +271,12 @@
        "The most similar subcommands are:"
        (mapv U/indent candidates)])))
 
-(s/fdef
-  generate-help-possible-mistypes
-  :args (s/cat :cfg ::S/climatic-cfg-classic :cmd ::S/command)
-  :ret (s/coll-of (s/or :str string?
-                        :cs (s/coll-of string?))))
+#?(:bb  nil
+   :default (s/fdef
+              generate-help-possible-mistypes
+              :args (s/cat :cfg ::S/climatic-cfg-classic :cmd ::S/command)
+              :ret (s/coll-of (s/or :str string?
+                                    :cs (s/coll-of string?)))))
 
 (defn getGlobalHelperFn
   [cfg path]
