@@ -372,7 +372,7 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" "$@"
 
 And so you have a nice place not to forget to set `skip-macros`!
 
-## Contribuiting
+## Contributing
 
 Before submitting a bug or pull request, make sure you read [CONTRIBUTING.md](CONTRIBUTING.md).
 
