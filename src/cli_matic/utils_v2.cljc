@@ -9,9 +9,9 @@
   (:require
    [cli-matic.utils :as U]
    [cli-matic.specs :as S]
-   [clojure.spec.alpha :as s]
-   #?(:clj  [cli-matic.platform-macros :refer [try-catch-all]]
-      :cljs [cli-matic.platform-macros :refer-macros [try-catch-all]])
+   #?(:bb      [spartan.spec :as s]
+      :default [clojure.spec.alpha :as s])
+   [cli-matic.platform-macros :refer [try-catch-all]]
    [clojure.string :as str]))
 
 (defn convert-config-v1->v2
@@ -26,22 +26,17 @@
 
   "
   [cmd_v1]
-
   {:command (get-in cmd_v1 [:app :command])
    :description (get-in cmd_v1 [:app :description])
    :version (get-in cmd_v1 [:app :version])
    :opts (get-in cmd_v1 [:global-opts])
    :subcommands (get-in cmd_v1 [:commands])})
 
-(s/fdef convert-config-v1->v2
-  :args (s/cat :cmdv1 ::S/climatic-cfg-classic)
-  :ret ::S/climatic-cfg)
-
-
-      ;
-;
-;
-
+;TODO remove :bb expression once https://github.com/borkdude/spartan.spec has fdef
+#?(:bb  nil
+   :default (s/fdef convert-config-v1->v2
+              :args (s/cat :cmdv1 ::S/climatic-cfg-classic)
+              :ret ::S/climatic-cfg))
 
 (def SETUP-DEFAULTS-v1
   {:app {; see help-gen/
@@ -60,7 +55,6 @@
 
   "
   [cfg]
-
   (cond
     ; in v2, we have no :app
     (nil? (:app cfg))
@@ -70,10 +64,11 @@
     :else
     (convert-config-v1->v2 (add-setup-defaults-v1 cfg))))
 
-(s/fdef cfg-v2
-  :args (s/cat :cfg (s/or :v1 ::S/climatic-cfg-classic
-                          :v2 ::S/climatic-cfg))
-  :ret ::S/climatic-cfg)
+#?(:bb  nil
+   :default (s/fdef cfg-v2
+              :args (s/cat :cfg (s/or :v1 ::S/climatic-cfg-classic
+                                      :v2 ::S/climatic-cfg))
+              :ret ::S/climatic-cfg))
 
 (defn isRightCmd?
   "Check if this is the right command or not,
@@ -137,11 +132,12 @@
                  rp
                  elems))))))
 
-(s/fdef walk
-  :args (s/cat
-         :cfg ::S/climatic-cfg
-         :path ::S/subcommand-path)
-  :ret ::S/subcommand-executable-path)
+#?(:bb  nil
+   :default (s/fdef walk
+              :args (s/cat
+                     :cfg ::S/climatic-cfg
+                     :path ::S/subcommand-path)
+              :ret ::S/subcommand-executable-path))
 
 (defn can-walk?
   "Check that you can walk up to a point.
@@ -156,11 +152,12 @@
    (fn [_]
      false)))
 
-(s/fdef can-walk?
-  :args (s/cat
-         :cfg ::S/climatic-cfg
-         :path ::S/subcommand-path)
-  :ret boolean?)
+#?(:bb  nil
+   :default (s/fdef can-walk?
+              :args (s/cat
+                     :cfg ::S/climatic-cfg
+                     :path ::S/subcommand-path)
+              :ret boolean?))
 
 (defn as-canonical-path
   "
@@ -178,18 +175,20 @@
   (let [e (last xp)]
     (ifn? (:runs e))))
 
-(s/fdef is-runnable?
-  :args (s/cat :xp ::S/subcommand-executable-path)
-  :ret boolean?)
+#?(:bb  nil
+   :default (s/fdef is-runnable?
+              :args (s/cat :xp ::S/subcommand-executable-path)
+              :ret boolean?))
 
 (defn canonical-path-to-string
   [path]
   (str/join " " path))
 
-(s/fdef canonical-path-to-string
-  :args (s/cat
-         :path ::S/subcommand-path)
-  :ret string?)
+#?(:bb  nil
+   :default (s/fdef canonical-path-to-string
+              :args (s/cat
+                     :path ::S/subcommand-path)
+              :ret string?))
 
 (defn get-subcommand
   "Given a configuration and a path through it,
@@ -214,10 +213,11 @@
   (U/cm-opts->cli-opts
    (get-options-for climatic-args subcmd)))
 
-(s/fdef rewrite-opts
-  :args (s/cat :args ::S/climatic-cfg
-               :path ::S/subcommand-path)
-  :ret some?)
+#?(:bb  nil
+   :default (s/fdef rewrite-opts
+              :args (s/cat :args ::S/climatic-cfg
+                           :path ::S/subcommand-path)
+              :ret some?))
 
 (defn list-positional-parms
   "Extracts all positional parameters from the configuration."
@@ -226,11 +226,12 @@
   (let [opts (get-options-for cfg subcmd)]
     (U/positional-parms-from-opts opts)))
 
-(s/fdef
-  list-positional-parms
-  :args (s/cat :cfg ::S/climatic-cfg
-               :cmd ::S/subcommand-path)
-  :ret (s/coll-of ::S/climatic-option))
+#?(:bb  nil
+   :default (s/fdef
+              list-positional-parms
+              :args (s/cat :cfg ::S/climatic-cfg
+                           :cmd ::S/subcommand-path)
+              :ret (s/coll-of ::S/climatic-option)))
 
 (defn get-most-specific-value
   "Given a configuration and a path through it, gets the most

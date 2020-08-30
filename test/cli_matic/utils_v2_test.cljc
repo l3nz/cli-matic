@@ -1,7 +1,6 @@
 (ns cli-matic.utils-v2-test
   (:require [clojure.test :refer [is are deftest testing]]
-            #?(:clj [cli-matic.platform-macros :refer [try-catch-all]]
-               :cljs [cli-matic.platform-macros :refer-macros [try-catch-all]])
+            [cli-matic.platform-macros :refer [try-catch-all]]
             [cli-matic.optionals :as OPT]
             [cli-matic.utils-v2 :refer [convert-config-v1->v2
                                         walk

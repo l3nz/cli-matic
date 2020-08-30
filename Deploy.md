@@ -52,7 +52,7 @@ To see my account, `creds.sh clojars`.
 
 ## Pushing documentation
 
-Change the documentation linkin `README.md`. Then click on it.
+Change the documentation link in `README.md`. Then click on it.
 
 
 # ClojureScript
@@ -61,6 +61,8 @@ Unit tests:
 
 	lein cljsbuild test unit-tests
 
+# Babashka
 
+Unit tests:
 
-
+	./bb-test.sh

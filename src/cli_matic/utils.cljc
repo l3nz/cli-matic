@@ -12,7 +12,8 @@
   (:require [clojure.string :as str]
             [cli-matic.presets :as PRESETS]
             [cli-matic.specs :as S]
-            [clojure.spec.alpha :as s]
+            #?(:bb      [spartan.spec :as s]
+               :default [clojure.spec.alpha :as s])
             [cli-matic.platform :as P]))
 
 
@@ -60,9 +61,11 @@
   [s]
   (str " " s))
 
-(s/fdef indent-string
-  :args (s/cat :s string?)
-  :ret string?)
+;TODO remove :bb expression once https://github.com/borkdude/spartan.spec has fdef
+#?(:bb  nil
+   :default (s/fdef indent-string
+              :args (s/cat :s string?)
+              :ret string?))
 
 (defn indent
   "Indents a single string, or each string
@@ -193,9 +196,10 @@
      conj positional-opts
      (flatten (seq opts-3)))))
 
-(s/fdef mk-cli-option
-  :args (s/cat :opts ::S/climatic-option)
-  :ret some?)
+#?(:bb  nil
+   :default (s/fdef mk-cli-option
+              :args (s/cat :opts ::S/climatic-option)
+              :ret some?))
 
 (defn all-subcommands-aliases
   "Maps all subcommands and subcommand aliases
@@ -226,9 +230,10 @@
              subcommands)))
      nil)))
 
-(s/fdef all-subcommands-aliases
-  :args (s/cat :args ::S/climatic-cfg-classic)
-  :ret (s/map-of string? string?))
+#?(:bb  nil
+   :default (s/fdef all-subcommands-aliases
+              :args (s/cat :args ::S/climatic-cfg-classic)
+              :ret (s/map-of string? string?)))
 
 (defn all-subcommands
   "Returns all subcommands, as strings.
@@ -237,9 +242,10 @@
   [climatic-args]
   (set (keys (all-subcommands-aliases climatic-args))))
 
-(s/fdef all-subcommands
-  :args (s/cat :args ::S/climatic-cfg-classic)
-  :ret set?)
+#?(:bb  nil
+   :default (s/fdef all-subcommands
+              :args (s/cat :args ::S/climatic-cfg-classic)
+              :ret set?))
 
 (defn canonicalize-subcommand
   "Returns the 'canonical' name of a subcommand,
@@ -248,9 +254,10 @@
   [commands subcmd]
   (get (all-subcommands-aliases commands) subcmd))
 
-(s/fdef canonicalize-subcommand
-  :args (s/cat :args ::S/climatic-cfg-classic :sub string?)
-  :ret string?)
+#?(:bb  nil
+   :default (s/fdef canonicalize-subcommand
+              :args (s/cat :args ::S/climatic-cfg-classic :sub string?)
+              :ret string?))
 
 
 ;; Out of a cli-matic arg list,
@@ -287,10 +294,11 @@
   [opts]
   (filterv #(integer? (:short %)) opts))
 
-(s/fdef
-  positional-parms-from-opts
-  :args (s/cat :opts ::S/opts)
-  :ret (s/coll-of ::S/climatic-option))
+#?(:bb  nil
+   :default (s/fdef
+              positional-parms-from-opts
+              :args (s/cat :opts ::S/opts)
+              :ret (s/coll-of ::S/climatic-option)))
 
 (defn a-positional-parm
   "Reads one positional parameter from the arguments.
@@ -302,11 +310,12 @@
         val (get args pos nil)]
     [lbl val]))
 
-(s/fdef
-  a-positional-parm
-  :args (s/cat :args sequential?
-               :opt  ::S/climatic-option)
-  :ret vector?)
+#?(:bb  nil
+   :default (s/fdef
+              a-positional-parm
+              :args (s/cat :args sequential?
+                           :opt  ::S/climatic-option)
+              :ret vector?))
 
 (defn capture-positional-parms
   "Captures positional parameters in the remaining-args of
@@ -316,11 +325,12 @@
     (into {}
           (map (partial a-positional-parm remaining-args) pp))))
 
-(s/fdef
-  capture-positional-parms
-  :args (s/cat :opts ::S/opts
-               :args sequential?)
-  :ret ::S/mapOfCliParams)
+#?(:bb  nil
+   :default (s/fdef
+              capture-positional-parms
+              :args (s/cat :opts ::S/opts
+                           :args sequential?)
+              :ret ::S/mapOfCliParams))
 
 (defn exit!
   "Raises an exception that will print a message

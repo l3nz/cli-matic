@@ -1,5 +1,6 @@
 (ns cli-matic.specs
-  (:require [clojure.spec.alpha :as s]))
+  (:require #?(:bb      [spartan.spec :as s]
+               :default [clojure.spec.alpha :as s])))
 
 (defn has-elements? [s]
   (pos? (count s)))

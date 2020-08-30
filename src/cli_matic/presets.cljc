@@ -7,7 +7,8 @@
   (:require [clojure.string :as str]
             [cli-matic.optionals :as OPT]
             [cli-matic.platform :as P]
-            [clojure.spec.alpha :as s]
+            #?(:bb      [spartan.spec :as s]
+               :default [clojure.spec.alpha :as s])
             [cli-matic.specs :as S]
             [cli-matic.utils-candidates :as BU]))
 
@@ -23,7 +24,7 @@
   "
   [filename]
   (cond
-    (nil? filename)   ""
+    (nil? filename) ""
     (empty? filename) ""
     :else (P/slurp-file filename)))
 
@@ -83,11 +84,13 @@
   "Given a set, return allowed options as string"
   [st]
   (let [opts (map name st)]
-    (str/join  "|" (sort opts))))
+    (str/join "|" (sort opts))))
 
-(s/fdef
-  set-help-values
-  :args (s/cat :set ::S/set-of-vals))
+;TODO remove :bb expression once https://github.com/borkdude/spartan.spec has fdef
+#?(:bb  nil
+   :default (s/fdef
+              set-help-values
+              :args (s/cat :set ::S/set-of-vals)))
 
 (defn set-normalized-entry
   "A normalized set entry is a lowercase string
@@ -95,7 +98,7 @@
   [v]
   (let [ne (str/lower-case (name v))]
     (cond
-      (str/starts-with? ne ":")  (subs ne 1)
+      (str/starts-with? ne ":") (subs ne 1)
       :else ne)))
 
 (defn set-normalize-map
@@ -119,38 +122,40 @@
         opt (set-normalized-entry v)]
     (get mOpts opt)))
 
-(s/fdef
-  set-find-value
-  :args (s/cat :set ::S/set-of-vals :v ::S/existing-string))
+#?(:bb  nil
+   :default (s/fdef
+              set-find-value
+              :args (s/cat :set ::S/set-of-vals :v ::S/existing-string)))
 
 (defn set-find-didyoumean
   "Finds candidates after normalization.
   Return original candidates."
   [st v]
   (let [optMap (set-normalize-map st)
-        ov  (set-normalized-entry v)
+        ov (set-normalized-entry v)
         cands (BU/candidate-suggestions (keys optMap) ov 0.33)]
 
     (mapv #(get optMap %) cands)))
 
-(s/fdef
-  set-find-value
-  :args (s/cat :set ::S/set-of-vals :v ::S/existing-string))
+#?(:bb  nil
+   :default (s/fdef
+              set-find-value
+              :args (s/cat :set ::S/set-of-vals :v ::S/existing-string)))
 
 (defn set-find-didyoumean-str
   "Returns ' Did you mean A or B?' or '' if no candidates. "
   [st v]
-  (let [cs  (set-find-didyoumean st v)]
-    (if
-     (pos? (count cs))
+  (let [cs (set-find-didyoumean st v)]
+    (if (pos? (count cs))
       (str " Did you mean '"
            (str/join "' or '" cs)
            "'?")
       "")))
 
-(s/fdef
-  set-find-value
-  :args (s/cat :set ::S/set-of-vals :v ::S/existing-string))
+#?(:bb  nil
+   :default (s/fdef
+              set-find-value
+              :args (s/cat :set ::S/set-of-vals :v ::S/existing-string)))
 
 (defn asSet
   "Sets of options are dark black magic.
@@ -213,50 +218,50 @@
 
 
 (def known-presets
-  {:int    {:parse-fn    P/parseInt
-            :placeholder "N"}
-   :int-0  {:parse-fn    P/parseInt
-            :placeholder "N"
-            :default     0}
+  {:int        {:parse-fn    P/parseInt
+                :placeholder "N"}
+   :int-0      {:parse-fn    P/parseInt
+                :placeholder "N"
+                :default     0}
 
-   :float  {:parse-fn    P/parseFloat
-            :placeholder "N.N"}
+   :float      {:parse-fn    P/parseFloat
+                :placeholder "N.N"}
 
-   :float-0  {:parse-fn    P/parseFloat
-              :placeholder "N.N"
-              :default     0.0}
+   :float-0    {:parse-fn    P/parseFloat
+                :placeholder "N.N"
+                :default     0.0}
 
-   :string {:placeholder "S"}
+   :string     {:placeholder "S"}
 
-   :keyword {:placeholder "S"
-             :parse-fn asKeyword}
+   :keyword    {:placeholder "S"
+                :parse-fn    asKeyword}
 
-   :with-flag {}
+   :with-flag  {}
 
-   :flag {:parse-fn parseFlag
-          :placeholder "F"}
+   :flag       {:parse-fn    parseFlag
+                :placeholder "F"}
 
-   :slurp  {:parse-fn    asSingleString
-            :placeholder "f"}
+   :slurp      {:parse-fn    asSingleString
+                :placeholder "f"}
    :slurplines {:parse-fn    asLinesString
                 :placeholder "f"}
-   :edn        {:parse-fn asDecodedEdnValue
+   :edn        {:parse-fn    asDecodedEdnValue
                 :placeholder "edn"}
-   :ednfile    {:parse-fn asDecodedEdnFile
+   :ednfile    {:parse-fn    asDecodedEdnFile
                 :placeholder "f"}
-   :json       {:parse-fn asDecodedJsonValue
+   :json       {:parse-fn    asDecodedJsonValue
                 :placeholder "json"}
-   :jsonfile   {:parse-fn asDecodedJsonFile
+   :jsonfile   {:parse-fn    asDecodedJsonFile
                 :placeholder "f"}
-   :yaml       {:parse-fn asDecodedYamlValue
+   :yaml       {:parse-fn    asDecodedYamlValue
                 :placeholder "yaml"}
-   :yamlfile   {:parse-fn asDecodedYamlFile
+   :yamlfile   {:parse-fn    asDecodedYamlFile
                 :placeholder "f"}
 
    ; dates
-   :yyyy-mm-dd {:placeholder "YYYY-MM-DD"     :parse-fn    P/asDate}
-    ;;:validate    [#(true)
-    ;;              "Must be a date in format YYYY-MM-DD"]
-   })
+   :yyyy-mm-dd {:placeholder "YYYY-MM-DD" :parse-fn P/asDate}})
+;;:validate    [#(true)
+;;              "Must be a date in format YYYY-MM-DD"]
+
 
 (OPT/orchestra-instrument)
