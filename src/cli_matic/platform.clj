@@ -44,6 +44,9 @@
   [f]
   (slurp f))
 
+(defonce ^:dynamic *stdin*
+  clojure.core/*in*)
+
 ;
 ; Conversions
 ;
