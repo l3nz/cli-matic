@@ -25,6 +25,7 @@
   (cond
     (nil? filename)   ""
     (empty? filename) ""
+    (= filename "-") (P/slurp-file P/*stdin*)
     :else (P/slurp-file filename)))
 
 (defn asLinesString

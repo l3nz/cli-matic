@@ -53,6 +53,9 @@
   [f]
   (plk/slurp f))
 
+(defonce ^:dynamic *stdin*
+  plk/*in*)
+
 ;
 ; Conversions
 ;
