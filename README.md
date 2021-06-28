@@ -89,7 +89,7 @@ And help for sub-commands:
 	   -b, --a2 N  0  Addendum 2
 	   -?, --help
 
-But while we are coding this, we do not realy want to waste time writing any parsing logic.
+But while we are coding this, we do not really want to waste time writing any parsing logic.
 What we care about implementing are the functions `add-numbers` and `sub-numbers` where we do actual work; the rest should be declared externally and/or "just happen".
 
 From the point of view of us programmers, we'd like to have a couple of functions like:
