@@ -21,7 +21,7 @@ The library is available on Clojars:
 [![](https://cljdoc.xyz/badge/cli-matic)](https://cljdoc.xyz/jump/release/cli-matic)
 ![ClojarsDownloads](https://img.shields.io/clojars/dt/cli-matic)
 
-Or the library can be easily referenced through Github (make sure you change the commit-id):
+Or the library can be easily referenced through Github when using `deps` (make sure you change the commit-id):
 
 	{:deps
 	 {cli-matic
