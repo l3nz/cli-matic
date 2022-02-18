@@ -22,7 +22,7 @@
 ;
 
 
-(deftest unmangle-fn-name-test
+(deftest ^:skip-bb unmangle-fn-name-test
   (are [i o]
        (= o (unmangle-fn-name i))
 
@@ -30,7 +30,7 @@
     "cli_matic.utils_v2$convert_config_v1__GT_v2"
     "cli-matic.utils-v2/convert-config-v1->v2"))
 
-(deftest unmangle-fn-test
+(deftest ^:skip-bb unmangle-fn-test
   (are [i o]
        (= o (unmangle-fn i))
 

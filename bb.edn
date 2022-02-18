@@ -1,0 +1,14 @@
+{:paths ["src" "test"]
+ :deps {org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
+                                 :sha "1a841c4cc1d4f6dab7505a98ed2d532dd9d56b78"}
+        project/deps {:local/root "."}}
+ :tasks {test {:extra-deps {io.github.cognitect-labs/test-runner
+                            {:git/tag "v0.5.0" :git/sha "b3fd0d2"}
+                            org.clojure/tools.namespace {:git/url "https://github.com/babashka/tools.namespace"
+                                                         :git/sha "3625153ee66dfcec2ba600851b5b2cbdab8fae6c"}
+                            cljc.java-time {:mvn/version "0.1.11"}}
+               :requires ([cognitect.test-runner :as tr])
+               :task (apply tr/-main
+                            "-d" "test"
+                            "-e" "skip-bb"
+                            *command-line-args*)}}}

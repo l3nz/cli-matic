@@ -362,7 +362,7 @@
 
 ; YAML
 
-(deftest test-yaml
+(deftest ^:skip-bb test-yaml
   (testing "YAML single value"
     (are [i o]
          (= (parse-cmds-simpler
