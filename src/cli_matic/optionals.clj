@@ -34,23 +34,22 @@
   (json-decode-cheshire json))
 
 ;; YAML
-
 (def with-yaml?
   (try
-    (require 'yaml.core)
+    (require 'clj-yaml.core)
     true
     (catch Throwable _ false)))
 
 (defn ^:dynamic yaml-decode
-  "Resolve and apply io.forward/yaml's yaml decoding dynamically."
+  "Resolve and apply clj-yaml's yaml decoding dynamically."
   [& args]
   {:pre [with-yaml?]}
-  ((ns-resolve (symbol "yaml.core") (symbol "parse-string"))
+  ((ns-resolve (symbol "clj-yaml.core") (symbol "parse-string"))
    (if (string? args) args (str/join args))
-   :keywords identity
-   :constructor (ns-resolve (symbol "yaml.reader") (symbol "passthrough-constructor"))))
+   :keywords false))
 
 ;; ORCHESTRA
+
 
 (def with-orchestra?
   (try

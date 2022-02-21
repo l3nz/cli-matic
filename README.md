@@ -270,7 +270,7 @@ See example in `helpgen.clj`.
 This library is compatible with babashka. In addition to this library, you need
 to include babashka's [fork of
 clojure.spec.alpha](https://github.com/babashka/spec.alpha) in your
-`bb.edn`. Also see this project's `bb.edn` for how thid project's tests are run
+`bb.edn`. Also see this project's `bb.edn` for how this project's tests are run
 with babashka.
 
 ## Old (non-recursive) configuration
@@ -319,9 +319,11 @@ CLI-matic currently depends on:
 To use **JSON decoding**, you need Cheshire `cheshire/cheshire` to be on the classpath; otherwise it will break.
 If you do not need JSON parsing, you can do without.
 
-To use **Yaml decoding**, you need `io.forward/yaml` on your classpath; otherwise it will break.
+To use **Yaml decoding**, you need `clj-commons/clj-yaml` on your classpath; otherwise it will break.
 If you do not need YAML parsing, you can do without.
-Note that the YAML library has reflection in it, and so is incompatible with GraalVM native images.
+
+Note that up to version 0.4 of cli-matic we used to rely on `io.forward/yaml`,
+but it had used reflection, and so was incompatible with GraalVM native images.
 
 If Orchestra `orchestra` is present on the classpath, loading most namespaces triggers
 an instrumentation. As we already have Expound, we get easy-to-read messages
