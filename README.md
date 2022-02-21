@@ -37,6 +37,7 @@ Or the library can be easily referenced through Github when using `deps` (make s
 * **Validate with Spec.** Modern Clojure uses Spec, so validation should be spec-based as well. Validation should happen at the parameter level, and across all parameters of the subcommand at once, and emit sane error messages. Again, the more you have in declarative code, the less room for mistakes.  
 * **Read environment variables.** Passing environment variables is a handy way to inject passwords, etc. This should just happen and be declarative.
 * **Capture unnamed parameters** as if they were named parameters, with casting, validation, etc.
+* **Babashka-compatible**. Read [here](#babashka) for more info.
 
 While targeted at scripting, CLI-matic of course works with any program receiving CLI arguments.
 
@@ -264,6 +265,13 @@ Both functions receive the the configuration and the sub-command it was called w
 
 See example in `helpgen.clj`.
 
+## Babashka
+
+This library is compatible with babashka. In addition to this library, you need
+to include babashka's [fork of
+clojure.spec.alpha](https://github.com/babashka/spec.alpha) in your
+`bb.edn`. Also see this project's `bb.edn` for how thid project's tests are run
+with babashka.
 
 ## Old (non-recursive) configuration
 

@@ -91,7 +91,7 @@
 
 (def with-core-async?
   (try
-    (require 'clojure.core.async)
+    (require 'clojure.core.async.impl.channels)
     true
     (catch Throwable _ false)))
 

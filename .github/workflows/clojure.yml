@@ -1,6 +1,6 @@
 name: Clojure CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -13,3 +13,18 @@ jobs:
       run: lein deps
     - name: Run tests
       run: lein test
+
+  babashka-tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Setup Babashka
+      uses: turtlequeue/setup-babashka@v1.3.0
+      with:
+        babashka-version: 0.7.5
+
+    - name: Babashka tests
+      run: bb test

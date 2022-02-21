@@ -11,8 +11,7 @@
   "
   (:require [clojure.edn :as edn]
             [cli-matic.optionals :as OPT])
-  (:import (clojure.lang IPending)
-           (java.text SimpleDateFormat)))
+  (:import (clojure.lang IPending)))
 
 (defn read-env
   "Reads an environment variable.
@@ -58,14 +57,17 @@
   [s]
   (Float/parseFloat s))
 
+(def ^:private formatter
+  (java.time.format.DateTimeFormatter/ofPattern "yyyy-MM-dd"))
+
 (defn asDate
   "Converts a string in format yyyy-mm-dd to a
   Date object; if conversion
   fails, returns nil."
   [s]
   (try
-    (.parse
-     (SimpleDateFormat. "yyyy-MM-dd") s)
+    (java.sql.Date/valueOf
+     (java.time.LocalDate/parse s formatter))
     (catch Throwable _
       nil)))
 
