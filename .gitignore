@@ -11,6 +11,9 @@ pom.xml.asc
 .hg/
 .idea/
 *.iml
+
 .cpcache/
 .planck_cache/
 .cli-kondo-cache/
+.lsp/
+.clj-kondo/
