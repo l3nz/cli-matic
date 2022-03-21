@@ -3,5 +3,5 @@
  org.clojure/spec.alpha {:mvn/version "0.1.143"}
  org.clojure/tools.cli {:mvn/version "0.3.7"}
  org.clojure/core.async {:mvn/version "0.5.527"}
- expound {:mvn/version "0.7.1"}}}
+ expound/expound {:mvn/version "0.7.1"}}}
 
