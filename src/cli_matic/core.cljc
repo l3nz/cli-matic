@@ -578,7 +578,7 @@
     (condp = parse-errors
       :ERR-CFG (->RV -1 :ERR-CFG nil nil  "Error in CLI-matic configuration.")
       :ERR-NO-SUBCMD (->RV -1 :ERR-NO-SUBCMD :HELP-GLOBAL subcommand-path "No sub-command specified.")
-      :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL subcommand-path
+      :ERR-UNKNOWN-SUBCMD (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-SUBCMD  (butlast subcommand-path)  ; (-> subcommand-path butlast vec)
                                 error-text)
       :HELP-GLOBAL (->RV 0 :OK :HELP-GLOBAL subcommand-path nil)
       :ERR-PARMS-GLOBAL (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL subcommand-path

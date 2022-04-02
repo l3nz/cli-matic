@@ -125,7 +125,7 @@
           (empty? my-cmd)
           (throw (ex-info
                   (str "Unknown subcommand: " pe " - in path " path)
-                  {}))
+                  {:valid-path (mapv :command  elems)}))
 
           ; no remaining items
           (empty? rp)
