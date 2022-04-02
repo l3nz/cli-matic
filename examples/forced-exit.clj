@@ -2,7 +2,7 @@
 #_(
 #_This runs clj so we use the deps.edn but specify which module 
 #_we want to run. 
-exec clj -J-Xms256m -J-Xmx256m -J-client  -J-Dclojure.spec.skip-macros=true -i "$0" -m forcedexit "$@"
+exec clj -J-Xms256m -J-Xmx256m -J-client  -J-Dclojure.spec.skip-macros=true -M -i "$0" -m forcedexit "$@"
 )
 
 ; Execute the following from the project root directory to:

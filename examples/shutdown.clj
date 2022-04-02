@@ -2,7 +2,7 @@
 #_(
 #_This runs clj so we use the deps.edn but specify which module 
 #_we want to run. 
-exec clj -J-Xms256m -J-Xmx256m -J-client  -J-Dclojure.spec.skip-macros=true -i "$0" -m shutdown "$@"
+exec clj -J-Xms256m -J-Xmx256m -J-client  -J-Dclojure.spec.skip-macros=true -M -i "$0" -m shutdown "$@"
 )
 
 (ns shutdown
