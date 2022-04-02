@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+
+
+## 0.5.1 - 2022-04-02
+###  Changes
+
+* Fix #113 - Babashka compatibility  - *YES!*
+ Fix #140 - Do not dump stack trace on mistyped subcommand 
+* Fix #143 - clj -m raises warning 
+* Fix #109 - Update YAML library to `clj-commons/clj-yaml` 
+* Use modern tools.cli - 1.0.206
+
 ## 0.4.3 - 2020-06-11
 ###  Changes
 * Fix #115: Convert old configuration objects to new ones automatically.

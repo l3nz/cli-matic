@@ -10,7 +10,7 @@ Clojure is not good for scripting?).
 
 CLI-matic works with GraalVM, giving unbeatable performance for stand-alone command-line apps that do not even need a Java installation - see [Command-line apps with Clojure and GraalVM: 300x better start-up times](https://www.astrecipes.net/blog/2018/07/20/cmd-line-apps-with-clojure-and-graalvm/).
 
-CLI-matic also works with Planck REPL for very quick CLJS scripting - see [Using with Planck](https://github.com/l3nz/cli-matic/blob/master/planck.md).
+CLI-matic also works with Planck REPL for very quick CLJS scripting - see [Using with Planck](https://github.com/l3nz/cli-matic/blob/master/planck.md) and - last but not least - is compatible with Babashka, that happens to be the gold standard of Clojure scripting.
 
 
 ## Using
@@ -320,10 +320,8 @@ To use **JSON decoding**, you need Cheshire `cheshire/cheshire` to be on the cla
 If you do not need JSON parsing, you can do without.
 
 To use **Yaml decoding**, you need `clj-commons/clj-yaml` on your classpath; otherwise it will break.
-If you do not need YAML parsing, you can do without.
-
-Note that up to version 0.4 of cli-matic we used to rely on `io.forward/yaml`,
-but it had used reflection, and so was incompatible with GraalVM native images.
+If you do not need YAML parsing, you can do without. Note that up to version 0.4 of cli-matic we used to rely on `io.forward/yaml`,
+but it used reflection, and so was incompatible with GraalVM native images.
 
 If Orchestra `orchestra` is present on the classpath, loading most namespaces triggers
 an instrumentation. As we already have Expound, we get easy-to-read messages
