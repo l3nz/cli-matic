@@ -1,4 +1,9 @@
 # CLI-matic 
+
+
+[![Clojars Project](https://img.shields.io/clojars/v/cli-matic.svg)](https://clojars.org/cli-matic)
+[![](https://cljdoc.xyz/badge/cli-matic)](https://cljdoc.xyz/jump/release/cli-matic)
+![ClojarsDownloads](https://img.shields.io/clojars/dt/cli-matic)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -17,11 +22,7 @@ And if there is no such thing as too much of a good thing, then [BabashkaBins](#
 
 ## Using
 
-The library is available on Clojars:
-
-[![Clojars Project](https://img.shields.io/clojars/v/cli-matic.svg)](https://clojars.org/cli-matic)
-[![](https://cljdoc.xyz/badge/cli-matic)](https://cljdoc.xyz/jump/release/cli-matic)
-![ClojarsDownloads](https://img.shields.io/clojars/dt/cli-matic)
+The library is available on Clojars: https://clojars.org/cli-matic
 
 Or the library can be easily referenced through Github when using `deps` (make sure you change the commit-id):
 
