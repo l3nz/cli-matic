@@ -2,11 +2,11 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 
-## 0.5.2 - 2022-04-03
+## 0.5.3 - 2022-04-03
 ###  Changes
 
 * Fix #140 - We can do better and display the list of available subcommands
-
+* Fixed broken Cljdocs
 
 ## 0.5.1 - 2022-04-02
 ###  Changes
