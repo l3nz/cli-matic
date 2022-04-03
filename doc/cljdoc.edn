@@ -1,4 +1,5 @@
 {:cljdoc.doc/tree [["Introduction" {:file "README.md"}]
-                   ["Scripting with Planck" {:file "planck.md"}]
+                   ["Scripting with Planck" {:file "examples/cljs-planck/README.md"}]
+                   ["Scripting with Babashka" {:file "examples/bb/README.md"}]
                    ["Change log" {:file "CHANGELOG.md"}]
-                    ["Contribuiting" {:file "CONTRIBUTING.md"}]]}
+                   ["Contribuiting" {:file "CONTRIBUTING.md"}]]}
