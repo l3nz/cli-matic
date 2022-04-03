@@ -10,7 +10,7 @@ Clojure is not good for scripting?).
 
 CLI-matic works with GraalVM, giving unbeatable performance for stand-alone command-line apps that do not even need a Java installation - see [Command-line apps with Clojure and GraalVM: 300x better start-up times](https://www.astrecipes.net/blog/2018/07/20/cmd-line-apps-with-clojure-and-graalvm/).
 
-CLI-matic also works with Planck REPL for very quick CLJS scripting - see [Using with Planck](https://github.com/l3nz/cli-matic/blob/master/planck.md) and - last but not least - is compatible with [Babashka](#babashka), that happens to be the gold standard of Clojure scripting.
+CLI-matic also works with Planck REPL for very quick CLJS scripting - see [Using with Planck](https://github.com/l3nz/cli-matic/blob/master/examples/cljs-planck/README.md) and - last but not least - is compatible with [Babashka](#babashka), that happens to be the gold standard of Clojure scripting.
 
 And if there is no such thing as too much of a good thing, then [BabashkaBins](#babashkabins) lets you write a script using `bb` and then compile it to a Graal binary automagically.
 
@@ -241,7 +241,7 @@ At the same time, the named option remains, so you can use either version. Bound
 
 ### Validation with Spec (and Expound)
 
-CLI-matic can optionally validate any parameter, and the set of parameters you use to call the subcommand function, with Spec, and uses the excellent Expound https://github.com/bhb/expound to produce sane error messages. An example is under `examples` as `toycalc-spec.clj` - see https://github.com/l3nz/cli-matic/blob/master/examples/toycalc-spec.clj
+CLI-matic can optionally validate any parameter, and the set of parameters you use to call the subcommand function, with Spec, and uses the excellent Expound https://github.com/bhb/expound to produce sane error messages. An example is under `examples/clj` as `toycalc-spec.clj` - see https://github.com/l3nz/cli-matic/blob/master/examples/clj/toycalc-spec.clj
 
 By using and including Expound as a depencency, you can add error descriptions where the raw Spec would be hard to read, and use a nice set of
 pre-built specs with readable descriptions that come with Expound - see https://github.com/bhb/expound/blob/master/src/expound/specs.cljc
@@ -269,11 +269,15 @@ See example in `helpgen.clj`.
 
 ## Babashka
 
-This library is compatible with (Babashka)[https://github.com/babashka/babashka]. In addition to this library, you need
-to include babashka's [fork of
+This library is compatible with [Babashka](https://github.com/babashka/babashka) - a native Clojure interpreter for scripting with fast startup. Its main goal is to leverage Clojure in places where you would be using bash otherwise.
+
+In addition to this library, you need to include babashka's [fork of
 clojure.spec.alpha](https://github.com/babashka/spec.alpha) in your
 `bb.edn`. Also see this project's `bb.edn` for how this project's tests are run
 with babashka.
+
+See [Scripting with Babashka](https://github.com/l3nz/cli-matic/blob/master/examples/bb/README.md).
+
 
 ## Old (non-recursive) configuration
 

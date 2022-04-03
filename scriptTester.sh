@@ -29,8 +29,8 @@ function testPresence {
 }
 
 
-CLJ="./examples"
-CLJS="./examples-cljs-planck"
+CLJ="./examples/clj"
+CLJS="./examples/cljs-planck"
 
 
 
@@ -111,7 +111,7 @@ testPresence "$CMD --base 16 add -a 1 -b 254" \
 	"ff" "$SCRIPT hex add"
 
 export AA=10
-testPresence "./examples/toycalc.clj add -b 20" \
+testPresence "$CMD add -b 20" \
 	"30" "$SCRIPT add with environment"
 
 #
@@ -129,7 +129,7 @@ testPresence "$CMD --base 16 add -a 1 -b 254" \
 	"ff" "$SCRIPT hex add"
 
 export AA=10
-testPresence "./examples/toycalc.clj add -b 20" \
+testPresence "$CMD add -b 20" \
 	"30" "$SCRIPT add with environment"
 
 
