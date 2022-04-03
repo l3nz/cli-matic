@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. This change
 ###  Changes
 
 * Fix #113 - Babashka compatibility  - *YES!*
- Fix #140 - Do not dump stack trace on mistyped subcommand 
+* Fix #140 - Do not dump stack trace on mistyped subcommand 
 * Fix #143 - clj -m raises warning 
 * Fix #109 - Update YAML library to `clj-commons/clj-yaml` 
 * Use modern tools.cli - 1.0.206
