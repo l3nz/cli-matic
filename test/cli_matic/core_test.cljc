@@ -149,7 +149,7 @@
 
       ; noe that the "path" here contains the last GOOD path so we can print its help
       ["x"]
-      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-SUBCMD ["dummy"] "Unknown sub-command: 'dummy x'.")
+      (->RV -1 :ERR-UNKNOWN-SUBCMD :HELP-GLOBAL ["dummy"] "Unknown sub-command: 'dummy x'.")
 
       ["--lippa" "foo"]
       (->RV -1 :ERR-PARMS-GLOBAL :HELP-GLOBAL ["dummy"] "Global option error: Unknown option: \"--lippa\"")
