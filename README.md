@@ -10,7 +10,9 @@ Clojure is not good for scripting?).
 
 CLI-matic works with GraalVM, giving unbeatable performance for stand-alone command-line apps that do not even need a Java installation - see [Command-line apps with Clojure and GraalVM: 300x better start-up times](https://www.astrecipes.net/blog/2018/07/20/cmd-line-apps-with-clojure-and-graalvm/).
 
-CLI-matic also works with Planck REPL for very quick CLJS scripting - see [Using with Planck](https://github.com/l3nz/cli-matic/blob/master/planck.md) and - last but not least - is compatible with Babashka, that happens to be the gold standard of Clojure scripting.
+CLI-matic also works with Planck REPL for very quick CLJS scripting - see [Using with Planck](https://github.com/l3nz/cli-matic/blob/master/planck.md) and - last but not least - is compatible with [Babashka](#babashka), that happens to be the gold standard of Clojure scripting.
+
+And if there is no such thing as too much of a good thing, then [BabashkaBins](#babashkabins) lets you write a script using `bb` and then compile it to a Graal binary automagically.
 
 
 ## Using
@@ -267,7 +269,7 @@ See example in `helpgen.clj`.
 
 ## Babashka
 
-This library is compatible with babashka. In addition to this library, you need
+This library is compatible with (Babashka)[https://github.com/babashka/babashka]. In addition to this library, you need
 to include babashka's [fork of
 clojure.spec.alpha](https://github.com/babashka/spec.alpha) in your
 `bb.edn`. Also see this project's `bb.edn` for how this project's tests are run
@@ -381,6 +383,16 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" "$@"
 ```
 
 And so you have a nice place not to forget to set `skip-macros`!
+
+
+### BabashkaBins
+
+`bbb`
+ lets you take a standard Clojure project layout, run it under both JVM Clojure and babashka, and then automates 
+ the compilation of your project into a static binary with GraalVM for you when it’s time to distribute it.
+
+- https://nikvdp.com/post/bbb/
+- https://github.com/nikvdp/bbb
 
 ## Contributing
 
