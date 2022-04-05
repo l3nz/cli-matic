@@ -1,10 +1,13 @@
-# Scripting with Bababshka
+# Scripting with Babashka
 
-This is JMV/Clojure
+Babashka is a native, stand-alone Clojure interpreter built for scripting - https://github.com/babashka/babashka
+
+
+This is the time it takes to run a scimple script from JMV/Clojure
 
 		./toycalc.clj  4.49s user 0.15s system 295% cpu 1.569 total
 
-This is bb
+This is the same script in Babashka
 
 		./toycalc.bb  0.43s user 0.04s system 96% cpu 0.484 total
 
