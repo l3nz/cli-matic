@@ -1,4 +1,4 @@
-# Scripting with Ba*bash*ka
+# Scripting with Ba·*bash*·ka
 
 Babashka is a native, stand-alone Clojure interpreter built for scripting - https://github.com/babashka/babashka
 
