@@ -4,6 +4,13 @@
 ;; ./toycalc.bb -m toycalc add -a 1 -b 80
 
 
+; To avoid having an external bb.edn file, we reference dependencies
+; within the script itself.
+(require '[babashka.deps :as deps])
+(deps/add-deps '{:deps {org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
+                                                 :sha "1a841c4cc1d4f6dab7505a98ed2d532dd9d56b78"}
+                        cli-matic/cli-matic {:mvn/version "0.5.2"}}})
+
 (require '[cli-matic.core :refer [run-cmd]])
 
 (defn add_numbers
@@ -42,5 +49,6 @@
 
 ; This is our entry point.
 ; Commands (functions) will be invoked as appropriate.
+
 
 (run-cmd *command-line-args* CONFIGURATION)

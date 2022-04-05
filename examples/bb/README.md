@@ -12,8 +12,14 @@ This is bb
 
 ## Differences 
 
-- You need to have a `bb.edn` file with the libraries you need. Look at the one here for a minimal working solution.
+- In the sample script, we import libraries (including *cli-matic*) right from the script itself,
+  so you can have single-file scripts.
+  As an alternative, for example if you have multiple scripts with the same deps and you don't want to change them all
+  when you upgrade a library,
+  you can to have a `bb.edn` file with the libraries you need. Look at the `example_bb.edn` 
+  file here for a minimal working solution.
 - You do not need an external namespace, but you can simply `(require '[cli-matic.core :refer [run-cmd]])` 
 - You don't need a main function, but you just call `(run-cmd *command-line-args* CONFIGURATION)`
 
 Good luck!
+
