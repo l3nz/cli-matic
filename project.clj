@@ -45,7 +45,7 @@
              {:dependencies [[cljc.java-time "0.1.11"]]}
              :kondo
              {:dependencies [[org.clojure/clojure "1.10.1"]
-                             [clj-kondo "2020.05.09"]]}}
+                             [clj-kondo "2022.03.09"]]}}
 
   :cljsbuild
   {:test-commands {"unit-tests" ["node" "target/unit-tests.js"]}

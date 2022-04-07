@@ -22,7 +22,7 @@
 
 
 (defn  yaml-decode
-  ""
+  "In JS, no YAML decoding - we throw an error"
   [& _]
   (throw (ex-info "No YAML decoding in CLJS." {})))
 
@@ -30,7 +30,7 @@
 
 
 (defn orchestra-instrument
-  ""
+  "No orchestra in JS, so we can simply ignore this call."
   []
   nil)
 
