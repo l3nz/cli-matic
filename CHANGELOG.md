@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 
+## Upcoming
+### Changes
+
+* Fix #150 - Update all dependencies but CLJ
+
+
 ## 0.5.3 - 2022-04-03
 ###  Changes
 

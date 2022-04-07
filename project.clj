@@ -19,13 +19,12 @@
    [org.clojure/spec.alpha "0.1.143" :scope "provided"]
    [org.clojure/tools.cli "1.0.206"]
    [orchestra/orchestra "2019.02.06-1" :scope "provided"]
-   [cheshire/cheshire "5.10.0" :scope "provided"]
-   ;[io.forward/yaml "1.0.11" :scope "provided"]
-   [clj-commons/clj-yaml "0.7.0" :scope "provided"]
+   [cheshire/cheshire "5.10.2" :scope "provided"]
+   [clj-commons/clj-yaml "0.7.108" :scope "provided"]
    [org.clojure/core.async "0.5.527" :scope "provided"]
    ;[planck "2.22.0" :scope "provided"]
    [l3nz/planck "0.0.0" :scope "provided"]
-   [expound/expound "0.8.4"]]
+   [expound/expound "0.9.0"]]
 
   ;:scm {:name "git"
   ;      ;; :tag "..."
