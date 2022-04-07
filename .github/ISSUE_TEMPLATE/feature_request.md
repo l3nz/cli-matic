@@ -19,3 +19,11 @@ A clear and concise description of any alternative solutions or features you've 
 **Additional context**
 Add any other context or screenshots about the feature request here.
 If something like this is present somewhere else, please link to its documentation/examples.
+
+
+**Version / Platform**
+
+[ Please specify which version of cli-matic you're using and the platform you are on, like JVM or JS or BB and which version ]
+
+
+
