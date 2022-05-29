@@ -6,7 +6,9 @@
             [cljc.java-time.zoned-date-time :as zoned-date-time]
             [cli-matic.core :refer [parse-command-line]]
             [cli-matic.utils-v2 :refer [convert-config-v1->v2]]
-            [cli-matic.presets :refer [set-help-values set-find-value set-find-didyoumean]]))
+            [cli-matic.presets :refer [set-help-values set-find-value set-find-didyoumean]]
+            [cli-matic.utils :as U]
+            [cli-matic.utils-v2 :as U2]))
 
 (defn cmd_foo [v]
   (prn "Foo:" v)
@@ -240,7 +242,28 @@
       {:commandline  {:_arguments []
                       :val        "defg"}
        :error-text   ""
+       :parse-errors :NONE}))
+  
+  (testing "multiple strings with default"
+    (are [i o]
+         (= (parse-cmds-simpler
+             i
+             (mkDummyCfg {:option "val" :as "x" :type :string :multiple true
+                          :default ["a" "b" "c"]})) o)
+
+         ;
+      ["foo"]
+      {:commandline  {:_arguments []
+                      :val        ["a" "b" "c"]}
+       :error-text   ""
+       :parse-errors :NONE}
+
+      ["foo" "--val" "abcd" "--val" "defg"]
+      {:commandline  {:_arguments []
+                      :val        ["abcd" "defg"]}
+       :error-text   ""
        :parse-errors :NONE})))
+
 
 ; :yyyy-mm-dd
 

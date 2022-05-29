@@ -191,7 +191,7 @@
                  opts-2)]
     (apply
      conj positional-opts
-     (flatten (seq opts-3)))))
+     (apply concat (seq opts-3)))))
 
 (s/fdef mk-cli-option
   :args (s/cat :opts ::S/climatic-option)
