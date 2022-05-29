@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file. This change
 ## Upcoming
 ### Changes
 
+* ....
+
+## 0.5.4 - 2022-05-29
+###  Changes
+
+* Fix #28 -  Support for STDIN
+* Patch #55 - Added aliases for more clojure versions
 * Fix #150 - Update all dependencies but CLJ
 
 
