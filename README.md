@@ -198,9 +198,10 @@ trailing colon.  Sets print their allowed values on help and, on mismatches, sug
 
 For all options, you can then add:
 
-* `:default` the default value, as expected after conversion. If no default, the value will be
-  passed only if present. If you set `:default :present` this means that CLI-matic will abort
-  if that option is not present (and it appears with a trailing asterisk in the help)
+* `:default` the default value, as expected after conversion
+  * If no default, the value will be passed only if present
+  * If you set `:default :present` this means that CLI-matic will abort if that option is not present;
+    it is effectively a “required option” (and it appears with a trailing asterisk in the help)
 * `:as` is the description that appears in help. It can be a multi-line array, or
   a single string.
 * `:multiple` if true, the values for all options with the same name are stored in an array
