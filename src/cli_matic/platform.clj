@@ -11,7 +11,7 @@
   "
   (:require [clojure.edn :as edn]
             [cli-matic.optionals :as OPT])
-  (:import (clojure.lang IPending)))
+  (:import (clojure.lang IDeref)))
 
 (defn read-env
   "Reads an environment variable.
@@ -82,7 +82,7 @@
 (defn- isJvmPromise?
   "Checks whether the value is a JVM promise."
   [x]
-  (instance? IPending x))
+  (instance? IDeref x))
 
 (defn isDeferredValue?
   "Is this a deferred value for this platform?"

@@ -709,5 +709,12 @@
                             :type    :int}]
              :runs        cmd_foo}]))
 
-
-
+(deftest ipending-is-not-ideref-test
+  (let [cmd (fn [& _] (lazy-seq (cons 1 ())))
+        setup {:command     "ipending-example"
+               :opts        []
+               :subcommands [{:command "foo"
+                              :opts    []
+                              :runs    cmd}]}]
+    (is (= (->RV 0 :OK nil [] [])
+           (run-cmd* setup ["foo"])))))
